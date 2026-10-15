@@ -69,7 +69,7 @@ Sources, Node 26 checks, GitHub Action commit pins, and the refresh policy (deli
 │   │   └── tools/chat/       chat-message builder route (page.tsx, static)
 │   ├── features/chat/
 │   │   ├── engine/           registry, parse, serialize, render, count, optimize, share (pure TS, tests beside each)
-│   │   └── ui/               builder: chat-builder, chat-editor (ProseMirror), editor schema, model and plugins, style picker, image picker, markup panel, preview
+│   │   └── ui/               builder: chat-builder, chat-editor (ProseMirror), editor schema, model and plugins, style picker (search, accordion), icon options, markup panel, chat line
 │   ├── lib/nexon/            server-only metadata client: descendants.ts (portrait URLs at build time)
 │   ├── data/
 │   │   ├── chat-tags.json    tag registry (versioned, patch-verified)
@@ -141,11 +141,11 @@ Pure TypeScript with no React, DOM or Next imports. The only dependency is Zod. 
 ### 5.3 Builder UI — `src/features/chat/ui`
 Route `/tools/chat`. Walkthrough: `docs/walkthroughs/chat-builder.md`.
 - **Editor:** ProseMirror (ADR 0007), one line, one `style` mark (a run holds one style), inline atom images that never carry a style. `normalizePlugin` removes refused characters and line breaks after every change. Copying from the editor gives markup; pasting text reads it as markup.
-- **Source of truth:** engine pieces. The editor and the markup panel write them; the counter, preview, hints and copy read them.
-- **Picker:** `styleGroups` shows each look once under its shortest tag, grouped by appearance, never by where a tag name came from (T7SEN, 2026-10-15): Colors (27, in hue order, reds first), Rarity (tier1 to tier4, kept together because they mean item rarity in game), Whites and grays (13, chroma below 0.15, light to dark), Bold and italic, Text sizes. Each shows its cost and a low-contrast mark below WCAG AA on the chat background.
-- **Copy:** the shorter of the optimizer's output and the text as written (both render the same). "Copy as written" appears when they differ.
-- **Preview:** directly under the editor in the same panel, so the text and its in-game look sit together. It shows the copy text after the input box's cut, parsed, on the chat background, per channel. Icon height (2em) and the font are approximations.
-- **Layout:** two columns from the `lg` breakpoint: the message panel (editor and preview) and the markup panel on the left, the style panel (styles and icons) on the right. On narrow screens the style panel follows the message panel.
+- **Source of truth:** engine pieces. The editor and the markup panel write them; the counter, overflow highlight, hints and copy read them.
+- **Picker:** a search box (label, tag name, same-looking names, group title) above accordion sections: Colors (27, hue order), Rarity (4), Whites and grays (13), Bold and italic, Text sizes, Icons. Colors, Rarity and Icons start open; a search opens every section that matches. `styleGroups` shows each look once under its shortest tag, grouped by appearance, never by where a tag name came from (T7SEN, 2026-10-15). Small swatches with tooltips show the cost and mark the 9 colors below WCAG AA on the chat background.
+- **Copy:** one large "Copy markup" button with the counter badge beside it, under the message. It copies the shorter of the optimizer's output and the text as written (both render the same). "Copy as written" appears when they differ. The markup panel itself is folded away until opened.
+- **No separate preview** (T7SEN, 2026-10-15): the editor is drawn as the in-game chat line (chat background, channel color, game colors, larger text, a stand-in "You:" sender), so it is the preview. The overflow highlight in it shows what the game cuts. The sender's in-game format is not verified. `ChatLine` renders read-only samples (home page). Icon height (2em) and the font are approximations.
+- **Layout:** two columns from the `lg` breakpoint: the message card stays in view on the left (sticky) while the style card scrolls on the right. On narrow screens the style card follows the message.
 
 ### 5.4 Sharing and templates
 - Share links: `/tools/chat?m=<code>`, with codes from `encodeShare` (section 5.2). Decoded content is untrusted text.
@@ -186,7 +186,7 @@ Header, tool registry, tool cards, footer with the disclaimer and attribution. A
 - **ADRs.** `docs/adr/NNNN-kebab-title.md` with Context, Decision, Consequences, Alternatives. Local only and gitignored; never committed.
 - **Walkthroughs.** `docs/walkthroughs/<subsystem>.md`: the code path, why it is shaped that way, what would break it.
 - **Copy.** Player-facing, short, sentence case. Game terms spelled as the game spells them.
-- **Legal text.** Footer on every page: "ArcheLab is an unofficial fan site. It is not affiliated with or endorsed by NEXON. The First Descendant is a trademark of NEXON. Data based on NEXON Open API."
+- **Legal text.** Footer on every page, in T7SEN's words (2026-10-15): "Made with ❤️ by T7SEN. © 2026 ArcheLab - ArcheLab is a community fan site and is not affiliated with Nexon." Plus the attribution NEXON's API terms require (§8.4): "Data based on NEXON Open API." (`src/components/site-footer.tsx`).
 
 ## 8. Environment variables
 
@@ -227,6 +227,8 @@ None today. When player lookups ship, `NEXON_API_KEY` is server-only, set in Ver
 13. **Scheduled rebuilds stop on a quiet repository.** GitHub disables scheduled workflows in a public repository after 60 days without activity. Without the weekly run, the live page's NEXON data ages past the 30-day limit (ADR 0008). Re-enable the schedule in the Actions tab if that happens.
 14. **ProseMirror styles images if asked.** `addMark` over a range marks inline atoms too. Style text nodes only (`applyStyle`), and keep `normalizePlugin`, which strips styles from images that arrive by paste.
 15. **NEXON's image host can fail.** A portrait URL can return 503 while others work (seen 2026-10-15). Every icon must fall back to its labeled placeholder.
+
+16. **ProseMirror reads selections late.** It reads native selection changes only while focused, and can apply them after the next key. The editor takes a non-empty browser selection on blur and before picker commands (`syncSelectionFromDom`), never a collapsed one: after Ctrl+A over styled text the browser can report a collapsed caret while ProseMirror holds the whole line. Tests that click and press keys within a millisecond can still race ProseMirror itself; model real sequences.
 
 ## 11. Known tech debt
 
