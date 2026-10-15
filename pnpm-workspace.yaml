@@ -1,0 +1,75 @@
+# pnpm 12 reads its settings from this file. ArcheLab is a single package.
+# Every key must be a known pnpm setting: unknown keys fail commands (SKILL.md landmine 11).
+
+# Exact versions only, dev dependencies included (ADR 0002).
+savePrefix: ""
+
+# Dependency build scripts are off unless approved here, each with a reason.
+allowBuilds:
+  # Image optimization is never used (images.unoptimized, SKILL.md landmine 2).
+  sharp: false
+  # Prebuilt native bindings ship as optional dependencies; the postinstall fallback is not needed.
+  unrs-resolver: false
+  # Pulled in by the Vercel CLI's builders. The platform binary ships as an optional
+  # dependency (@esbuild/<platform>), so the postinstall check and fallback are not needed.
+  esbuild: false
+
+# These plugins, bundled by eslint-config-next, do not list ESLint 10 in their peer ranges yet.
+# Next.js documents ESLint 10 as supported (ADR 0002).
+peerDependencyRules:
+  allowedVersions:
+    eslint-plugin-react>eslint: "10"
+    eslint-plugin-jsx-a11y>eslint: "10"
+    eslint-plugin-import>eslint: "10"
+
+# Written by pnpm on 2026-10-15: these exact versions were under a day old at install,
+# so pnpm recorded them as exceptions to the 24-hour minimumReleaseAge (ADR 0002).
+# Next.js 16.4.1 is a security release. Drop the list at the next pin refresh.
+minimumReleaseAgeExclude:
+  - "@next/env@16.4.1"
+  - "@next/eslint-plugin-next@16.4.1"
+  - "@next/swc-darwin-arm64@16.4.1"
+  - "@next/swc-darwin-x64@16.4.1"
+  - "@next/swc-linux-arm64-gnu@16.4.1"
+  - "@next/swc-linux-arm64-musl@16.4.1"
+  - "@next/swc-linux-x64-gnu@16.4.1"
+  - "@next/swc-linux-x64-musl@16.4.1"
+  - "@next/swc-win32-arm64-msvc@16.4.1"
+  - "@next/swc-win32-x64-msvc@16.4.1"
+  - "@playwright/test@1.64.1"
+  - "@vercel/backends@19.0.1"
+  - "@vercel/build-utils@14.21.1"
+  - "@vercel/cervel@0.1.81"
+  - "@vercel/container@19.1.1"
+  - "@vercel/elysia@19.0.1"
+  - "@vercel/express@19.0.1"
+  - "@vercel/fastify@19.0.1"
+  - "@vercel/gatsby-plugin-vercel-builder@2.2.73"
+  - "@vercel/go@22.0.1"
+  - "@vercel/h3@19.0.1"
+  - "@vercel/hono@19.0.1"
+  - "@vercel/hydrogen@20.0.1"
+  - "@vercel/koa@19.0.1"
+  - "@vercel/nestjs@19.0.1"
+  - "@vercel/next@23.0.1"
+  - "@vercel/node@24.0.1"
+  - "@vercel/python-analysis@0.15.0"
+  - "@vercel/python@25.1.0"
+  - "@vercel/redwood@21.0.1"
+  - "@vercel/remix-builder@24.0.1"
+  - "@vercel/ruby@21.0.1"
+  - "@vercel/rust@20.0.1"
+  - "@vercel/static-build@21.0.1"
+  - "@vercel/vc-native-darwin-arm64@64.1.0"
+  - "@vercel/vc-native-darwin-x64@64.1.0"
+  - "@vercel/vc-native-linux-arm64@64.1.0"
+  - "@vercel/vc-native-linux-x64@64.1.0"
+  - "@vercel/vc-native-win32-arm64@64.1.0"
+  - "@vercel/vc-native-win32-x64@64.1.0"
+  - eslint-config-next@16.4.1
+  - next@16.4.1
+  - playwright-core@1.64.1
+  - playwright@1.64.1
+  - react-dom@19.3.1
+  - react@19.3.1
+  - vercel@64.1.0

@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens: direction A (Signal) with direction B's (Rift) palette, chosen by
+ * T7SEN on 2026-10-15 (SKILL.md section 6). UI colors come only from these
+ * (AGENTS.md conventions), so Tailwind's default palette is removed. Rarity tier
+ * accents come from src/data/chat-tags.json in Phase 1, not from here.
+ *
+ * --color-shell must equal shellBackground in tokens.ts: the root layout inlines that
+ * value so the page is dark before this stylesheet loads (shell-background.test.ts).
+ */
+@theme {
+  --color-*: initial;
+  --color-shell: #0a0812;
+  --color-surface: #141024;
+  --color-line: #2b2244;
+  --color-ink: #ece7f7;
+  --color-ink-muted: #a69dc3;
+  --color-accent: #a184ff;
+}
+
+/* Fonts load through next/font in the root layout (self-hosted, OFL). */
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-rajdhani), ui-sans-serif, system-ui, sans-serif;
+}

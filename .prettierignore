@@ -1,0 +1,7 @@
+# Prettier also skips everything in .gitignore.
+# pnpm writes both of these files itself.
+pnpm-lock.yaml
+pnpm-workspace.yaml
+
+# Docs are formatted by hand; Prettier would rewrite their tables.
+*.md
