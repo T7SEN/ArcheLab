@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens. UI colors come only from these (AGENTS.md conventions), so Tailwind's
+ * default palette is removed. Phase 0 values are neutral placeholders until T7SEN picks
+ * a design direction.
+ *
+ * --color-shell must equal shellBackground in tokens.ts: the root layout inlines that
+ * value so the page is dark before this stylesheet loads (shell-background.test.ts).
+ */
+@theme {
+  --color-*: initial;
+  --color-shell: #0b0d10;
+  --color-ink: #e6e8eb;
+  --color-ink-muted: #9aa1aa;
+  --color-line: #23282f;
+}
