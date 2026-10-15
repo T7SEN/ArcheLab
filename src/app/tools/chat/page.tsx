@@ -18,11 +18,11 @@ export default async function ChatBuilderPage() {
   // Fetched once while the page is prerendered (ADR 0008).
   const portraits = await fetchPortraitUrls(portraitNames);
   return (
-    <section className="mx-auto max-w-5xl px-4 py-10">
+    <section className="mx-auto max-w-6xl px-4 py-10">
       <h1 className="font-display text-4xl font-semibold tracking-wide">
         Chat message builder
       </h1>
-      <p className="mt-3 max-w-2xl text-ink-muted">
+      <p className="mt-3 max-w-2xl text-muted-foreground">
         Build a colored chat message, see how it looks in game, and copy markup
         that fits the {chatRegistry.charLimit}-character chat limit.
       </p>

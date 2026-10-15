@@ -17,7 +17,7 @@ const textMetrics =
 /**
  * The raw markup, editable. A backdrop behind the transparent-background textarea
  * highlights what the game's input box cuts off; it repeats the text with the same
- * metrics so the highlight lines up.
+ * metrics so the highlight lines up. Styled like shadcn's Textarea (ADR 0009).
  */
 export function MarkupPanel({
   id,
@@ -28,7 +28,7 @@ export function MarkupPanel({
 }: MarkupPanelProps) {
   const backdropRef = useRef<HTMLDivElement>(null);
   return (
-    <div className="relative border border-line bg-shell focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
+    <div className="relative overflow-hidden rounded-lg border border-input bg-input/30 transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
       <div
         ref={backdropRef}
         aria-hidden="true"
@@ -39,7 +39,7 @@ export function MarkupPanel({
         ) : (
           <>
             {value.slice(0, overflowAt)}
-            <mark className="bg-warn/35 text-transparent">
+            <mark className="rounded-sm bg-warning/35 text-transparent">
               {value.slice(overflowAt)}
             </mark>
           </>
@@ -52,6 +52,7 @@ export function MarkupPanel({
         spellCheck={false}
         autoCapitalize="off"
         autoComplete="off"
+        placeholder="<red>Markup</> appears here as you type."
         aria-describedby={describedBy}
         onChange={(event) => {
           onChange(event.target.value);
@@ -67,7 +68,7 @@ export function MarkupPanel({
             backdropRef.current.scrollTop = event.currentTarget.scrollTop;
           }
         }}
-        className={`relative block w-full resize-none bg-transparent text-ink outline-none ${textMetrics}`}
+        className={`relative block w-full resize-none bg-transparent text-foreground outline-none placeholder:text-muted-foreground ${textMetrics}`}
       />
     </div>
   );

@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { imageTag } from "@/features/chat/engine/serialize";
 import type { PortraitUrls } from "@/lib/nexon/descendants";
 import { ChatIcon } from "./chat-icon";
@@ -15,33 +20,52 @@ interface ImagePickerProps {
 export function ImagePicker({ portraits, onPick }: ImagePickerProps) {
   return (
     <div role="group" aria-labelledby="image-picker-title">
-      <p
+      <h3
         id="image-picker-title"
-        className="text-xs font-semibold tracking-wider text-ink-muted uppercase"
+        className="text-xs font-medium text-muted-foreground"
       >
         Icons
-      </p>
-      <div className="mt-1.5 flex flex-wrap gap-2">
+      </h3>
+      <div className="mt-2 flex flex-wrap gap-1.5">
         {chatRegistry.data.images.map((image) => {
           const cost = imageTag(image.id).length;
           return (
-            <button
-              key={image.id}
-              type="button"
-              aria-label={`${image.label} icon, adds ${String(cost)} characters`}
-              title={`${image.label} icon (${image.id}), adds ${String(cost)} characters`}
-              onMouseDown={keepEditorFocus}
-              onClick={() => {
-                onPick(image.id);
-              }}
-              className="flex items-center gap-2 border border-line px-2 py-1 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              style={{ backgroundColor: chatRegistry.data.chatBackground.hex }}
-            >
-              <span aria-hidden="true">
-                <ChatIcon id={image.id} portraits={portraits} />
-              </span>
-              <span className="text-ink-muted">+{cost}</span>
-            </button>
+            <Tooltip key={image.id}>
+              <TooltipTrigger
+                render={
+                  <button
+                    type="button"
+                    aria-label={`${image.label} icon, adds ${String(cost)} characters`}
+                    onMouseDown={keepEditorFocus}
+                    onClick={() => {
+                      onPick(image.id);
+                    }}
+                    className="flex h-10 items-center gap-2 rounded-md border border-input px-2 text-sm transition-colors outline-none hover:border-ring/60 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                    style={{
+                      backgroundColor: chatRegistry.data.chatBackground.hex,
+                    }}
+                  />
+                }
+              >
+                <span aria-hidden="true" className="text-sm">
+                  <ChatIcon id={image.id} portraits={portraits} />
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="text-xs text-muted-foreground"
+                >
+                  +{cost}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <span className="grid gap-0.5">
+                  <span className="font-medium">{image.label} icon</span>
+                  <span className="font-mono">
+                    {imageTag(image.id)} · +{cost} characters
+                  </span>
+                </span>
+              </TooltipContent>
+            </Tooltip>
           );
         })}
       </div>

@@ -1,7 +1,21 @@
 "use client";
 
+import { BadgeCheck, Check, Copy, Gamepad2, TriangleAlert } from "lucide-react";
 import { useId, useMemo, useRef, useState } from "react";
-import { HudPanel } from "@/components/hud-panel";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   count,
   optimize,
@@ -73,6 +87,8 @@ function lowContrastStyles(pieces: readonly Piece[]): string[] {
   }
   return hints;
 }
+
+const cardTitle = "font-display text-lg font-semibold tracking-wide";
 
 type CopyStatus = { kind: "idle" } | { kind: "done" | "failed"; text: string };
 
@@ -176,180 +192,211 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
   const editorLabel = `${ids}-editor-label`;
   const counterId = `${ids}-counter`;
   const markupId = `${ids}-markup`;
+  const previewLabel = `${ids}-preview`;
 
   return (
     // Two columns on wide screens: the message (editor right above its preview) and
     // the markup on the left, the style picker beside them. On narrow screens the
     // picker follows the message, so it stays next to the text it styles.
-    <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_23rem] lg:grid-rows-[auto_auto_1fr] lg:items-start">
-      <HudPanel
-        title="Message"
-        titleId={`${ids}-message`}
-        className="lg:col-start-1 lg:row-start-1"
-      >
-        <p id={editorLabel} className="sr-only">
-          Message
-        </p>
-        <div
-          className="border border-line"
-          style={{ backgroundColor: chatBackground.hex, color: channelHex }}
-        >
-          <ChatEditor
-            ref={editorRef}
-            pieces={message.pieces}
-            overflowGlyph={overflowGlyph}
-            portraits={portraits}
-            labelledBy={editorLabel}
-            describedBy={counterId}
-            onChange={onEditorChange}
-            onRefused={(chars) => {
-              refusedThisChange.current = true;
-              setNotice(refusedNotice(chars));
-            }}
-            onActiveStyle={setActive}
-          />
-        </div>
-        <p aria-live="polite" className="mt-2 text-sm text-warn empty:mt-0">
-          {notice}
-        </p>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-          <p
-            id={`${ids}-preview`}
-            className="text-xs font-semibold tracking-wider text-ink-muted uppercase"
-          >
-            In game
-          </p>
-          <fieldset className="flex flex-wrap gap-1.5">
-            <legend className="sr-only">Channel</legend>
-            {channels.map((channel) => (
-              <label
-                key={channel.name}
-                className="flex cursor-pointer items-center gap-1.5 border border-line px-2 py-0.5 text-xs has-checked:border-accent has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent"
+    <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:grid-rows-[auto_auto_1fr] lg:items-start">
+      <Card className="lg:col-start-1 lg:row-start-1">
+        <CardHeader>
+          <CardTitle className={cardTitle}>Message</CardTitle>
+          <CardDescription>
+            Type your message, select text, then pick a style.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div>
+            <p id={editorLabel} className="sr-only">
+              Message
+            </p>
+            <div
+              className="overflow-hidden rounded-lg border border-input transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50"
+              style={{ backgroundColor: chatBackground.hex, color: channelHex }}
+            >
+              <ChatEditor
+                ref={editorRef}
+                pieces={message.pieces}
+                overflowGlyph={overflowGlyph}
+                portraits={portraits}
+                labelledBy={editorLabel}
+                describedBy={counterId}
+                onChange={onEditorChange}
+                onRefused={(chars) => {
+                  refusedThisChange.current = true;
+                  setNotice(refusedNotice(chars));
+                }}
+                onActiveStyle={setActive}
+              />
+            </div>
+            <p
+              aria-live="polite"
+              className="mt-2 text-sm text-warning empty:mt-0"
+            >
+              {notice}
+            </p>
+          </div>
+          <div>
+            <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+              <p
+                id={previewLabel}
+                className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
               >
-                <input
-                  type="radio"
-                  name={`${ids}-channel`}
-                  value={channel.name}
-                  checked={channel.name === channelName}
-                  onChange={() => {
-                    setChannelName(channel.name);
-                  }}
-                  className="sr-only"
-                />
-                <span
-                  aria-hidden="true"
-                  className="size-2.5"
-                  style={{ backgroundColor: channel.hex }}
-                />
-                {channel.label}
-              </label>
-            ))}
-          </fieldset>
-        </div>
-        <div className="mt-1.5" aria-labelledby={`${ids}-preview`} role="group">
-          <ChatPreview
-            pieces={shown}
-            channelHex={channelHex}
-            portraits={portraits}
-          />
-        </div>
-        <p className="mt-2 text-xs text-ink-muted">
-          Untagged text takes the channel&apos;s color. The font and icon size
-          are approximate.
-        </p>
-      </HudPanel>
+                <Gamepad2 aria-hidden="true" className="size-3.5" />
+                In game
+              </p>
+              <ToggleGroup
+                aria-label="Channel"
+                variant="outline"
+                size="sm"
+                spacing={0}
+                value={[channelName]}
+                onValueChange={(value) => {
+                  const next = value.at(0);
+                  // Clicking the pressed channel would clear the group; keep it.
+                  if (next !== undefined) {
+                    setChannelName(next);
+                  }
+                }}
+              >
+                {channels.map((channel) => (
+                  <ToggleGroupItem
+                    key={channel.name}
+                    value={channel.name}
+                    aria-label={`${channel.label} chat`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="size-2.5 rounded-full"
+                      style={{ backgroundColor: channel.hex }}
+                    />
+                    {channel.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+            <div
+              role="group"
+              aria-labelledby={previewLabel}
+              className="overflow-hidden rounded-lg border"
+            >
+              <ChatPreview
+                pieces={shown}
+                channelHex={channelHex}
+                portraits={portraits}
+              />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Untagged text takes the channel&apos;s color. The font and icon
+              size are approximate.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
-      <HudPanel
-        title="Style"
-        titleId={`${ids}-style`}
-        className="lg:col-start-2 lg:row-span-3 lg:row-start-1"
-      >
-        <p className="text-sm text-ink-muted">
-          Select text, then pick a style. A run of text holds one style, so a
-          new pick replaces the old one.
-        </p>
-        <div className="mt-4 grid gap-5">
+      <Card className="lg:col-start-2 lg:row-span-3 lg:row-start-1">
+        <CardHeader>
+          <CardTitle className={cardTitle}>Style</CardTitle>
+          <CardDescription>
+            A run of text holds one style, so a new pick replaces the old one.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-5">
           <StylePicker
             active={active}
             onPick={(style) => editorRef.current?.applyStyle(style)}
           />
+          <Separator />
           <ImagePicker
             portraits={portraits}
             onPick={(id) => editorRef.current?.insertImage(id)}
           />
-        </div>
-      </HudPanel>
+        </CardContent>
+      </Card>
 
-      <HudPanel
-        title="Markup"
-        titleId={`${ids}-markup-title`}
-        className="lg:col-start-1 lg:row-start-2"
-      >
-        <label htmlFor={markupId} className="sr-only">
-          Markup
-        </label>
-        <MarkupPanel
-          id={markupId}
-          value={message.markup}
-          overflowAt={asWritten.overflowAt}
-          describedBy={counterId}
-          onChange={onMarkupChange}
-        />
-        <p
-          id={counterId}
-          className={`mt-2 text-sm ${over ? "text-warn" : "text-ink-muted"}`}
-        >
-          {counted.used} of {counted.limit} characters.{" "}
-          {over
-            ? `${String(counted.used - counted.limit)} over the limit: the game cuts the highlighted part.`
-            : `${String(counted.remaining)} left.`}
-          {saved > 0
-            ? ` Copying the optimized markup saves ${String(saved)} characters.`
-            : ""}
-        </p>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <button
+      <Card className="lg:col-start-1 lg:row-start-2">
+        <CardHeader>
+          <CardTitle className={cardTitle}>Markup</CardTitle>
+          <CardDescription>
+            Edit it here, or copy it and paste it into the game.
+          </CardDescription>
+          <CardAction>
+            <Badge
+              variant={over ? "destructive" : "secondary"}
+              className="font-mono"
+            >
+              {counted.used} / {counted.limit}
+            </Badge>
+          </CardAction>
+        </CardHeader>
+        <CardContent className="grid gap-2">
+          <label htmlFor={markupId} className="sr-only">
+            Markup
+          </label>
+          <MarkupPanel
+            id={markupId}
+            value={message.markup}
+            overflowAt={asWritten.overflowAt}
+            describedBy={counterId}
+            onChange={onMarkupChange}
+          />
+          <p
+            id={counterId}
+            className={`text-sm ${over ? "text-warning" : "text-muted-foreground"}`}
+          >
+            {counted.used} of {counted.limit} characters.{" "}
+            {over
+              ? `${String(counted.used - counted.limit)} over the limit: the game cuts the highlighted part.`
+              : `${String(counted.remaining)} left.`}
+            {saved > 0
+              ? ` Copying the optimized markup saves ${String(saved)} characters.`
+              : ""}
+          </p>
+        </CardContent>
+        <CardFooter className="flex-wrap gap-3">
+          <Button
             type="button"
             disabled={best === ""}
             onClick={() => void copy(best, "Markup")}
-            className="bg-accent px-4 py-2 font-semibold text-shell focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50"
           >
+            {copyStatus.kind === "done" ? (
+              <Check aria-hidden="true" />
+            ) : (
+              <Copy aria-hidden="true" />
+            )}
             Copy markup
-          </button>
+          </Button>
           {saved > 0 ? (
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => void copy(message.markup, "Markup as written")}
-              className="border border-line px-4 py-2 text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               Copy as written
-            </button>
+            </Button>
           ) : null}
           <p
             aria-live="polite"
-            className={`text-sm ${copyStatus.kind === "failed" ? "text-warn" : "text-ink-muted"}`}
+            className={`text-sm ${copyStatus.kind === "failed" ? "text-warning" : "text-muted-foreground"}`}
           >
             {copyStatus.kind === "idle" ? "" : copyStatus.text}
           </p>
-        </div>
-      </HudPanel>
+        </CardFooter>
+      </Card>
 
-      <div className="grid gap-6 lg:col-start-1 lg:row-start-3">
-        {hints.length > 0 ? (
-          <HudPanel title="Hints" titleId={`${ids}-hints`}>
-            <ul className="list-disc space-y-1 pl-5 text-sm text-ink-muted">
-              {hints.map((hint) => (
-                <li key={hint}>{hint}</li>
-              ))}
-            </ul>
-          </HudPanel>
-        ) : null}
-
-        <p className="text-sm text-ink-muted">
-          {status === "verified" ? null : (
-            <span className="mr-2 border border-warn px-1.5 py-0.5 text-xs text-warn">
-              Provisional
-            </span>
+      <div className="grid gap-3 lg:col-start-1 lg:row-start-3">
+        {hints.map((hint) => (
+          <Alert key={hint} role="status">
+            <TriangleAlert aria-hidden="true" className="text-warning" />
+            <AlertDescription>{hint}</AlertDescription>
+          </Alert>
+        ))}
+        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+          {status === "verified" ? (
+            <BadgeCheck aria-hidden="true" className="size-4 text-primary" />
+          ) : (
+            <Badge variant="destructive">Provisional</Badge>
           )}
           {verifiedDate === null
             ? "Tags, colors and the chat limit are not verified in game yet."

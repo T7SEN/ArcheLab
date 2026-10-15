@@ -4,9 +4,9 @@ export const legalText =
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-line">
-      <div className="mx-auto max-w-5xl px-4 py-6">
-        <p className="text-sm text-ink-muted">{legalText}</p>
+    <footer className="border-t">
+      <div className="mx-auto max-w-6xl px-4 py-6">
+        <p className="text-sm text-muted-foreground">{legalText}</p>
       </div>
     </footer>
   );

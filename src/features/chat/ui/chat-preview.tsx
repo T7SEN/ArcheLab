@@ -28,7 +28,9 @@ export function ChatPreview({
       }}
     >
       {pieces.length === 0 ? (
-        <span className="text-ink-muted">Your message appears here.</span>
+        <span className="text-muted-foreground">
+          Your message appears here.
+        </span>
       ) : (
         pieces.map((piece, index) =>
           piece.kind === "image" ? (

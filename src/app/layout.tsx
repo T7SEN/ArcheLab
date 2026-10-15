@@ -3,6 +3,7 @@ import { Inter, Rajdhani } from "next/font/google";
 import type { ReactNode } from "react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { shellBackground } from "@/styles/tokens";
 import "@/styles/globals.css";
 
@@ -29,15 +30,18 @@ export default function RootLayout({
 }: Readonly<{ children: ReactNode }>) {
   return (
     // The inline background paints before the stylesheet loads, so there is no white flash.
+    // The site is dark only; `dark` turns on shadcn's dark variants (ADR 0009).
     <html
       lang="en"
-      className={`${inter.variable} ${rajdhani.variable}`}
+      className={`dark ${inter.variable} ${rajdhani.variable}`}
       style={{ backgroundColor: shellBackground, colorScheme: "dark" }}
     >
-      <body className="flex min-h-dvh flex-col bg-shell text-ink antialiased">
-        <SiteHeader />
-        <main className="flex-1">{children}</main>
-        <SiteFooter />
+      <body className="flex min-h-dvh flex-col bg-background text-foreground antialiased">
+        <TooltipProvider>
+          <SiteHeader />
+          <main className="flex-1">{children}</main>
+          <SiteFooter />
+        </TooltipProvider>
       </body>
     </html>
   );
