@@ -1,10 +1,12 @@
 @import "tailwindcss";
+/* ProseMirror's required editor styles (ADR 0007). */
+@import "prosemirror-view/style/prosemirror.css";
 
 /*
  * Design tokens: direction A (Signal) with direction B's (Rift) palette, chosen by
  * T7SEN on 2026-10-15 (SKILL.md section 6). UI colors come only from these
- * (AGENTS.md conventions), so Tailwind's default palette is removed. Rarity tier
- * accents come from src/data/chat-tags.json in Phase 1, not from here.
+ * (AGENTS.md conventions), so Tailwind's default palette is removed. Game colors
+ * (chat tags, the chat background) come from src/data/chat-tags.json instead.
  *
  * --color-shell must equal shellBackground in tokens.ts: the root layout inlines that
  * value so the page is dark before this stylesheet loads (shell-background.test.ts).
@@ -17,10 +19,83 @@
   --color-ink: #ece7f7;
   --color-ink-muted: #a69dc3;
   --color-accent: #a184ff;
+  /* Warnings: overflow, refused characters, hard-to-read colors. */
+  --color-warn: #ff886d;
 }
 
 /* Fonts load through next/font in the root layout (self-hosted, OFL). */
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-rajdhani), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* HUD frame: clipped top-left and bottom-right corners (SKILL.md section 6). */
+@utility hud-frame {
+  clip-path: polygon(
+    14px 0,
+    100% 0,
+    100% calc(100% - 14px),
+    calc(100% - 14px) 100%,
+    0 100%,
+    0 14px
+  );
+}
+
+/* Chat builder. Game colors arrive as inline styles from the registry. */
+.chat-editor .ProseMirror {
+  min-height: 3.5rem;
+  padding: 0.875rem 1rem;
+  line-height: 2;
+  outline: none;
+}
+
+.chat-editor:focus-within {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.chat-editor .ProseMirror[data-empty="true"]::before {
+  content: attr(data-placeholder);
+  position: absolute;
+  color: var(--color-ink-muted);
+  pointer-events: none;
+}
+
+.chat-editor .ProseMirror-selectednode {
+  outline: 2px solid var(--color-accent);
+}
+
+.chat-overflow {
+  background-color: color-mix(in srgb, var(--color-warn) 35%, transparent);
+}
+
+.chat-line {
+  min-height: 3.5rem;
+  padding: 0.875rem 1rem;
+  line-height: 2;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Icons are much taller than text (T8); 2em is an approximation (chat-icons.ts). */
+.chat-icon {
+  display: inline-flex;
+  height: 2em;
+  vertical-align: middle;
+}
+
+.chat-icon img {
+  height: 100%;
+  width: auto;
+}
+
+.chat-icon-placeholder {
+  align-items: center;
+  padding: 0 0.4em;
+  border: 1px dashed var(--color-ink-muted);
+  color: var(--color-ink-muted);
+  font-size: 0.75em;
+  font-style: normal;
+  font-weight: 400;
+  white-space: nowrap;
 }
