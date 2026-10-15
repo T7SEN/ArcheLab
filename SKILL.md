@@ -56,6 +56,8 @@ Sources, Node 26 checks, GitHub Action commit pins, and the refresh policy (deli
 ├── .github/workflows/ci.yml  checks, then Vercel prebuilt deploys (ADR 0003)
 ├── pnpm-workspace.yaml       pnpm settings: allowBuilds, peer rules, release-age exceptions
 ├── vercel.json               turns off Vercel's own Git deploys
+├── components.json           shadcn/ui CLI settings and registries (ADR 0009)
+├── .mcp.json                 shadcn MCP server for Claude Code (project scope)
 ├── docs/
 │   ├── SPEC.md               product spec and phase plan (local only, gitignored)
 │   ├── adr/                  NNNN-kebab-title.md (local only, gitignored)
@@ -168,6 +170,8 @@ Header, tool registry, tool cards, footer with the disclaimer and attribution. A
 
 - Clean, modern, dark. ArcheLab's own identity, with in-game cues as accents: rarity tier colors, Arche energy effects, and Descendant and item art from the API.
 - **Components:** shadcn/ui on Base UI (ADR 0009), in `src/components/ui`. `components.json` holds the CLI settings (style `base-nova`, icons `lucide`). Add components with `pnpm dlx shadcn@4.21.4 add <name>`, then format, lint and review the diff.
+- **React Bits registry** (T7SEN, 2026-10-15): `components.json` lists `@react-bits` (`https://reactbits.dev/r/{name}.json`), added with `pnpm dlx shadcn@latest registry add @react-bits`. Add an item with `pnpm dlx shadcn@4.21.4 add @react-bits/<name>`. Its license is MIT plus the Commons Clause: use, change and publish the components as part of the site, but never sell or redistribute the components on their own. Keep the copyright notice ("Copyright (c) 2026 David Haz" and the license text or a link to it) in each copied component. Check each item's dependencies against the zero-cost and pinning rules before adding it.
+- **shadcn MCP server** (T7SEN, 2026-10-15): `.mcp.json` registers `shadcn mcp` for Claude Code, created with `pnpm dlx shadcn@latest mcp init --client claude`. It lists, searches and shows items from the registries in `components.json` (including `@react-bits`). Claude Code asks for approval before starting a project server; check it with `/mcp`. It runs through `npx shadcn@latest`, so it uses the newest CLI, not the pinned one.
 - **Rarity accents.** The tier colors used in the UI are the same hex values the in-game test establishes for `<tier1>` to `<tier4>`. One source of truth: `src/data/chat-tags.json` feeds both the preview and the accent tokens. Tier colors used for text must pass WCAG AA on their background; otherwise they are used for fills, borders and glows only. The sampled values are in the registry: tier1 `#53B7F7`, tier2 `#D487F5`, tier3 `#F7DB78`, tier4 `#FF886D`.
 - **Palette and type.** Chosen 2026-10-15 (ADR 0004): direction A (Signal) with direction B's (Rift) palette, on shadcn's token names since ADR 0009 (dark only: `dark` class on `<html>`, values in `:root`).
   - Tokens in `src/styles/globals.css`, as Tailwind utilities: `background` `#0a0812`, `card` `#141024`, `popover`/`secondary`/`muted` `#1c1630`, `accent` `#241c3d` (shadcn's hover surface, not a brand color), `border`/`input` `#2b2244`, `foreground` `#ece7f7`, `muted-foreground` `#a69dc3`, `primary`/`ring` `#a184ff`, `destructive`/`warning` `#ff886d` (overflow, refused characters, hard-to-read colors). `radius` 0.625rem. Tailwind's default palette is removed. `--background` must equal `shellBackground` in `src/styles/tokens.ts`.
