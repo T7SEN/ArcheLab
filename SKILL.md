@@ -33,6 +33,8 @@ Exact versions are pinned in Phase 0 after checking official release notes, then
 | Language | TypeScript, `strict: true` | current stable that typescript-eslint supports | 6.0.3 (`@types/node` 24.19.2, `@types/react` and `@types/react-dom` 19.3.0) |
 | Styling | Tailwind CSS, CSS-first `@theme` | 4 | 4.3.3 (`@tailwindcss/postcss` 4.3.3) |
 | Validation | Zod | 4 | 4.6.7 (installed in Phase 1) |
+| Editor | ProseMirror (ADR 0007) | 1 | `prosemirror-model` 1.25.12, `-state` 1.4.4, `-view` 1.42.6, `-keymap` 1.2.3, `-history` 1.5.1, `-commands` 1.7.2 (installed in Phase 2) |
+| Server boundary | `server-only` | — | 0.0.1 (installed in Phase 2) |
 | Unit tests | Vitest, fast-check for property tests | current stable | Vitest 5.0.4 (Vite 8.3.4), fast-check 4.10.2 |
 | E2E tests | Playwright | current stable | 1.64.1 |
 | Lint and format | ESLint flat config, Prettier | current stable | ESLint 10.12.0 (`@eslint/js` 10.0.1, typescript-eslint 8.71.2, `eslint-config-prettier` 10.1.8), Prettier 3.9.10 (`prettier-plugin-tailwindcss` 0.8.1) |
@@ -63,15 +65,15 @@ Sources, Node 26 checks, GitHub Action commit pins, and the refresh policy (deli
 │   ├── app/
 │   │   ├── layout.tsx        shell, disclaimer, attribution
 │   │   ├── page.tsx          hub home
-│   │   └── tools/chat/       chat-message builder route
+│   │   └── tools/chat/       chat-message builder route (page.tsx, static)
 │   ├── features/chat/
 │   │   ├── engine/           registry, parse, serialize, render, count, optimize, share (pure TS, tests beside each)
-│   │   └── ui/               editor, markup panel, preview, counter, templates
-│   ├── lib/nexon/            server-only metadata client, schemas, cache
+│   │   └── ui/               builder: chat-builder, chat-editor (ProseMirror), editor schema, model and plugins, style picker, image picker, markup panel, preview
+│   ├── lib/nexon/            server-only metadata client: descendants.ts (portrait URLs at build time)
 │   ├── data/
 │   │   ├── chat-tags.json    tag registry (versioned, patch-verified)
 │   │   └── templates.json    curated templates
-│   ├── components/           hub shell (site-header, site-footer with legal text), tool cards, primitives
+│   ├── components/           hub shell (site-header, site-footer with legal text), hud-panel, tool cards, primitives
 │   └── styles/               globals.css (Tailwind theme, tokens), tokens.ts (inlined shell background)
 └── tests/e2e/                Playwright
 ```
@@ -107,6 +109,8 @@ Every fact in the registry comes from T7SEN's in-game tests (`reports/TFD in-gam
 - **`sizes[]`:** the text sizes written `<a id="ID">text</>`: `id`, `label`, `capHeightPx`, `hex`, `source`, `notes`.
 - **`images[]`:** verified image ids only: `id`, `label`, `art`, `artVerified`, `source`, `notes`. `art` is either `{ kind: "descendant", descendant }`, the NEXON API portrait of that Descendant, or `{ kind: "placeholder" }`. Portrait icons such as `IconHailey1` show the base Descendant's portrait, never the Ultimate one (T7SEN, 2026-10-15), so `descendant` names the base Descendant. The registry never stores image URLs: they are NEXON Game Data under the 30-day limit (section 5.5).
 - **`channels[]`:** untagged text color per channel: `name`, `label`, `hex`.
+- **`chatBackground`:** the sampled chat panel color (`#212321`). The preview draws on it, and contrast hints are measured against it.
+- **`untaggedText`:** `capHeightPx` (13), the cap height the sizes were measured against. The preview scales each size by `capHeightPx / 13`.
 - **`characters`:** `verifiedSymbols`, `refused`, `refuseOutsideBmp`.
 
 The UI shows a provisional badge whenever `status` is not `verified`. Tag colors come only from this file.
@@ -133,7 +137,12 @@ Pure TypeScript with no React, DOM or Next imports. The only dependency is Zod. 
 - **"Renders identically"** means the same sequence of glyphs. For a visible character, a glyph is the character, its color and its shape (weight, slant, size). For whitespace, only the shape counts, because a red space and a blue space look the same. An image glyph is its id, in any case. Chat is a single line, so line breaks are outside the invariants.
 
 ### 5.3 Builder UI — `src/features/chat/ui`
-Select text and apply a color; an editable raw-markup panel stays in two-way sync. Live preview in game colors on a chat-like background, a counter against the limit with the overflow point highlighted, copy buttons for optimized and as-written markup. The editor library is decided at the Phase 2 plan (Lexical, Tiptap, or custom) and recorded in an ADR.
+Route `/tools/chat`. Walkthrough: `docs/walkthroughs/chat-builder.md`.
+- **Editor:** ProseMirror (ADR 0007), one line, one `style` mark (a run holds one style), inline atom images that never carry a style. `normalizePlugin` removes refused characters and line breaks after every change. Copying from the editor gives markup; pasting text reads it as markup.
+- **Source of truth:** engine pieces. The editor and the markup panel write them; the counter, preview, hints and copy read them.
+- **Picker:** `styleGroups` shows each look once under its shortest tag (44 colors, bold, italic, six sizes), with its cost and a low-contrast mark below WCAG AA on the chat background.
+- **Copy:** the shorter of the optimizer's output and the text as written (both render the same). "Copy as written" appears when they differ.
+- **Preview:** the copy text after the input box's cut, parsed, on the chat background, per channel. Icon height (2em) and the font are approximations.
 
 ### 5.4 Sharing and templates
 - Share links: `/tools/chat?m=<code>`, with codes from `encodeShare` (section 5.2). Decoded content is untrusted text.
@@ -146,6 +155,7 @@ Select text and apply a color; an editable raw-markup panel stays in two-way syn
 - **30-day limit:** Nexon Game Data is kept at most 30 days (Nexon API Terms §8.7, [terms](https://openapi.nexon.com/support/terms/)). Static pages built from it are rebuilt at least every 30 days, for example by a scheduled deploy, and image URLs are never stored in committed files.
 - **No data-mining:** no data-mining outside the API (§8.15), so no art is extracted from game files. Chat icons use API portraits or labeled placeholders (`src/data/chat-tags.json`, `images[].art`).
 - Zod schemas validate every response. A schema failure degrades the page; it never crashes the build silently.
+- **Built so far (Phase 2, ADR 0008):** `descendants.ts` maps base Descendant names to portrait URLs while `/tools/chat` is prerendered. Invalid entries are skipped one by one; a failed fetch logs a warning and leaves every icon on its placeholder. A weekly scheduled CI run (Mondays 04:17 UTC) redeploys production so the data stays far inside the 30-day limit.
 - Attribution on every page: "Data based on NEXON Open API."
 
 ### 5.6 Hub shell — `src/components`, `src/app`
@@ -156,9 +166,9 @@ Header, tool registry, tool cards, footer with the disclaimer and attribution. A
 - Clean, modern, dark. ArcheLab's own identity, with in-game cues as accents: rarity tier colors, HUD and menu shapes, Arche energy effects, and Descendant and item art from the API.
 - **Rarity accents.** The tier colors used in the UI are the same hex values the in-game test establishes for `<tier1>` to `<tier4>`. One source of truth: `src/data/chat-tags.json` feeds both the preview and the accent tokens. Tier colors used for text must pass WCAG AA on their background; otherwise they are used for fills, borders and glows only. The sampled values are in the registry: tier1 `#53B7F7`, tier2 `#D487F5`, tier3 `#F7DB78`, tier4 `#FF886D`.
 - **Palette and type.** Chosen 2026-10-15 (ADR 0004): direction A (Signal) with direction B's (Rift) palette.
-  - Tokens in `src/styles/globals.css`, as Tailwind utilities: `shell` `#0a0812`, `surface` `#141024`, `line` `#2b2244`, `ink` `#ece7f7`, `ink-muted` `#a69dc3`, `accent` `#a184ff`. Tailwind's default palette is removed. `--color-shell` must equal `shellBackground` in `src/styles/tokens.ts`.
+  - Tokens in `src/styles/globals.css`, as Tailwind utilities: `shell` `#0a0812`, `surface` `#141024`, `line` `#2b2244`, `ink` `#ece7f7`, `ink-muted` `#a69dc3`, `accent` `#a184ff`, `warn` `#ff886d` (overflow, refused characters, hard-to-read colors). Tailwind's default palette is removed. `--color-shell` must equal `shellBackground` in `src/styles/tokens.ts`.
   - Type: Rajdhani for display (`font-display`), Inter for body (`font-sans`), loaded in the root layout with `next/font/google`.
-  - HUD frames: panels clip the top-left and bottom-right corners (14px) and carry a hairline edge in `line`.
+  - HUD frames: panels clip the top-left and bottom-right corners (14px) and carry a hairline edge in `line`: the `hud-frame` utility in `globals.css`, used by `HudPanel` (`src/components/hud-panel.tsx`).
   - Arche effect: a faint scan band in `accent` sweeps down featured art about every 5 seconds.
   - The violet accent sits close to the Rare (tier2) purple, so rarity is never shown by color alone.
 - **Fonts.** Free licenses that allow self-hosting. No NEXON or game fonts.
@@ -210,10 +220,15 @@ None today. When player lookups ship, `NEXON_API_KEY` is server-only, set in Ver
     - **Cloudflare proxy stays off.** Keep the domain's records DNS-only (grey cloud) in Cloudflare: proxying Vercel through Cloudflare breaks certificate renewal and adds a second cache.
     - **The only public address is `arche-lab.tech`.** Removing it, letting it expire, or breaking its DNS takes the site offline.
     - **`vercel link` edits `.gitignore`.** Each run appends `.vercel` and `.env*`. Revert that: `.env*` would hide `.env.example`.
+13. **Scheduled rebuilds stop on a quiet repository.** GitHub disables scheduled workflows in a public repository after 60 days without activity. Without the weekly run, the live page's NEXON data ages past the 30-day limit (ADR 0008). Re-enable the schedule in the Actions tab if that happens.
+14. **ProseMirror styles images if asked.** `addMark` over a range marks inline atoms too. Style text nodes only (`applyStyle`), and keep `normalizePlugin`, which strips styles from images that arrive by paste.
+15. **NEXON's image host can fail.** A portrait URL can return 503 while others work (seen 2026-10-15). Every icon must fall back to its labeled placeholder.
 
 ## 11. Known tech debt
 
-None yet. Label every entry **Intentional decision** (with its ADR) or **Genuine bug**. Improvements wait until T7SEN schedules them.
+- **Intentional decision (ADR 0008):** the preview's icon height (2em) and font are approximations. T8 records only that icons are much taller than text. A screenshot measurement after the October 2026 patch can replace the icon height.
+
+Label every entry **Intentional decision** (with its ADR) or **Genuine bug**. Improvements wait until T7SEN schedules them.
 
 ## 12. Pre-finish checklist
 
