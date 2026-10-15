@@ -65,7 +65,7 @@ Sources, Node 26 checks, GitHub Action commit pins, and the refresh policy (deli
 │   │   ├── page.tsx          hub home
 │   │   └── tools/chat/       chat-message builder route
 │   ├── features/chat/
-│   │   ├── engine/           parse, serialize, count, optimize, share codec (pure TS)
+│   │   ├── engine/           registry, parse, serialize, render, count, optimize, share (pure TS, tests beside each)
 │   │   └── ui/               editor, markup panel, preview, counter, templates
 │   ├── lib/nexon/            server-only metadata client, schemas, cache
 │   ├── data/
@@ -84,43 +84,67 @@ Folders appear with their code. No empty placeholders.
 - **Pure engine.** `src/features/chat/engine` has no React, DOM, or Next imports. The UI is a thin layer over it.
 - **Data, not code, for game facts.** Tags, colors, the chat limit and syntax rules live in `src/data/chat-tags.json`. Updating them after a patch never requires a code change.
 - **No user content on the server.** Shared messages travel inside the URL. Personal templates live in the visitor's browser. Nothing user-generated is stored or moderated by ArcheLab.
-- **NEXON metadata.** Fetched on the server from keyless static JSON, validated with Zod, cached for long periods, and rendered statically. Images load directly from NEXON's static image host.
+- **NEXON metadata.** Fetched on the server from keyless static JSON, validated with Zod, and rendered statically. The data is never kept more than 30 days (Nexon API Terms §8.7), so pages built from it are rebuilt at least every 30 days (section 5.5). Images load directly from NEXON's static image host.
 - **Player lookups are deferred.** They need an API key, and T7SEN cannot register one (NEXON's portal is unavailable in his region). The data layer leaves a typed slot for an authenticated client; nothing calls it.
 
 ## 5. Subsystems
 
 ### 5.1 Tag registry — `src/data/chat-tags.json`
-Schema (enforced by a Zod schema in the engine):
-- `version` (integer), `status` (`provisional` | `verified`), `verifiedPatch` (string or null), `verifiedOn` (ISO date or null).
-- `rules`: `charLimit`, `tagsCountTowardLimit`, `closeTag` (string or null), `implicitSwitch`, `spaceAfterTag` (`none` | `optional` | `required` | `consumed`), `caseSensitive`, `unknownTagBehavior` (`literal` | `stripped` | `breaks`), `countingUnit` (`utf16` | `codepoint` | `grapheme`). Every field may be `null` while unverified.
-- `tags[]`: `name`, `label`, `hex` (or null), `source` (`community` | `in-game-test`), `notes`.
-The UI shows a provisional badge whenever `status` is not `verified`.
+Every fact in the registry comes from T7SEN's in-game tests (`reports/TFD in-game chat tests.md`, local only), so every entry has `source: "in-game-test"`. A Zod schema in the engine (`registry.ts`, `chatRegistrySchema`) enforces this shape:
+- **Top level:** `version` (integer), `status` (`provisional` | `verified`), `verifiedPatch` (string or null), `verifiedOn` (ISO date or null).
+- **`rules`:**
+  - `charLimit`: 100.
+  - `tagsCountTowardLimit`: true.
+  - `closeTag`: `</>`.
+  - `implicitSwitch`: false.
+  - `spaceAfterTag`: `none`.
+  - `caseSensitive`: false.
+  - `unknownTagBehavior`: `literal`.
+  - `countingUnit`: `utf16`.
+
+  `createRegistry` rejects a registry whose rules differ from the ones the engine implements, so a game patch that changes the rules forces an engine change.
+- **`tags[]`:** `name`, `label`, `kind` (`color` | `style`), `hex` (or null), `weight` (`regular` | `bold`), `slant` (`normal` | `italic`), `source`, `notes`. It holds 50 colors and the `<b>` and `<i>` styles. Names ignore case. `img` and `a` are reserved.
+- **`sizes[]`:** the text sizes written `<a id="ID">text</>`: `id`, `label`, `capHeightPx`, `hex`, `source`, `notes`.
+- **`images[]`:** verified image ids only: `id`, `label`, `art`, `artVerified`, `source`, `notes`. `art` is either `{ kind: "descendant", descendant }`, the NEXON API portrait of that Descendant, or `{ kind: "placeholder" }`. The registry never stores image URLs: they are NEXON Game Data under the 30-day limit (section 5.5).
+- **`channels[]`:** untagged text color per channel: `name`, `label`, `hex`.
+- **`characters`:** `verifiedSymbols`, `refused`, `refuseOutsideBmp`.
+
+The UI shows a provisional badge whenever `status` is not `verified`. Tag colors come only from this file.
 
 ### 5.2 Engine — `src/features/chat/engine`
-- `parse(markup, registry) → Run[]` where `Run = { text, tag | null }`.
-- `serialize(runs, registry) → markup`, canonical form.
-- `count(markup, registry) → { used, limit, overflowAt }` using `rules.countingUnit`.
-- `optimize(runs, registry) → markup`: the shortest markup that renders identically.
-- `encodeShare(markup) / decodeShare(code)`: versioned, URL-safe codec.
-- Invariants, each a property test:
-  1. `parse(serialize(runs))` renders identically to `runs`.
+Pure TypeScript with no React, DOM or Next imports. The only dependency is Zod. The parser reproduces Unreal Engine's standard rich-text parser, which every in-game test matched. Walkthrough: `docs/walkthroughs/chat-engine.md`.
+- **Model:**
+  - `Piece = { kind: "text", text, style: Style | null } | { kind: "image", id }`.
+  - `Style = { type: "tag", name } | { type: "size", id }`.
+  - `null` means untagged text, shown in the channel's color.
+- `createRegistry(json) → ChatRegistry`: validates the JSON and builds case-insensitive lookups.
+- `parse(markup, registry) → Piece[]`: never throws. Malformed or unknown markup is shown as typed. Escapes are decoded.
+- `serialize(pieces) → markup`: the canonical form. Every run is closed, and every `<` is escaped.
+- `render(pieces, registry) → Glyph[]` and `rendersIdentically(a, b, registry)`.
+- `count(markup, registry) → { used, limit, remaining, overflowAt, issues }`: counts UTF-16 units, markup included. `truncateToLimit` returns what the input box keeps. `classifyCharacter` returns `ok`, `unverified` or `refused`.
+- `optimize(pieces, registry) → markup`: uses the shortest same-looking tag, merges same-style neighbors (also across whitespace of the same shape), and escapes minimally. Each candidate is verified by parsing it back, falling back to `serialize`.
+- `encodeShare(markup) / decodeShare(code)`: format version `1` plus WTF-8 in unpadded base64url. `decodeShare` returns null for anything invalid and never throws.
+- **Invariants,** each a property test (`invariants.test.ts`, 1,000 runs each):
+  1. `parse(serialize(pieces))` renders identically to `pieces`.
   2. `optimize` output renders identically to its input.
   3. `optimize` never produces longer markup than `serialize`.
   4. `optimize` is idempotent.
   5. `decodeShare(encodeShare(m)) === m`, and `decodeShare` never throws on arbitrary input.
-- "Renders identically" means the same sequence of (character, resolved color) pairs.
+- **"Renders identically"** means the same sequence of glyphs. For a visible character, a glyph is the character, its color and its shape (weight, slant, size). For whitespace, only the shape counts, because a red space and a blue space look the same. An image glyph is its id, in any case. Chat is a single line, so line breaks are outside the invariants.
 
 ### 5.3 Builder UI — `src/features/chat/ui`
 Select text and apply a color; an editable raw-markup panel stays in two-way sync. Live preview in game colors on a chat-like background, a counter against the limit with the overflow point highlighted, copy buttons for optimized and as-written markup. The editor library is decided at the Phase 2 plan (Lexical, Tiptap, or custom) and recorded in an ADR.
 
 ### 5.4 Sharing and templates
-- Share links: `/tools/chat?m=<code>`. Decoded content is untrusted text.
+- Share links: `/tools/chat?m=<code>`, with codes from `encodeShare` (section 5.2). Decoded content is untrusted text.
 - Curated templates: `src/data/templates.json`, written or approved by T7SEN.
 - Personal templates: `localStorage`, every access wrapped in try/catch; the builder works when storage is unavailable.
 
 ### 5.5 NEXON data layer — `src/lib/nexon`
 - Base: `https://open.api.nexon.com/static/tfd/meta/en/<set>.json`. Verified keyless for `descendant.json` on 2026-10-14 and again on 2026-10-15; the sets that responded on 2026-10-15 are listed in `docs/SPEC.md` section 6. Other sets are confirmed in Phase 4 before use.
 - Images: `https://open.api.nexon.com/static/tfd/img/<hash>`, loaded directly. Never through Vercel Image Optimization.
+- **30-day limit:** Nexon Game Data is kept at most 30 days (Nexon API Terms §8.7, [terms](https://openapi.nexon.com/support/terms/)). Static pages built from it are rebuilt at least every 30 days, for example by a scheduled deploy, and image URLs are never stored in committed files.
+- **No data-mining:** no data-mining outside the API (§8.15), so no art is extracted from game files. Chat icons use API portraits or labeled placeholders (`src/data/chat-tags.json`, `images[].art`).
 - Zod schemas validate every response. A schema failure degrades the page; it never crashes the build silently.
 - Attribution on every page: "Data based on NEXON Open API."
 
@@ -130,7 +154,7 @@ Header, tool registry, tool cards, footer with the disclaimer and attribution. A
 ## 6. Design system
 
 - Clean, modern, dark. ArcheLab's own identity, with in-game cues as accents: rarity tier colors, HUD and menu shapes, Arche energy effects, and Descendant and item art from the API.
-- **Rarity accents.** The tier colors used in the UI are the same hex values the in-game test establishes for `<tier1>` to `<tier4>`. One source of truth: `src/data/chat-tags.json` feeds both the preview and the accent tokens. Tier colors used for text must pass WCAG AA on their background; otherwise they are used for fills, borders and glows only. T7SEN's first samples (15 October 2026) are recorded in `docs/SPEC.md` section 4.1 until the registry exists in Phase 1.
+- **Rarity accents.** The tier colors used in the UI are the same hex values the in-game test establishes for `<tier1>` to `<tier4>`. One source of truth: `src/data/chat-tags.json` feeds both the preview and the accent tokens. Tier colors used for text must pass WCAG AA on their background; otherwise they are used for fills, borders and glows only. The sampled values are in the registry: tier1 `#53B7F7`, tier2 `#D487F5`, tier3 `#F7DB78`, tier4 `#FF886D`.
 - **Palette and type.** Chosen 2026-10-15 (ADR 0004): direction A (Signal) with direction B's (Rift) palette.
   - Tokens in `src/styles/globals.css`, as Tailwind utilities: `shell` `#0a0812`, `surface` `#141024`, `line` `#2b2244`, `ink` `#ece7f7`, `ink-muted` `#a69dc3`, `accent` `#a184ff`. Tailwind's default palette is removed. `--color-shell` must equal `shellBackground` in `src/styles/tokens.ts`.
   - Type: Rajdhani for display (`font-display`), Inter for body (`font-sans`), loaded in the root layout with `next/font/google`.
