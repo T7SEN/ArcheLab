@@ -13,7 +13,7 @@
 
 `vercel.json` sets `git.deploymentEnabled: false`, so Vercel never builds the same push itself. The repository is not connected to the Vercel project.
 
-A production deploy updates every production domain at once. `https://arche-lab.tech` serves it, and `archelab.vercel.app` redirects there with a 308 (ADR 0005, `SKILL.md` section 1).
+A production deploy updates every production domain at once. `https://arche-lab.tech` is the only public one. `archelab-t7sens-projects.vercel.app` also gets each production deploy, but it sits behind Vercel Authentication. `archelab.vercel.app` is no longer attached (ADR 0005, `SKILL.md` section 1).
 
 ## Why it is shaped this way
 
