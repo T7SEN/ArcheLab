@@ -1,0 +1,681 @@
+{
+  "version": 1,
+  "status": "verified",
+  "verifiedPatch": null,
+  "verifiedOn": "2026-10-15",
+  "rules": {
+    "charLimit": 100,
+    "tagsCountTowardLimit": true,
+    "closeTag": "</>",
+    "implicitSwitch": false,
+    "spaceAfterTag": "none",
+    "caseSensitive": false,
+    "unknownTagBehavior": "literal",
+    "countingUnit": "utf16"
+  },
+  "tags": [
+    {
+      "name": "red",
+      "label": "Red",
+      "kind": "color",
+      "hex": "#E73E3E",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "C1. Below WCAG AA on the chat background (3.89:1)."
+    },
+    {
+      "name": "blue",
+      "label": "Blue",
+      "kind": "color",
+      "hex": "#009EF0",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "C1."
+    },
+    {
+      "name": "green",
+      "label": "Green",
+      "kind": "color",
+      "hex": "#4EAE24",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "C1."
+    },
+    {
+      "name": "yellow",
+      "label": "Yellow",
+      "kind": "color",
+      "hex": "#FFD919",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "C1."
+    },
+    {
+      "name": "orange",
+      "label": "Orange",
+      "kind": "color",
+      "hex": "#FF9314",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "C2. Same color as World chat's untagged text."
+    },
+    {
+      "name": "lightblue",
+      "label": "Light blue",
+      "kind": "color",
+      "hex": "#00E1FF",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "C2. `<cyan>` does not exist (T18)."
+    },
+    {
+      "name": "field",
+      "label": "Field",
+      "kind": "color",
+      "hex": "#2DEF00",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "C2."
+    },
+    {
+      "name": "default",
+      "label": "Default (white)",
+      "kind": "color",
+      "hex": "#FFFFFF",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "C3. White, not the channel's color."
+    },
+    {
+      "name": "peagreen",
+      "label": "Pea green",
+      "kind": "color",
+      "hex": "#9FEA00",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "C3. Same color as Trade chat's untagged text."
+    },
+    {
+      "name": "friendly",
+      "label": "Friendly",
+      "kind": "color",
+      "hex": "#25CC7E",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "C3."
+    },
+    {
+      "name": "enemy",
+      "label": "Enemy",
+      "kind": "color",
+      "hex": "#EB292A",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "C4. Below WCAG AA on the chat background (3.68:1)."
+    },
+    {
+      "name": "guide",
+      "label": "Guide",
+      "kind": "color",
+      "hex": "#FFD11A",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "C4. Close to yellow but not identical."
+    },
+    {
+      "name": "tier1",
+      "label": "Tier 1 (Normal rarity)",
+      "kind": "color",
+      "hex": "#53B7F7",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "First tier screenshot."
+    },
+    {
+      "name": "tier2",
+      "label": "Tier 2 (Rare rarity)",
+      "kind": "color",
+      "hex": "#D487F5",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "First tier screenshot."
+    },
+    {
+      "name": "tier3",
+      "label": "Tier 3 (Ultimate rarity)",
+      "kind": "color",
+      "hex": "#F7DB78",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "First tier screenshot, confirmed by T34."
+    },
+    {
+      "name": "tier4",
+      "label": "Tier 4 (Transcendent rarity)",
+      "kind": "color",
+      "hex": "#FF886D",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "First tier screenshot, confirmed by T34."
+    },
+    {
+      "name": "skillvalue",
+      "label": "Skill value",
+      "kind": "color",
+      "hex": "#25CC7E",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "T29, sampled from text."
+    },
+    {
+      "name": "queststory",
+      "label": "Quest story (pink)",
+      "kind": "color",
+      "hex": "#F44A96",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "T29, sampled from text. `<pink>` does not exist (T18)."
+    },
+    {
+      "name": "purple",
+      "label": "Purple",
+      "kind": "color",
+      "hex": "#B872FF",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "T29, sampled from text."
+    },
+    {
+      "name": "Highlight",
+      "label": "Highlight",
+      "kind": "color",
+      "hex": "#00FEA1",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "T30, sampled from text."
+    },
+    {
+      "name": "Gray50",
+      "label": "Gray 50",
+      "kind": "color",
+      "hex": "#A0A0A0",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "T30, sampled from text."
+    },
+    {
+      "name": "Camp",
+      "label": "Camp",
+      "kind": "color",
+      "hex": "#EF9200",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "T30, sampled from text."
+    },
+    {
+      "name": "Archive",
+      "label": "Archive",
+      "kind": "color",
+      "hex": "#006CFF",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "T30, sampled from text. Below WCAG AA on the chat background (3.46:1)."
+    },
+    {
+      "name": "Blazer",
+      "label": "Blazer",
+      "kind": "color",
+      "hex": "#FE2A2A",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "T31, sampled from text. Below WCAG AA on the chat background (4.20:1)."
+    },
+    {
+      "name": "Glacier",
+      "label": "Glacier",
+      "kind": "color",
+      "hex": "#E0F4FF",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "T31, sampled from text."
+    },
+    {
+      "name": "Electricity",
+      "label": "Electricity",
+      "kind": "color",
+      "hex": "#3AC7FB",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "T31, sampled from text."
+    },
+    {
+      "name": "Demonic",
+      "label": "Demonic",
+      "kind": "color",
+      "hex": "#44C621",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "T31, sampled from text."
+    },
+    {
+      "name": "Gray10",
+      "label": "Gray 10",
+      "kind": "color",
+      "hex": "#EEEEEE",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X1."
+    },
+    {
+      "name": "Gray20",
+      "label": "Gray 20",
+      "kind": "color",
+      "hex": "#DCDCDC",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X1."
+    },
+    {
+      "name": "Gray30",
+      "label": "Gray 30",
+      "kind": "color",
+      "hex": "#C9C9C9",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X1."
+    },
+    {
+      "name": "Gray40",
+      "label": "Gray 40",
+      "kind": "color",
+      "hex": "#B5B5B5",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X1."
+    },
+    {
+      "name": "Gray60",
+      "label": "Gray 60",
+      "kind": "color",
+      "hex": "#898989",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X2."
+    },
+    {
+      "name": "Gray70",
+      "label": "Gray 70",
+      "kind": "color",
+      "hex": "#707070",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X2. Below WCAG AA on the chat background (3.20:1)."
+    },
+    {
+      "name": "Gray80",
+      "label": "Gray 80",
+      "kind": "color",
+      "hex": "#535353",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X2. Below WCAG AA on the chat background (2.06:1)."
+    },
+    {
+      "name": "Gray90",
+      "label": "Gray 90",
+      "kind": "color",
+      "hex": "#313131",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X2. Below WCAG AA on the chat background (1.22:1)."
+    },
+    {
+      "name": "QuestMain",
+      "label": "Quest main",
+      "kind": "color",
+      "hex": "#C671F2",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X3."
+    },
+    {
+      "name": "QuestSub",
+      "label": "Quest sub",
+      "kind": "color",
+      "hex": "#1A76FF",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X3. Below WCAG AA on the chat background (3.83:1)."
+    },
+    {
+      "name": "QuestField",
+      "label": "Quest field",
+      "kind": "color",
+      "hex": "#04BA90",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X3."
+    },
+    {
+      "name": "QuestEvent",
+      "label": "Quest event",
+      "kind": "color",
+      "hex": "#FFFFFF",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X4."
+    },
+    {
+      "name": "QuestSeason",
+      "label": "Quest season",
+      "kind": "color",
+      "hex": "#45A41C",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X4."
+    },
+    {
+      "name": "QuestGuid",
+      "label": "Quest guide",
+      "kind": "color",
+      "hex": "#FF9314",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X4."
+    },
+    {
+      "name": "QuestBeginner",
+      "label": "Quest beginner",
+      "kind": "color",
+      "hex": "#FB663A",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X5."
+    },
+    {
+      "name": "QuestCommend",
+      "label": "Quest commend",
+      "kind": "color",
+      "hex": "#DA4621",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X5. Below WCAG AA on the chat background (3.68:1)."
+    },
+    {
+      "name": "QuestDesc",
+      "label": "Quest description",
+      "kind": "color",
+      "hex": "#F2B13F",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X5."
+    },
+    {
+      "name": "SkillElement",
+      "label": "Skill element",
+      "kind": "color",
+      "hex": "#1589FF",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X6."
+    },
+    {
+      "name": "MetaGuide",
+      "label": "Meta guide",
+      "kind": "color",
+      "hex": "#1589FF",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X6."
+    },
+    {
+      "name": "Plain",
+      "label": "Plain (white)",
+      "kind": "color",
+      "hex": "#FFFFFF",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X6. The shortest white tag."
+    },
+    {
+      "name": "CharSkew",
+      "label": "Char skew",
+      "kind": "color",
+      "hex": "#C2C6BE",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X7."
+    },
+    {
+      "name": "UltimateCharacter",
+      "label": "Ultimate character",
+      "kind": "color",
+      "hex": "#F7DB78",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X7."
+    },
+    {
+      "name": "NormalCharacter",
+      "label": "Normal character",
+      "kind": "color",
+      "hex": "#F7F7F7",
+      "weight": "regular",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "X7."
+    },
+    {
+      "name": "b",
+      "label": "Bold",
+      "kind": "style",
+      "hex": "#FFFFFF",
+      "weight": "bold",
+      "slant": "normal",
+      "source": "in-game-test",
+      "notes": "T32. White bold text."
+    },
+    {
+      "name": "i",
+      "label": "Italic",
+      "kind": "style",
+      "hex": "#FFFFFF",
+      "weight": "regular",
+      "slant": "italic",
+      "source": "in-game-test",
+      "notes": "T32. White italic text."
+    }
+  ],
+  "sizes": [
+    {
+      "id": "ChatSender_VerySmall",
+      "label": "Very small",
+      "capHeightPx": 10,
+      "hex": "#CCCCCC",
+      "source": "in-game-test",
+      "notes": "X8."
+    },
+    {
+      "id": "ChatSender_Small",
+      "label": "Small",
+      "capHeightPx": 12,
+      "hex": "#CCCCCC",
+      "source": "in-game-test",
+      "notes": "X8."
+    },
+    {
+      "id": "ChatSender_Normal",
+      "label": "Normal",
+      "capHeightPx": 14,
+      "hex": "#CCCCCC",
+      "source": "in-game-test",
+      "notes": "X8. Slightly larger than untagged text (13px)."
+    },
+    {
+      "id": "ChatSender_Big",
+      "label": "Big",
+      "capHeightPx": 16,
+      "hex": "#CCCCCC",
+      "source": "in-game-test",
+      "notes": "T33, X9."
+    },
+    {
+      "id": "ChatSender_VeryBig",
+      "label": "Very big",
+      "capHeightPx": 18,
+      "hex": "#CCCCCC",
+      "source": "in-game-test",
+      "notes": "X9."
+    },
+    {
+      "id": "Test_Link",
+      "label": "Huge",
+      "capHeightPx": 26,
+      "hex": "#CCCCCC",
+      "source": "in-game-test",
+      "notes": "X9. About twice untagged text. No link behavior reported."
+    }
+  ],
+  "images": [
+    {
+      "id": "IconBunny1",
+      "label": "Bunny",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Bunny"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T6, T7, T13 to T15. Art assumed to be the API portrait of Bunny; pending T7SEN's close-up comparison."
+    },
+    {
+      "id": "BossIcon",
+      "label": "Boss icon",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T11. Appearance not described yet."
+    },
+    {
+      "id": "cash",
+      "label": "Silver emblem",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T39. A four-pointed silver emblem with a cyan ring."
+    },
+    {
+      "id": "BlueCash",
+      "label": "Silver card",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T39. A silver card or bar."
+    },
+    {
+      "id": "RedCash",
+      "label": "Caliber",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T39. The Caliber icon, per T7SEN: a round gold-rimmed medallion with a violet emblem."
+    },
+    {
+      "id": "Icon_CharacterTicket_004_U01",
+      "label": "Character ticket 004 U01",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T40. Appearance not described yet. The misspelling icon_chatacterticket_004_u01 does not work (T41)."
+    }
+  ],
+  "channels": [
+    {
+      "name": "normal",
+      "label": "Normal",
+      "hex": "#CCCCCC",
+      "source": "in-game-test",
+      "notes": "Untagged text color, sampled."
+    },
+    {
+      "name": "world",
+      "label": "World",
+      "hex": "#FF9314",
+      "source": "in-game-test",
+      "notes": "Untagged text color, sampled. Same as <orange>."
+    },
+    {
+      "name": "trade",
+      "label": "Trade",
+      "hex": "#9FEA00",
+      "source": "in-game-test",
+      "notes": "Untagged text color, sampled. Same as <peagreen>."
+    }
+  ],
+  "characters": {
+    "verifiedSymbols": "★☆♥♡✓→←↑↓█▓▒░■□●○♪※∞",
+    "refused": ["✦", "➤", "⚡"],
+    "refuseOutsideBmp": true,
+    "source": "in-game-test",
+    "notes": "T22, T23, T43. Characters outside the Basic Multilingual Plane (emoji) count as 2 and are refused. Hangul syllable 가 counts as 1 and displays."
+  }
+}
