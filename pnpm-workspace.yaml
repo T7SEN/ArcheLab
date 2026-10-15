@@ -25,7 +25,9 @@ peerDependencyRules:
 # Written by pnpm on 2026-10-15: these exact versions were under a day old at install,
 # so pnpm recorded them as exceptions to the 24-hour minimumReleaseAge (ADR 0002).
 # Next.js 16.4.1 is a security release. Drop the list once every entry is a day old,
-# after 2026-10-15 21:50 UTC (ADR 0002, Phase 2 refresh).
+# after 2026-10-15 21:50 UTC (ADR 0002, Phase 2 refresh). shadcn 4.21.5 and
+# @shadcn/registry 0.1.4 (pinned at T7SEN's request on 2026-10-15) are a day old
+# after 13:07 UTC that day.
 minimumReleaseAgeExclude:
   - "@next/env@16.4.1"
   - "@next/eslint-plugin-next@16.4.1"
@@ -74,3 +76,5 @@ minimumReleaseAgeExclude:
   - react-dom@19.3.1
   - react@19.3.1
   - vercel@64.1.0
+  - "@shadcn/registry@0.1.4"
+  - shadcn@4.21.5
