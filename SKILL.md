@@ -105,7 +105,7 @@ Every fact in the registry comes from T7SEN's in-game tests (`reports/TFD in-gam
   `createRegistry` rejects a registry whose rules differ from the ones the engine implements, so a game patch that changes the rules forces an engine change.
 - **`tags[]`:** `name`, `label`, `kind` (`color` | `style`), `hex` (or null), `weight` (`regular` | `bold`), `slant` (`normal` | `italic`), `source`, `notes`. It holds 50 colors and the `<b>` and `<i>` styles. Names ignore case. `img` and `a` are reserved.
 - **`sizes[]`:** the text sizes written `<a id="ID">text</>`: `id`, `label`, `capHeightPx`, `hex`, `source`, `notes`.
-- **`images[]`:** verified image ids only: `id`, `label`, `art`, `artVerified`, `source`, `notes`. `art` is either `{ kind: "descendant", descendant }`, the NEXON API portrait of that Descendant, or `{ kind: "placeholder" }`. The registry never stores image URLs: they are NEXON Game Data under the 30-day limit (section 5.5).
+- **`images[]`:** verified image ids only: `id`, `label`, `art`, `artVerified`, `source`, `notes`. `art` is either `{ kind: "descendant", descendant }`, the NEXON API portrait of that Descendant, or `{ kind: "placeholder" }`. Portrait icons such as `IconHailey1` show the base Descendant's portrait, never the Ultimate one (T7SEN, 2026-10-15), so `descendant` names the base Descendant. The registry never stores image URLs: they are NEXON Game Data under the 30-day limit (section 5.5).
 - **`channels[]`:** untagged text color per channel: `name`, `label`, `hex`.
 - **`characters`:** `verifiedSymbols`, `refused`, `refuseOutsideBmp`.
 

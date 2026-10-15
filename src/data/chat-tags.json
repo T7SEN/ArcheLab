@@ -593,9 +593,9 @@
         "kind": "descendant",
         "descendant": "Bunny"
       },
-      "artVerified": false,
+      "artVerified": true,
       "source": "in-game-test",
-      "notes": "T6, T7, T13 to T15. Art assumed to be the API portrait of Bunny; pending T7SEN's close-up comparison."
+      "notes": "T6, T7, T13 to T15. Art is the base Bunny portrait from the NEXON API, not Ultimate Bunny: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
     },
     {
       "id": "BossIcon",
