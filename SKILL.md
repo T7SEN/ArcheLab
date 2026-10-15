@@ -128,7 +128,12 @@ Header, tool registry, tool cards, footer with the disclaimer and attribution. A
 
 - Clean, modern, dark. ArcheLab's own identity, with in-game cues as accents: rarity tier colors, HUD and menu shapes, Arche energy effects, and Descendant and item art from the API.
 - **Rarity accents.** The tier colors used in the UI are the same hex values the in-game test establishes for `<tier1>` to `<tier4>`. One source of truth: `src/data/chat-tags.json` feeds both the preview and the accent tokens. Tier colors used for text must pass WCAG AA on their background; otherwise they are used for fills, borders and glows only. T7SEN's first samples (15 October 2026) are recorded in `docs/SPEC.md` section 4.1 until the registry exists in Phase 1.
-- **Palette and type.** Proposed in Phase 0 (three directions), chosen by T7SEN, recorded in ADR and section 6 of this file.
+- **Palette and type.** Chosen 2026-10-15 (ADR 0004): direction A (Signal) with direction B's (Rift) palette.
+  - Tokens in `src/styles/globals.css`, as Tailwind utilities: `shell` `#0a0812`, `surface` `#141024`, `line` `#2b2244`, `ink` `#ece7f7`, `ink-muted` `#a69dc3`, `accent` `#a184ff`. Tailwind's default palette is removed. `--color-shell` must equal `shellBackground` in `src/styles/tokens.ts`.
+  - Type: Rajdhani for display (`font-display`), Inter for body (`font-sans`), loaded in the root layout with `next/font/google`.
+  - HUD frames: panels clip the top-left and bottom-right corners (14px) and carry a hairline edge in `line`.
+  - Arche effect: a faint scan band in `accent` sweeps down featured art about every 5 seconds.
+  - The violet accent sits close to the Rare (tier2) purple, so rarity is never shown by color alone.
 - **Fonts.** Free licenses that allow self-hosting. No NEXON or game fonts.
 - **Motion.** Arche energy effects are CSS or SVG, subtle, and disabled under `prefers-reduced-motion`.
 - **No NEXON branding.** No game logo, no NEXON logo, no art used as ArcheLab's own branding.
