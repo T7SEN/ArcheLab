@@ -11,7 +11,9 @@ Product spec: `docs/SPEC.md` (local only, gitignored; read it by path). Lean rul
 
 - Owner: T7SEN. Repository: `https://github.com/T7SEN/ArcheLab.git` (public; from `git remote get-url origin`).
 - Name: **ArcheLab**, one word, everywhere: repo, app, Vercel project (`archelab`, since Vercel project names are lowercase), metadata, and UI copy.
-- Addresses: `archelab.vercel.app` (free, primary until launch). Custom domain `arche-lab.tech`, hyphenated only because `archelab.tech` was taken. The hyphen exists in the domain and nowhere else.
+- Addresses (decided 2026-10-15, ADR 0005):
+  - **Primary: `https://arche-lab.tech`.** Hyphenated only because `archelab.tech` was taken; the hyphen exists in the domain and nowhere else. Registered at Namify on 2026-10-14, free for the first year, **expires 2027-10-14**. DNS is on Cloudflare, with records pointing straight at Vercel and the proxy off (landmine 12).
+  - **`archelab.vercel.app`:** the free fallback, redirecting to the primary with a 308.
 - Product: an unofficial tools hub for The First Descendant. First tool: the chat-message builder.
 - Audience: TFD players, mostly on PC, where chat accepts pasted markup.
 - Priority order: correctness of game facts, then zero cost, then visual quality, then everything else.
@@ -178,6 +180,11 @@ None today. When player lookups ship, `NEXON_API_KEY` is server-only, set in Ver
 9. **`localStorage` can throw.** Private windows and blocked storage. Wrap every access.
 10. **Two-way editor sync.** Converting between the visual editor and raw markup must round-trip through the engine, never through ad hoc string edits.
 11. **pnpm 12 defaults.** `minimumReleaseAge` is 1440 minutes, so pnpm prefers versions at least a day old. `strictDepBuilds` is on, so an install fails when a dependency's build script is not listed in `allowBuilds` in `pnpm-workspace.yaml`. Unrecognized keys in `pnpm-workspace.yaml` fail commands. Approve each build script deliberately, with a reason.
+12. **Custom domain.**
+    - **Renewal:** `arche-lab.tech` costs money from its second year. The renewal (due before 2027-10-14) is T7SEN's decision under the zero-cost rule. If it lapses, make `archelab.vercel.app` primary again before the expiry date.
+    - **Cloudflare proxy stays off.** Keep the domain's records DNS-only (grey cloud) in Cloudflare: proxying Vercel through Cloudflare breaks certificate renewal and adds a second cache.
+    - **Keep the fallback.** Never remove `archelab.vercel.app` from the project, because a released `.vercel.app` name can be claimed by another account.
+    - **`vercel link` edits `.gitignore`.** Each run appends `.vercel` and `.env*`. Revert that: `.env*` would hide `.env.example`.
 
 ## 11. Known tech debt
 
