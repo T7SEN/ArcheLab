@@ -3,8 +3,7 @@ import { closeTag, openTag } from "@/features/chat/engine/serialize";
 import { contrastRatio, minimumTextContrast } from "./contrast";
 import { lookOf, type StyleLook } from "./style-look";
 
-export type StyleGroupId =
-  "common" | "rarity" | "grays" | "quest" | "more" | "text" | "sizes";
+export type StyleGroupId = "colors" | "rarity" | "neutrals" | "text" | "sizes";
 
 export interface StyleOption {
   /** Stable key, such as `tag:red` or `size:ChatSender_Big`. */
@@ -30,45 +29,86 @@ export interface StyleGroup {
 }
 
 const groupTitles: Record<StyleGroupId, string> = {
-  common: "Common colors",
+  colors: "Colors",
   rarity: "Rarity",
-  grays: "Grays",
-  quest: "Quest colors",
-  more: "More colors",
+  neutrals: "Whites and grays",
   text: "Bold and italic",
   sizes: "Text sizes",
 };
 
-/** The color tags players report most, across languages (SPEC.md section 4.1). */
-const commonNames = new Set([
-  "red",
-  "blue",
-  "green",
-  "yellow",
-  "orange",
-  "lightblue",
-  "field",
-  "default",
-  "peagreen",
-  "friendly",
-  "enemy",
-  "guide",
-]);
+/**
+ * Colors whose chroma (max channel minus min channel, 0 to 1) is below this read as
+ * white or gray: the grays, `Plain`, `Glacier`'s ice white, `CharSkew`.
+ */
+const neutralChroma = 0.15;
 
-function colorGroupOf(name: string): StyleGroupId {
-  if (commonNames.has(name)) {
-    return "common";
+/** Hues from here up to 360° sort with the reds at the start of the wheel. */
+const redWrapDegrees = 345;
+
+interface Hsl {
+  readonly hue: number;
+  readonly lightness: number;
+  readonly chroma: number;
+}
+
+function hslOf(hex: string): Hsl {
+  const [red, green, blue] = [1, 3, 5].map(
+    (start) => Number.parseInt(hex.slice(start, start + 2), 16) / 255,
+  );
+  const max = Math.max(red, green, blue);
+  const min = Math.min(red, green, blue);
+  const chroma = max - min;
+  let hue = 0;
+  if (chroma > 0) {
+    if (max === red) {
+      hue = ((((green - blue) / chroma) % 6) + 6) % 6;
+    } else if (max === green) {
+      hue = (blue - red) / chroma + 2;
+    } else {
+      hue = (red - green) / chroma + 4;
+    }
   }
-  if (/^tier\d$/.test(name)) {
+  // Hues just below 360° are reds: start the wheel there, so reds sort together.
+  const degrees = hue * 60;
+  return {
+    hue: degrees >= redWrapDegrees ? degrees - 360 : degrees,
+    lightness: (max + min) / 2,
+    chroma,
+  };
+}
+
+/**
+ * Groups by what a color looks like, not where its tag name came from. The rarity
+ * colors stay together because they mean something in game: item rarity.
+ */
+function groupOf(tag: TagEntry): StyleGroupId {
+  if (tag.kind === "style") {
+    return "text";
+  }
+  if (/^tier\d$/.test(tag.name)) {
     return "rarity";
   }
-  if (/^Gray\d0$/.test(name)) {
-    return "grays";
-  }
-  if (/^Quest[A-Z]/.test(name)) {
-    return "quest";
-  }
-  return "more";
+  return tag.hex !== null && hslOf(tag.hex).chroma < neutralChroma
+    ? "neutrals"
+    : "colors";
+}
+
+/** Colors run around the color wheel; whites and grays run from light to dark. */
+function compareLooks(group: StyleGroupId) {
+  return (a: StyleOption, b: StyleOption): number => {
+    if (a.look.color === null || b.look.color === null) {
+      return 0;
+    }
+    const first = hslOf(a.look.color);
+    const second = hslOf(b.look.color);
+    if (group === "colors") {
+      return first.hue - second.hue || first.lightness - second.lightness;
+    }
+    if (group === "neutrals") {
+      return second.lightness - first.lightness;
+    }
+    return 0;
+  };
 }
 
 export function styleKey(style: Style): string {
@@ -107,9 +147,7 @@ function option(
 /**
  * The style picker's groups. A run holds exactly one style, so bold, italic and the
  * text sizes are styles like the colors. Tags that render exactly the same appear
- * once, under the shortest name, which is also what the optimizer writes. A look
- * belongs to the group of its first registry entry, so white sits with the common
- * colors as `Plain`.
+ * once, under the shortest name, which is also what the optimizer writes.
  */
 export function styleGroups(registry: ChatRegistry): StyleGroup[] {
   const looks = new Map<string, TagEntry[]>();
@@ -133,7 +171,7 @@ export function styleGroups(registry: ChatRegistry): StyleGroup[] {
     const sameAs = entries
       .filter((tag) => tag !== shortest)
       .map((tag) => tag.name);
-    const group = first.kind === "style" ? "text" : colorGroupOf(first.name);
+    const group = groupOf(first);
     add(
       group,
       option(
@@ -151,10 +189,9 @@ export function styleGroups(registry: ChatRegistry): StyleGroup[] {
       option({ type: "size", id: size.id }, size.id, size.label, [], registry),
     );
   }
-  return Object.entries(groupTitles).flatMap(([id, title]) => {
-    const options = grouped.get(id as StyleGroupId) ?? [];
-    return options.length === 0
-      ? []
-      : [{ id: id as StyleGroupId, title, options }];
+  return Object.entries(groupTitles).flatMap(([key, title]) => {
+    const id = key as StyleGroupId;
+    const options = (grouped.get(id) ?? []).sort(compareLooks(id));
+    return options.length === 0 ? [] : [{ id, title, options }];
   });
 }

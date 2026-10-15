@@ -32,15 +32,41 @@ describe("style picker options", () => {
     expect(byName.get("MetaGuide")?.sameAs).toEqual(["SkillElement"]);
   });
 
-  it("groups colors, keeping white with the common colors", () => {
+  it("groups colors by how they look, not where their names came from", () => {
     const names = (id: string): string[] =>
       groups
         .find((group) => group.id === id)
         ?.options.map((entry) => entry.name) ?? [];
-    expect(names("common")).toContain("Plain");
+    expect(groups.map((group) => group.title)).toEqual([
+      "Colors",
+      "Rarity",
+      "Whites and grays",
+      "Bold and italic",
+      "Text sizes",
+    ]);
+    expect(names("colors")).toHaveLength(27);
+    expect(names("colors")).toEqual(
+      expect.arrayContaining(["red", "Camp", "QuestMain", "queststory"]),
+    );
     expect(names("rarity")).toEqual(["tier1", "tier2", "tier3", "tier4"]);
-    expect(names("grays")).toHaveLength(9);
-    expect(names("quest")).not.toContain("queststory");
+    // Near-neutral colors join the grays, light to dark.
+    const neutrals = names("neutrals");
+    expect(neutrals[0]).toBe("Plain");
+    expect(neutrals.at(-1)).toBe("Gray90");
+    expect(neutrals).toEqual(expect.arrayContaining(["Glacier", "CharSkew"]));
+  });
+
+  it("sorts colors around the color wheel, reds first", () => {
+    const colors = groups.find((group) => group.id === "colors")?.options ?? [];
+    const position = (name: string): number =>
+      colors.findIndex((entry) => entry.name === name);
+    // enemy's hue is just under 360°, so it sorts with the reds.
+    expect(position("enemy")).toBeLessThan(position("orange"));
+    expect(position("orange")).toBeLessThan(position("yellow"));
+    expect(position("yellow")).toBeLessThan(position("green"));
+    expect(position("green")).toBeLessThan(position("blue"));
+    expect(position("blue")).toBeLessThan(position("purple"));
+    expect(colors.at(-1)?.name).toBe("queststory");
   });
 
   it("knows each style's cost and readability", () => {
