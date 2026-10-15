@@ -140,9 +140,10 @@ Pure TypeScript with no React, DOM or Next imports. The only dependency is Zod. 
 Route `/tools/chat`. Walkthrough: `docs/walkthroughs/chat-builder.md`.
 - **Editor:** ProseMirror (ADR 0007), one line, one `style` mark (a run holds one style), inline atom images that never carry a style. `normalizePlugin` removes refused characters and line breaks after every change. Copying from the editor gives markup; pasting text reads it as markup.
 - **Source of truth:** engine pieces. The editor and the markup panel write them; the counter, preview, hints and copy read them.
-- **Picker:** `styleGroups` shows each look once under its shortest tag (44 colors, bold, italic, six sizes), with its cost and a low-contrast mark below WCAG AA on the chat background.
+- **Picker:** `styleGroups` shows each look once under its shortest tag, grouped by appearance, never by where a tag name came from (T7SEN, 2026-10-15): Colors (27, in hue order, reds first), Rarity (tier1 to tier4, kept together because they mean item rarity in game), Whites and grays (13, chroma below 0.15, light to dark), Bold and italic, Text sizes. Each shows its cost and a low-contrast mark below WCAG AA on the chat background.
 - **Copy:** the shorter of the optimizer's output and the text as written (both render the same). "Copy as written" appears when they differ.
-- **Preview:** the copy text after the input box's cut, parsed, on the chat background, per channel. Icon height (2em) and the font are approximations.
+- **Preview:** directly under the editor in the same panel, so the text and its in-game look sit together. It shows the copy text after the input box's cut, parsed, on the chat background, per channel. Icon height (2em) and the font are approximations.
+- **Layout:** two columns from the `lg` breakpoint: the message panel (editor and preview) and the markup panel on the left, the style panel (styles and icons) on the right. On narrow screens the style panel follows the message panel.
 
 ### 5.4 Sharing and templates
 - Share links: `/tools/chat?m=<code>`, with codes from `encodeShare` (section 5.2). Decoded content is untrusted text.
