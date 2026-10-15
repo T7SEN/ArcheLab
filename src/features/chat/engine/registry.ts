@@ -73,6 +73,12 @@ const chatBackgroundSchema = z.strictObject({
   notes: z.string(),
 });
 
+const untaggedTextSchema = z.strictObject({
+  capHeightPx: z.number().positive(),
+  source: factSource,
+  notes: z.string(),
+});
+
 const charactersSchema = z.strictObject({
   verifiedSymbols: z.string(),
   refused: z.array(z.string().min(1)),
@@ -93,6 +99,7 @@ export const chatRegistrySchema = z.strictObject({
   images: z.array(imageSchema),
   channels: z.array(channelSchema).min(1),
   chatBackground: chatBackgroundSchema,
+  untaggedText: untaggedTextSchema,
   characters: charactersSchema,
 });
 
