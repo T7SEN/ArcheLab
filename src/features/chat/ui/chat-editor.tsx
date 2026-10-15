@@ -1,7 +1,7 @@
 "use client";
 
 import { Slice, type Node as ProseMirrorNode } from "prosemirror-model";
-import { EditorState } from "prosemirror-state";
+import { EditorState, TextSelection } from "prosemirror-state";
 import { EditorView, type NodeView } from "prosemirror-view";
 import { useEffect, useImperativeHandle, useRef, type Ref } from "react";
 import {
@@ -88,6 +88,39 @@ function imageView(portraits: PortraitUrls) {
     }
     return { dom, ignoreMutation: () => true };
   };
+}
+
+/**
+ * ProseMirror reads native selection changes only while it has focus. A keyboard user
+ * can select (Shift+Home) and Tab to a picker button before that read happens, so a
+ * picker first takes the selection the browser still shows inside the editor.
+ */
+function syncSelectionFromDom(view: EditorView): void {
+  const selection = view.dom.ownerDocument.getSelection();
+  const { anchorNode, focusNode } = selection ?? {};
+  if (
+    selection === null ||
+    anchorNode == null ||
+    focusNode == null ||
+    !view.dom.contains(anchorNode) ||
+    !view.dom.contains(focusNode)
+  ) {
+    return;
+  }
+  try {
+    const anchor = view.posAtDOM(anchorNode, selection.anchorOffset);
+    const head = view.posAtDOM(focusNode, selection.focusOffset);
+    const current = view.state.selection;
+    if (anchor !== current.anchor || head !== current.head) {
+      view.dispatch(
+        view.state.tr.setSelection(
+          TextSelection.create(view.state.doc, anchor, head),
+        ),
+      );
+    }
+  } catch {
+    // A DOM position that no longer maps into the document: keep ProseMirror's selection.
+  }
 }
 
 /**
@@ -210,6 +243,7 @@ export function ChatEditor({
       applyStyle: (style) => {
         const view = viewRef.current;
         if (view !== null) {
+          syncSelectionFromDom(view);
           applyStyle(schema, style)(view.state, (tr) => {
             view.dispatch(tr);
           });
@@ -219,6 +253,7 @@ export function ChatEditor({
       insertImage: (id) => {
         const view = viewRef.current;
         if (view !== null) {
+          syncSelectionFromDom(view);
           insertImage(schema, id)(view.state, (tr) => {
             view.dispatch(tr);
           });

@@ -38,6 +38,21 @@ test("typing and picking a style writes markup", async ({ page }) => {
   await expect(markup).toHaveValue("<tier4>Hello</>");
 });
 
+test("a style can be applied with the keyboard alone", async ({ page }) => {
+  const { editor, markup } = builder(page);
+  await editor.focus();
+  await page.keyboard.type("Hi");
+  await page.keyboard.press("Shift+Home");
+  // The picker follows the editor: "Channel color", then the first color, red.
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("button", { name: /^Red, <red>/ })).toBeFocused();
+  await page.keyboard.press("Enter");
+
+  await expect(markup).toHaveValue("<red>Hi</>");
+  await expect(editor).toBeFocused();
+});
+
 test("editing the markup updates the editor and preview", async ({ page }) => {
   const { editor, markup, preview } = builder(page);
   await markup.fill("<blue>Hi</> <b>there</> <zzz>A</>");
