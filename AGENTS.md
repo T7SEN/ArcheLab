@@ -21,7 +21,7 @@ ArcheLab is an unofficial tools hub for The First Descendant, a NEXON game. The 
 | `src/features/chat/ui` | Builder interface: editor, markup panel, preview, counter, templates, sharing |
 | `src/lib/nexon` | Server-only NEXON data layer: fetch, validate, cache metadata |
 | `src/data` | Versioned data: chat tag registry, curated templates |
-| `src/components` | Shared UI: hub shell, tool cards, primitives |
+| `src/components` | Shared UI: hub shell, tool cards; `ui/` holds the shadcn/ui components |
 | `src/styles` | Tailwind v4 theme and design tokens |
 | `tests/e2e` | Playwright tests |
 | `docs/adr` | Architecture decision records (local only, gitignored) |

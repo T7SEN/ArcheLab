@@ -4,6 +4,9 @@ The builder at `/tools/chat` composes one line of chat, previews it the way the 
 
 ## Code path
 
+The page is built from shadcn/ui components (ADR 0009): a Message card (editor, then the "In game" preview with the channel toggle), a Markup card (panel, counter badge, copy buttons), and a Style card (style and icon pickers with tooltips) beside them on wide screens.
+
+
 1. **Page.** `src/app/tools/chat/page.tsx` is a server component, prerendered as a static page. While it renders, `fetchPortraitUrls` (`src/lib/nexon/descendants.ts`, server-only) reads NEXON's `descendant.json` once and returns the base Descendant portrait URL for each portrait icon in the registry (ADR 0008). The page passes those URLs to the client component `ChatBuilder`.
 2. **State.** `ChatBuilder` holds one message: the markup panel's text and the engine pieces. Everything else is derived from them on each render:
    - the copy text: the shorter of the optimizer's output and the text as written;

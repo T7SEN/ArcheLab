@@ -35,6 +35,7 @@ Exact versions are pinned in Phase 0 after checking official release notes, then
 | Validation | Zod | 4 | 4.6.7 (installed in Phase 1) |
 | Editor | ProseMirror (ADR 0007) | 1 | `prosemirror-model` 1.25.12, `-state` 1.4.4, `-view` 1.42.6, `-keymap` 1.2.3, `-history` 1.5.1, `-commands` 1.7.2 (installed in Phase 2) |
 | Server boundary | `server-only` | — | 0.0.1 (installed in Phase 2) |
+| UI components | shadcn/ui on Base UI (ADR 0009) | — | `@base-ui/react` 1.9.0, `class-variance-authority` 0.7.1, `cn` 0.4.0, `lucide-react` 1.57.0, `tw-animate-css` 1.4.0; CLI and CSS `shadcn` 4.21.4 (dev dependency) |
 | Unit tests | Vitest, fast-check for property tests | current stable | Vitest 5.0.4 (Vite 8.3.4), fast-check 4.10.2 |
 | E2E tests | Playwright | current stable | 1.64.1 |
 | Lint and format | ESLint flat config, Prettier | current stable | ESLint 10.12.0 (`@eslint/js` 10.0.1, typescript-eslint 8.71.2, `eslint-config-prettier` 10.1.8), Prettier 3.9.10 (`prettier-plugin-tailwindcss` 0.8.1) |
@@ -73,7 +74,8 @@ Sources, Node 26 checks, GitHub Action commit pins, and the refresh policy (deli
 │   ├── data/
 │   │   ├── chat-tags.json    tag registry (versioned, patch-verified)
 │   │   └── templates.json    curated templates
-│   ├── components/           hub shell (site-header, site-footer with legal text), hud-panel, tool cards, primitives
+│   ├── components/           hub shell (site-header, site-footer with legal text), tool cards
+│   │   └── ui/               shadcn/ui components (ADR 0009): owned source, added with the pinned CLI
 │   └── styles/               globals.css (Tailwind theme, tokens), tokens.ts (inlined shell background)
 └── tests/e2e/                Playwright
 ```
@@ -164,16 +166,17 @@ Header, tool registry, tool cards, footer with the disclaimer and attribution. A
 
 ## 6. Design system
 
-- Clean, modern, dark. ArcheLab's own identity, with in-game cues as accents: rarity tier colors, HUD and menu shapes, Arche energy effects, and Descendant and item art from the API.
+- Clean, modern, dark. ArcheLab's own identity, with in-game cues as accents: rarity tier colors, Arche energy effects, and Descendant and item art from the API.
+- **Components:** shadcn/ui on Base UI (ADR 0009), in `src/components/ui`. `components.json` holds the CLI settings (style `base-nova`, icons `lucide`). Add components with `pnpm dlx shadcn@4.21.4 add <name>`, then format, lint and review the diff.
 - **Rarity accents.** The tier colors used in the UI are the same hex values the in-game test establishes for `<tier1>` to `<tier4>`. One source of truth: `src/data/chat-tags.json` feeds both the preview and the accent tokens. Tier colors used for text must pass WCAG AA on their background; otherwise they are used for fills, borders and glows only. The sampled values are in the registry: tier1 `#53B7F7`, tier2 `#D487F5`, tier3 `#F7DB78`, tier4 `#FF886D`.
-- **Palette and type.** Chosen 2026-10-15 (ADR 0004): direction A (Signal) with direction B's (Rift) palette.
-  - Tokens in `src/styles/globals.css`, as Tailwind utilities: `shell` `#0a0812`, `surface` `#141024`, `line` `#2b2244`, `ink` `#ece7f7`, `ink-muted` `#a69dc3`, `accent` `#a184ff`, `warn` `#ff886d` (overflow, refused characters, hard-to-read colors). Tailwind's default palette is removed. `--color-shell` must equal `shellBackground` in `src/styles/tokens.ts`.
-  - Type: Rajdhani for display (`font-display`), Inter for body (`font-sans`), loaded in the root layout with `next/font/google`.
-  - HUD frames: panels clip the top-left and bottom-right corners (14px) and carry a hairline edge in `line`: the `hud-frame` utility in `globals.css`, used by `HudPanel` (`src/components/hud-panel.tsx`).
+- **Palette and type.** Chosen 2026-10-15 (ADR 0004): direction A (Signal) with direction B's (Rift) palette, on shadcn's token names since ADR 0009 (dark only: `dark` class on `<html>`, values in `:root`).
+  - Tokens in `src/styles/globals.css`, as Tailwind utilities: `background` `#0a0812`, `card` `#141024`, `popover`/`secondary`/`muted` `#1c1630`, `accent` `#241c3d` (shadcn's hover surface, not a brand color), `border`/`input` `#2b2244`, `foreground` `#ece7f7`, `muted-foreground` `#a69dc3`, `primary`/`ring` `#a184ff`, `destructive`/`warning` `#ff886d` (overflow, refused characters, hard-to-read colors). `radius` 0.625rem. Tailwind's default palette is removed. `--background` must equal `shellBackground` in `src/styles/tokens.ts`.
+  - Type: Rajdhani for display (`font-display`) and shadcn titles (`font-heading`), Inter for body (`font-sans`), loaded in the root layout with `next/font/google`.
+  - Shapes: shadcn's rounded cards, inputs, toggles and tooltips (T7SEN, 2026-10-15). The clipped HUD frames of Phase 0 are gone.
   - Arche effect: a faint scan band in `accent` sweeps down featured art about every 5 seconds.
   - The violet accent sits close to the Rare (tier2) purple, so rarity is never shown by color alone.
 - **Fonts.** Free licenses that allow self-hosting. No NEXON or game fonts.
-- **Motion.** Arche energy effects are CSS or SVG, subtle, and disabled under `prefers-reduced-motion`.
+- **Motion.** Arche energy effects are CSS or SVG, subtle, and disabled under `prefers-reduced-motion`. A global rule in `globals.css` also shortens shadcn's component animations under `prefers-reduced-motion: reduce`.
 - **No NEXON branding.** No game logo, no NEXON logo, no art used as ArcheLab's own branding.
 
 ## 7. Conventions
