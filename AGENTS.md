@@ -1,6 +1,6 @@
 # AGENTS.md — ArcheLab
 
-Read this at the start of every session. Operational reference: `SKILL.md`. Product spec: `docs/SPEC.md`, which is local only and gitignored.
+Read this at the start of every session. Operational reference: `SKILL.md`. Product spec: `docs/SPEC.md`, which is local only and gitignored. Sourced research reports live in `reports/` with their notes in `research_notes/`, both local only and gitignored; read `reports/TFD chat rich text tags.md` before touching chat tags.
 
 ## Project
 
@@ -24,7 +24,7 @@ ArcheLab is an unofficial tools hub for The First Descendant, a NEXON game. The 
 | `src/components` | Shared UI: hub shell, tool cards, primitives |
 | `src/styles` | Tailwind v4 theme and design tokens |
 | `tests/e2e` | Playwright tests |
-| `docs/adr` | Architecture decision records |
+| `docs/adr` | Architecture decision records (local only, gitignored) |
 | `docs/walkthroughs` | Annotated explanations of non-obvious code |
 
 ## Conventions
