@@ -23,20 +23,20 @@ Exact versions are pinned in Phase 0 after checking official release notes, then
 
 | Layer | Choice | Floor | Pinned |
 |---|---|---|---|
-| Runtime | Node | 26 | — |
-| Package manager | pnpm, single package | 12 | — |
-| Framework | Next.js App Router | 16.3 | — |
-| UI | React | 19 | — |
-| Language | TypeScript, `strict: true` | current stable that typescript-eslint supports | — |
-| Styling | Tailwind CSS, CSS-first `@theme` | 4 | — |
-| Validation | Zod | 4 | — |
-| Unit tests | Vitest, fast-check for property tests | current stable | — |
-| E2E tests | Playwright | current stable | — |
-| Lint and format | ESLint flat config, Prettier | current stable | — |
-| Hosting | Vercel Hobby | — | — |
+| Runtime | Node | 26 | 26.12.0 (`.node-version`); Vercel functions run Node 24.x |
+| Package manager | pnpm, single package | 12 | 12.11.2 (`packageManager`) |
+| Framework | Next.js App Router | 16.3 | 16.4.1 (`eslint-config-next` 16.4.1) |
+| UI | React | 19 | 19.3.1 (`react`, `react-dom`) |
+| Language | TypeScript, `strict: true` | current stable that typescript-eslint supports | 6.0.3 (`@types/node` 24.19.2, `@types/react` and `@types/react-dom` 19.3.0) |
+| Styling | Tailwind CSS, CSS-first `@theme` | 4 | 4.3.3 (`@tailwindcss/postcss` 4.3.3) |
+| Validation | Zod | 4 | 4.6.7 (installed in Phase 1) |
+| Unit tests | Vitest, fast-check for property tests | current stable | Vitest 5.0.4 (Vite 8.3.4), fast-check 4.10.2 |
+| E2E tests | Playwright | current stable | 1.64.1 |
+| Lint and format | ESLint flat config, Prettier | current stable | ESLint 10.12.0 (`@eslint/js` 10.0.1, typescript-eslint 8.71.2, `eslint-config-prettier` 10.1.8), Prettier 3.9.10 (`prettier-plugin-tailwindcss` 0.8.1) |
+| Hosting | Vercel Hobby | — | Vercel CLI 64.1.0 (dev dependency) |
 | Data | NEXON Open API static metadata (keyless) | — | — |
 
-Proposed pins, with sources and Node 26 checks: `docs/adr/0002-version-pins.md` (status Proposed). The Pinned column is filled when T7SEN approves them.
+Sources, Node 26 checks, GitHub Action commit pins, and the refresh policy (deliberately at the start of each phase, no dependency bot): `docs/adr/0002-version-pins.md` (accepted 2026-10-15).
 
 ## 3. Repository structure
 
@@ -46,7 +46,10 @@ Proposed pins, with sources and Node 26 checks: `docs/adr/0002-version-pins.md` 
 ├── CLAUDE.md                 imports AGENTS.md
 ├── SKILL.md                  this file
 ├── .gitignore                must keep the docs/SPEC.md entry
-├── .node-version
+├── .node-version             exact Node version for local and CI
+├── .github/workflows/ci.yml  checks, then Vercel prebuilt deploys (ADR 0003)
+├── pnpm-workspace.yaml       pnpm settings: allowBuilds, peer rules, release-age exceptions
+├── vercel.json               turns off Vercel's own Git deploys
 ├── docs/
 │   ├── SPEC.md               product spec and phase plan (local only, gitignored)
 │   ├── adr/                  NNNN-kebab-title.md (local only, gitignored)
@@ -65,8 +68,8 @@ Proposed pins, with sources and Node 26 checks: `docs/adr/0002-version-pins.md` 
 │   ├── data/
 │   │   ├── chat-tags.json    tag registry (versioned, patch-verified)
 │   │   └── templates.json    curated templates
-│   ├── components/           hub shell, tool cards, primitives
-│   └── styles/               Tailwind theme, tokens
+│   ├── components/           hub shell (site-header, site-footer with legal text), tool cards, primitives
+│   └── styles/               globals.css (Tailwind theme, tokens), tokens.ts (inlined shell background)
 └── tests/e2e/                Playwright
 ```
 
@@ -143,22 +146,26 @@ Header, tool registry, tool cards, footer with the disclaimer and attribution. A
 
 None today. When player lookups ship, `NEXON_API_KEY` is server-only, set in Vercel, and never prefixed `NEXT_PUBLIC_`.
 
-## 9. Commands (filled in Phase 0)
+## 9. Commands
 
 | Command | Does |
 |---|---|
-| `pnpm dev` | Dev server |
-| `pnpm build` | Production build |
-| `pnpm typecheck` / `pnpm lint` / `pnpm test` | Static checks and unit tests |
-| `pnpm test:e2e` | Playwright |
-| `pnpm format` | Prettier |
+| `pnpm install` | Installs dependencies. CI uses `pnpm install --frozen-lockfile`. A new build script fails the install until it is listed in `allowBuilds` (landmine 11). |
+| `pnpm dev` | Dev server at http://localhost:3000 |
+| `pnpm build` | Production build. The route summary must show only static (○) routes unless the spec names a reason. |
+| `pnpm start` | Serves the production build at http://localhost:3000 |
+| `pnpm typecheck` | `next typegen` (writes `next-env.d.ts` and route types), then `tsc --noEmit` |
+| `pnpm lint` | ESLint with typed rules (typescript-eslint strict and stylistic), then `prettier --check` |
+| `pnpm test` | Vitest unit and property tests (`src/**/*.test.ts`) |
+| `pnpm test:e2e` | Playwright (Chromium) against `pnpm start`; run `pnpm build` first. On a new machine, run `pnpm exec playwright install chromium` once. |
+| `pnpm format` | Prettier, with Tailwind class sorting. Markdown and pnpm's own files are skipped. |
 
 ## 10. Landmines
 
 1. **Hobby caps pause the project.** Vercel Hobby has hard caps (including 1M function invocations, 4 hours of active CPU, 100 GB transfer) and pauses projects that exceed them. Static rendering keeps usage near zero; any change that adds per-request server work needs justification.
 2. **Image optimization cap.** Hobby includes a small image-optimization allowance. NEXON images bypass it (`unoptimized` or plain `<img>`).
 3. **Commercial use is banned on Hobby.** No ads, sponsorships, paid features, or affiliate links without T7SEN's decision to move hosts.
-4. **Toolchain on Vercel.** Verified 2026-10-15 against Vercel's docs: builds and functions offer Node 24.x (default) and 22.x only, pnpm 6–10 is supported, and Corepack is experimental. Vercel's build-utils reject an `engines.node` range that matches only Node 26 (`BUILD_UTILS_NODE_VERSION_INVALID`), in Vercel builds and in a local `vercel build`, so `package.json` carries no `engines.node`; Node is pinned in `.node-version`. Without `engines`, the function runtime comes from Project Settings (24.x). Runtime code must run on Node 24. Deploy path: `docs/adr/0003-deploy-path.md` (status Proposed).
+4. **Toolchain on Vercel.** Verified 2026-10-15 against Vercel's docs: builds and functions offer Node 24.x (default) and 22.x only, pnpm 6–10 is supported, and Corepack is experimental. Vercel's build-utils reject an `engines.node` range that matches only Node 26 (`BUILD_UTILS_NODE_VERSION_INVALID`), in Vercel builds and in a local `vercel build`, so `package.json` carries no `engines.node`; Node is pinned in `.node-version`. Without `engines`, the function runtime comes from Project Settings (24.x). Runtime code must run on Node 24. Deploy path (accepted 2026-10-15): build in GitHub Actions on Node 26 and pnpm 12, deploy the prebuilt output with the Vercel CLI; see `docs/adr/0003-deploy-path.md`.
 5. **Game facts drift.** A patch can change or remove tags. The registry carries `verifiedPatch`; after each game patch, T7SEN re-runs the in-game test. Chat markup is undocumented by NEXON: tag names and image ids (`<img id="..."/>`) look like the game's internal UI style and icon rows, found by players. Sourced research: `reports/TFD chat rich text tags.md` (local only).
 6. **XSS through shared links.** Decoded share codes and template text are untrusted. Render as text nodes only.
 7. **NEXON schema drift.** Metadata shapes change with game updates. Zod validation plus graceful degradation; never trust field presence.
