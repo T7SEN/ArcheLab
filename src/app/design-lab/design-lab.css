@@ -1,0 +1,296 @@
+/*
+ * Temporary styles for /design-lab (Phase 0). Each direction section sets its palette
+ * as --dl-* custom properties inline (directions.ts); everything here reads them.
+ * Arche energy effects animate only when the visitor allows motion.
+ */
+
+.dl-direction {
+  background: var(--dl-bg);
+  color: var(--dl-ink);
+  font-family: var(--dl-body), system-ui, sans-serif;
+  border-top: 1px solid var(--dl-line);
+}
+
+.dl-signal {
+  --dl-display: var(--dl-font-signal-display);
+  --dl-body: var(--dl-font-signal-body);
+}
+
+.dl-rift {
+  --dl-display: var(--dl-font-rift-display);
+  --dl-body: var(--dl-font-rift-body);
+}
+
+.dl-forge {
+  --dl-display: var(--dl-font-forge-display);
+  --dl-body: var(--dl-font-forge-body);
+}
+
+.dl-display {
+  font-family: var(--dl-display), system-ui, sans-serif;
+}
+
+.dl-muted {
+  color: var(--dl-muted);
+}
+
+.dl-kicker {
+  color: var(--dl-accent);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.dl-title {
+  margin-top: 0.25rem;
+  font-size: 2.5rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+}
+
+.dl-type-display {
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.dl-panel-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dl-accent);
+}
+
+.dl-panel-body {
+  margin-top: 1rem;
+}
+
+.dl-link {
+  color: var(--dl-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.dl-link:focus-visible {
+  outline: 2px solid var(--dl-accent);
+  outline-offset: 2px;
+}
+
+.dl-swatch {
+  display: block;
+  height: 2.5rem;
+  border: 1px solid var(--dl-line);
+}
+
+.dl-chip {
+  border: 1px solid;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.8125rem;
+}
+
+/* Chat preview: the sampled in-game chat background with neutral untagged text. */
+.dl-chat {
+  /* Neutral placeholders: untagged chat text colors are not verified yet. */
+  --dl-chat-ink: #c9cdd1;
+  --dl-chat-meta: #9aa0a6;
+  background: var(--dl-chat-bg);
+  color: var(--dl-chat-ink);
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+}
+
+.dl-chat-channel,
+.dl-chat-name {
+  color: var(--dl-chat-meta);
+}
+
+/* Portrait shared by all three directions. */
+.dl-portrait-wrap {
+  position: relative;
+  width: min(100%, 256px);
+}
+
+.dl-portrait {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--dl-line);
+}
+
+.dl-portrait img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ---- A. Signal: clipped corners and a scan band ---- */
+
+.dl-signal .dl-frame {
+  --cut: 14px;
+  background: var(--dl-surface);
+  padding: 1.25rem;
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
+  box-shadow: inset 0 0 0 1px var(--dl-line);
+}
+
+.dl-signal .dl-portrait {
+  clip-path: polygon(
+    12px 0,
+    100% 0,
+    100% calc(100% - 12px),
+    calc(100% - 12px) 100%,
+    0 100%,
+    0 12px
+  );
+}
+
+.dl-signal .dl-portrait::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 30%;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, var(--dl-accent) 28%, transparent),
+    transparent
+  );
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---- B. Rift: corner brackets and a breathing glow ---- */
+
+.dl-rift .dl-frame {
+  --b: 14px;
+  padding: 1.25rem;
+  border-radius: 6px;
+  background:
+    linear-gradient(var(--dl-accent), var(--dl-accent)) top left / var(--b) 1px
+      no-repeat,
+    linear-gradient(var(--dl-accent), var(--dl-accent)) top left / 1px var(--b)
+      no-repeat,
+    linear-gradient(var(--dl-accent), var(--dl-accent)) top right / var(--b) 1px
+      no-repeat,
+    linear-gradient(var(--dl-accent), var(--dl-accent)) top right / 1px var(--b)
+      no-repeat,
+    linear-gradient(var(--dl-accent), var(--dl-accent)) bottom left / var(--b)
+      1px no-repeat,
+    linear-gradient(var(--dl-accent), var(--dl-accent)) bottom left / 1px
+      var(--b) no-repeat,
+    linear-gradient(var(--dl-accent), var(--dl-accent)) bottom right / var(--b)
+      1px no-repeat,
+    linear-gradient(var(--dl-accent), var(--dl-accent)) bottom right / 1px
+      var(--b) no-repeat,
+    var(--dl-surface);
+}
+
+.dl-rift .dl-portrait {
+  border-radius: 6px;
+  z-index: 1;
+}
+
+.dl-rift .dl-portrait-wrap::before {
+  content: "";
+  position: absolute;
+  inset: -16%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--dl-accent) 40%, transparent),
+    transparent
+  );
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* ---- C. Forge: notched tab, double rule, and a tracing line ---- */
+
+.dl-forge .dl-frame {
+  background: var(--dl-surface);
+  border: 1px solid var(--dl-line);
+}
+
+.dl-forge .dl-panel-title {
+  display: inline-block;
+  padding: 0.375rem 1.5rem 0.375rem 0.875rem;
+  background: var(--dl-line);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+}
+
+.dl-forge .dl-panel-body {
+  margin-top: 0;
+  padding: 1rem 1.25rem 1.25rem;
+  border-top: 3px double var(--dl-line);
+}
+
+.dl-trace {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--dl-accent);
+  stroke-width: 2;
+  stroke-dasharray: 12 88;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ---- Motion: only when the visitor has not asked for less ---- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .dl-signal .dl-portrait::after {
+    animation: dl-scan 5s ease-in-out infinite;
+  }
+
+  .dl-rift .dl-portrait-wrap::before {
+    animation: dl-breathe 6s ease-in-out infinite;
+  }
+
+  .dl-trace {
+    opacity: 0.9;
+    animation: dl-trace 6s linear infinite;
+  }
+}
+
+@keyframes dl-scan {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  15%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(340%);
+    opacity: 0;
+  }
+}
+
+@keyframes dl-breathe {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes dl-trace {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
