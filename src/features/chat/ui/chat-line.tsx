@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import type { Piece } from "@/features/chat/engine";
 import type { PortraitUrls } from "@/lib/nexon/descendants";
 import { ChatIcon } from "./chat-icon";
@@ -12,12 +13,18 @@ interface ChatLineProps {
   /** Untagged text takes the channel's color. */
   channelHex: string;
   portraits: PortraitUrls;
+  className?: string;
 }
 
 /** One line of chat in game colors, read-only. The home page uses it for samples. */
-export function ChatLine({ pieces, channelHex, portraits }: ChatLineProps) {
+export function ChatLine({
+  pieces,
+  channelHex,
+  portraits,
+  className,
+}: ChatLineProps) {
   return (
-    <p className="chat-line" style={{ color: channelHex }}>
+    <p className={cn("chat-line", className)} style={{ color: channelHex }}>
       {pieces.map((piece, index) =>
         piece.kind === "image" ? (
           <ChatIcon key={index} id={piece.id} portraits={portraits} />

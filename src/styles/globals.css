@@ -125,10 +125,9 @@
   background-color: color-mix(in srgb, var(--warning) 35%, transparent);
 }
 
+/* A read-only line of chat (ChatLine). Callers set spacing. */
 .chat-line {
-  min-height: 3.5rem;
-  padding: 0.875rem 1rem;
-  line-height: 2;
+  line-height: 1.75;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }

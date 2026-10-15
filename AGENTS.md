@@ -21,7 +21,7 @@ ArcheLab is an unofficial tools hub for The First Descendant, a NEXON game. The 
 | `src/features/chat/ui` | Builder interface: editor, markup panel, preview, counter, templates, sharing |
 | `src/lib/nexon` | Server-only NEXON data layer: fetch, validate, cache metadata |
 | `src/data` | Versioned data: chat tag registry, curated templates |
-| `src/components` | Shared UI: hub shell, tool cards; `ui/` holds the shadcn/ui components |
+| `src/components` | Shared UI: hub shell, tool cards; `ui/` holds the shadcn/ui components, `react-bits/` the adapted React Bits effects |
 | `src/styles` | Tailwind v4 theme and design tokens |
 | `tests/e2e` | Playwright tests |
 | `docs/adr` | Architecture decision records (local only, gitignored) |
@@ -32,7 +32,7 @@ ArcheLab is an unofficial tools hub for The First Descendant, a NEXON game. The 
 - TypeScript strict. No `any`; no non-null assertion without a comment explaining it.
 - The chat engine is framework-free and fully unit-tested.
 - Every module that touches NEXON data imports `server-only`.
-- UI colors come only from design tokens. Chat tag colors come only from `src/data/chat-tags.json`.
+- UI colors come only from design tokens: CSS variables in `globals.css`, or `palette` in `src/styles/tokens.ts` for canvas and WebGL. Chat tag colors come only from `src/data/chat-tags.json`.
 - User-supplied text is rendered as React text nodes only. Never `dangerouslySetInnerHTML`.
 - UI copy is sentence case, direct, and player-facing. Game terms (Descendant, Transcendent, Void Intercept) are spelled exactly as the game spells them.
 

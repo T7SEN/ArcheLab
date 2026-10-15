@@ -1,37 +1,21 @@
-import { ArrowRight, Check, MessageSquareText, Sparkles } from "lucide-react";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { cn } from "cn";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { parse } from "@/features/chat/engine";
-import { ChatLine } from "@/features/chat/ui/chat-line";
-import { chatRegistry } from "@/features/chat/ui/chat-registry";
+  ArrowRight,
+  Check,
+  FlaskConical,
+  MessageSquareText,
+  Sparkles,
+} from "lucide-react";
+import { DotGrid } from "@/components/react-bits/dot-grid";
+import { PixelCard } from "@/components/react-bits/pixel-card";
+import { ShinyText } from "@/components/react-bits/shiny-text";
+import { SpecularButton } from "@/components/react-bits/specular-button";
+import { SpotlightCard } from "@/components/react-bits/spotlight-card";
+import { StarBorder } from "@/components/react-bits/star-border";
+import { Badge } from "@/components/ui/badge";
+import { ChatShowcase } from "@/features/chat/ui/chat-showcase";
 import { fetchPortraitUrls } from "@/lib/nexon/descendants";
-
-/** Sample messages for the hero, written with verified tags only. */
-const samples = [
-  {
-    channel: "normal",
-    markup:
-      '<tier4>Transcendent</> mods for trade <img id="IconBunny1"/> <friendly>whisper me</>',
-  },
-  {
-    channel: "world",
-    markup: "LF2M <Highlight>Void Intercept</>, mic optional",
-  },
-  { channel: "trade", markup: "<b>GG</> <yellow>everyone</> ★" },
-] as const;
-
-const channelHex = (name: string): string =>
-  chatRegistry.data.channels.find((channel) => channel.name === name)?.hex ??
-  "#FFFFFF";
+import { palette } from "@/styles/tokens";
 
 const builderFeatures = [
   "Every verified color, rarity color and text size",
@@ -39,24 +23,45 @@ const builderFeatures = [
   "Counts the way the game does, against the chat limit",
 ];
 
+/** Widths of the coming-soon card's placeholder feature lines. */
+const placeholderRows = ["w-4/5", "w-3/5", "w-2/3"];
+
 export default async function HomePage() {
   // Fetched once while the page is prerendered (ADR 0008).
   const portraits = await fetchPortraitUrls(["Bunny"]);
   return (
     <>
       <section className="relative overflow-hidden border-b">
+        {/* React Bits effects take the palette's values: they draw with WebGL and canvas. */}
+        <div aria-hidden="true" className="absolute inset-0">
+          <DotGrid
+            baseColor={palette.mutedForeground}
+            activeColor={palette.primary}
+            dotSize={4}
+            gap={22}
+            fade={0.7}
+            opacity={0.45}
+          />
+        </div>
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -top-48 left-1/2 size-[44rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
         />
-        <div className="relative mx-auto grid max-w-6xl gap-12 px-4 py-16 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:py-24">
+        <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-12 px-4 py-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-center lg:py-24">
           <div>
             <Badge variant="secondary">
               <Sparkles aria-hidden="true" />
               Free and unofficial
             </Badge>
             <h1 className="mt-5 font-display text-5xl leading-[1.05] font-bold tracking-wide sm:text-6xl">
-              Tools for The First Descendant
+              <ShinyText
+                color={palette.foreground}
+                shineColor={palette.primary}
+                speed={3}
+                delay={2.5}
+              >
+                Tools for The First Descendant
+              </ShinyText>
             </h1>
             <p className="mt-5 max-w-xl text-lg text-muted-foreground">
               Fan-made tools for Descendants. Start with the chat message
@@ -64,34 +69,20 @@ export default async function HomePage() {
               markup that fits the chat limit.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link
+              <StarBorder
                 href="/tools/chat"
-                className={buttonVariants({ size: "lg" })}
+                radius={10}
+                thickness={1.5}
+                glow={0.9}
+                backgroundColor="color-mix(in srgb, var(--primary) 22%, var(--card))"
+                className="px-5 py-3 text-sm font-semibold"
               >
                 Open the chat builder
-                <ArrowRight aria-hidden="true" />
-              </Link>
+                <ArrowRight aria-hidden="true" className="size-4" />
+              </StarBorder>
             </div>
           </div>
-          <figure className="overflow-hidden rounded-xl border bg-card shadow-2xl shadow-primary/10">
-            <figcaption className="flex items-center gap-2 border-b px-4 py-2.5 text-xs font-medium text-muted-foreground">
-              <MessageSquareText aria-hidden="true" className="size-3.5" />
-              Made with the chat builder
-            </figcaption>
-            <div
-              className="divide-white/5 divide-y"
-              style={{ backgroundColor: chatRegistry.data.chatBackground.hex }}
-            >
-              {samples.map((sample) => (
-                <ChatLine
-                  key={sample.markup}
-                  pieces={parse(sample.markup, chatRegistry)}
-                  channelHex={channelHex(sample.channel)}
-                  portraits={portraits}
-                />
-              ))}
-            </div>
-          </figure>
+          <ChatShowcase portraits={portraits} />
         </div>
       </section>
 
@@ -101,54 +92,93 @@ export default async function HomePage() {
         </h2>
         <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <li>
-            <Card className="h-full">
-              <CardHeader>
-                <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
-                  <MessageSquareText aria-hidden="true" className="size-5" />
-                </div>
-                <CardTitle className="font-display text-xl font-semibold tracking-wide">
+            <SpotlightCard className="flex h-full flex-col gap-4 p-6">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                <MessageSquareText aria-hidden="true" className="size-5" />
+              </div>
+              <div className="grid gap-1">
+                <h3 className="font-display text-xl font-semibold tracking-wide">
                   Chat message builder
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-sm text-muted-foreground">
                   Color your chat messages and copy markup that pastes right
                   into the game.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="grid gap-2 text-sm text-muted-foreground">
-                  {builderFeatures.map((feature) => (
-                    <li key={feature} className="flex gap-2">
-                      <Check
-                        aria-hidden="true"
-                        className="mt-0.5 size-4 shrink-0 text-primary"
+                </p>
+              </div>
+              <ul className="grid gap-2 text-sm text-muted-foreground">
+                {builderFeatures.map((feature) => (
+                  <li key={feature} className="flex gap-2">
+                    <Check
+                      aria-hidden="true"
+                      className="mt-0.5 size-4 shrink-0 text-primary"
+                    />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <SpecularButton
+                href="/tools/chat"
+                size="sm"
+                radius={10}
+                className="mt-auto w-fit"
+              >
+                Open the builder
+                <ArrowRight aria-hidden="true" className="size-4" />
+              </SpecularButton>
+            </SpotlightCard>
+          </li>
+          <li>
+            {/* A tool card still being drawn: its lines are placeholders. */}
+            <PixelCard
+              noFocus
+              radius={14}
+              origin="pointer"
+              gap={6}
+              opacity={0.7}
+              fade={0.85}
+              className="h-full"
+            >
+              <div className="flex h-full w-full flex-col gap-4 p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-lg bg-card text-muted-foreground outline-1 -outline-offset-1 outline-muted-foreground/40 outline-dashed">
+                    <FlaskConical aria-hidden="true" className="size-5" />
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className="bg-card text-muted-foreground"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="size-1.5 rounded-full bg-primary motion-safe:animate-pulse"
+                    />
+                    Coming soon
+                  </Badge>
+                </div>
+                <div className="grid gap-1">
+                  <h3 className="font-display text-xl font-semibold tracking-wide">
+                    More tools are on the way
+                  </h3>
+                  <div aria-hidden="true" className="grid gap-3 py-1.5">
+                    <div className="h-2 w-full rounded-full bg-border" />
+                    <div className="h-2 w-3/4 rounded-full bg-border" />
+                  </div>
+                </div>
+                <ul aria-hidden="true" className="grid gap-2">
+                  {placeholderRows.map((width) => (
+                    <li key={width} className="flex items-center gap-2 py-0.5">
+                      <span className="size-4 shrink-0 rounded-full border border-dashed border-muted-foreground/40" />
+                      <span
+                        className={cn("h-2 rounded-full bg-border", width)}
                       />
-                      {feature}
                     </li>
                   ))}
                 </ul>
-              </CardContent>
-              <CardFooter className="mt-auto">
-                <Link
-                  href="/tools/chat"
-                  className={buttonVariants({ variant: "outline" })}
-                >
-                  Open the builder
-                  <ArrowRight aria-hidden="true" />
-                </Link>
-              </CardFooter>
-            </Card>
-          </li>
-          <li>
-            <Card className="h-full border-dashed bg-transparent ring-0 outline-1 -outline-offset-1 outline-border outline-dashed">
-              <CardHeader>
-                <CardTitle className="font-display text-xl font-semibold tracking-wide text-muted-foreground">
-                  More tools are on the way
-                </CardTitle>
-                <CardDescription>
-                  New tools will build on NEXON&apos;s public game data.
-                </CardDescription>
-              </CardHeader>
-            </Card>
+                <div
+                  aria-hidden="true"
+                  className="mt-auto h-9 w-36 rounded-[10px] border border-dashed border-muted-foreground/40"
+                />
+              </div>
+            </PixelCard>
           </li>
         </ul>
       </section>

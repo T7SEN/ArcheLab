@@ -1,14 +1,32 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { shellBackground } from "./tokens";
+import { palette, shellBackground } from "./tokens";
 
-const backgroundTokenPattern = /--background:\s*(#[0-9a-f]{3,8})\s*;/i;
+const css = readFileSync(new URL("./globals.css", import.meta.url), "utf8");
 
-describe("shell background", () => {
-  it("matches the --background design token", () => {
-    const css = readFileSync(new URL("./globals.css", import.meta.url), "utf8");
-    const token = backgroundTokenPattern.exec(css)?.[1];
+/** The value of a CSS custom property declared in globals.css. */
+function token(name: string): string | undefined {
+  const pattern = new RegExp(`--${name}:\\s*(#[0-9a-f]{3,8})\\s*;`, "i");
+  return pattern.exec(css)?.[1]?.toLowerCase();
+}
 
-    expect(token?.toLowerCase()).toBe(shellBackground.toLowerCase());
+describe("design tokens mirrored in TypeScript", () => {
+  it("matches the --background token for the first paint", () => {
+    expect(token("background")).toBe(shellBackground.toLowerCase());
+  });
+
+  it("matches every palette token that canvas and WebGL effects use", () => {
+    const names: Record<keyof typeof palette, string> = {
+      background: "background",
+      foreground: "foreground",
+      border: "border",
+      mutedForeground: "muted-foreground",
+      primary: "primary",
+    };
+    for (const [key, name] of Object.entries(names)) {
+      expect(token(name), name).toBe(
+        palette[key as keyof typeof palette].toLowerCase(),
+      );
+    }
   });
 });

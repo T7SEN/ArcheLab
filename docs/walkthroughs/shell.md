@@ -5,7 +5,7 @@
 1. `src/styles/tokens.ts` exports `shellBackground`, the page background color.
 2. `src/app/layout.tsx` puts it inline on `<html>` (`style={{ backgroundColor, colorScheme: "dark" }}`). It also exports `viewport` with `colorScheme: "dark"` and `themeColor`, which Next.js renders as `<meta name="color-scheme">` and `<meta name="theme-color">`.
 3. `src/styles/globals.css` defines the same value as the `--background` token (shadcn's name, ADR 0009), used by the `bg-background` class on `<body>`. `<html>` also carries the `dark` class, because the site is dark only and shadcn's components style their dark look through it.
-4. `src/styles/shell-background.test.ts` reads `globals.css` and fails if `--background` and `shellBackground` differ.
+4. `src/styles/shell-background.test.ts` reads `globals.css` and fails if `--background` and `shellBackground` differ, or if any value in `palette` (used by canvas and WebGL effects) differs from its CSS token.
 5. `src/components/site-footer.tsx` renders the footer line in T7SEN's words and the NEXON Open API attribution (`SKILL.md` section 7) inside `<footer>`, which the root layout puts on every page, including the 404 page.
 6. `tests/e2e/shell.spec.ts` checks the footer text on `/`, `/tools/chat` and a missing page.
 

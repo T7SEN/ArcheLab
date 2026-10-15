@@ -1,10 +1,10 @@
 import { MessageSquareText } from "lucide-react";
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
+import { SpecularButton } from "@/components/react-bits/specular-button";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
+    <header className="sticky top-0 z-40 overflow-x-clip border-b bg-background/80 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
         <Link
           href="/"
@@ -13,13 +13,15 @@ export function SiteHeader() {
           ArcheLab
         </Link>
         <nav aria-label="Tools">
-          <Link
+          <SpecularButton
             href="/tools/chat"
-            className={buttonVariants({ variant: "ghost", size: "sm" })}
+            size="sm"
+            radius={10}
+            className="px-3.5 py-2"
           >
-            <MessageSquareText aria-hidden="true" />
+            <MessageSquareText aria-hidden="true" className="size-4" />
             Chat builder
-          </Link>
+          </SpecularButton>
         </nav>
       </div>
     </header>
