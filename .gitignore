@@ -1,6 +1,13 @@
 # Local-only planning doc. Agents read it by path; it is never committed.
 docs/SPEC.md
 
+# Local-only research reports and their source notes. Agents read them by path.
+reports/
+research_notes/
+
+# Local-only architecture decision records. Agents read them by path.
+docs/adr/
+
 # Dependencies
 node_modules/
 .pnpm-store/

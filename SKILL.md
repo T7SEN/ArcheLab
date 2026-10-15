@@ -9,7 +9,7 @@ Product spec: `docs/SPEC.md` (local only, gitignored; read it by path). Lean rul
 
 ## 1. Identity and priorities
 
-- Owner: T7SEN. Repository: _filled in Phase 0 from `git remote get-url origin`_.
+- Owner: T7SEN. Repository: `https://github.com/T7SEN/ArcheLab.git` (public; from `git remote get-url origin`).
 - Name: **ArcheLab**, one word, everywhere: repo, app, Vercel project (`archelab`, since Vercel project names are lowercase), metadata, and UI copy.
 - Addresses: `archelab.vercel.app` (free, primary until launch). Custom domain `arche-lab.tech`, hyphenated only because `archelab.tech` was taken. The hyphen exists in the domain and nowhere else.
 - Product: an unofficial tools hub for The First Descendant. First tool: the chat-message builder.
@@ -36,6 +36,8 @@ Exact versions are pinned in Phase 0 after checking official release notes, then
 | Hosting | Vercel Hobby | — | — |
 | Data | NEXON Open API static metadata (keyless) | — | — |
 
+Proposed pins, with sources and Node 26 checks: `docs/adr/0002-version-pins.md` (status Proposed). The Pinned column is filled when T7SEN approves them.
+
 ## 3. Repository structure
 
 ```
@@ -47,8 +49,10 @@ Exact versions are pinned in Phase 0 after checking official release notes, then
 ├── .node-version
 ├── docs/
 │   ├── SPEC.md               product spec and phase plan (local only, gitignored)
-│   ├── adr/                  NNNN-kebab-title.md
+│   ├── adr/                  NNNN-kebab-title.md (local only, gitignored)
 │   └── walkthroughs/         annotated explanations of non-obvious code
+├── reports/                  sourced research reports (local only, gitignored)
+├── research_notes/           notes behind each report (local only, gitignored)
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx        shell, disclaimer, attribution
@@ -109,7 +113,7 @@ Select text and apply a color; an editable raw-markup panel stays in two-way syn
 - Personal templates: `localStorage`, every access wrapped in try/catch; the builder works when storage is unavailable.
 
 ### 5.5 NEXON data layer — `src/lib/nexon`
-- Base: `https://open.api.nexon.com/static/tfd/meta/en/<set>.json`. Verified keyless for `descendant.json` on 2026-10-14. Other sets are confirmed in Phase 4 before use.
+- Base: `https://open.api.nexon.com/static/tfd/meta/en/<set>.json`. Verified keyless for `descendant.json` on 2026-10-14 and again on 2026-10-15; the sets that responded on 2026-10-15 are listed in `docs/SPEC.md` section 6. Other sets are confirmed in Phase 4 before use.
 - Images: `https://open.api.nexon.com/static/tfd/img/<hash>`, loaded directly. Never through Vercel Image Optimization.
 - Zod schemas validate every response. A schema failure degrades the page; it never crashes the build silently.
 - Attribution on every page: "Data based on NEXON Open API."
@@ -120,7 +124,7 @@ Header, tool registry, tool cards, footer with the disclaimer and attribution. A
 ## 6. Design system
 
 - Clean, modern, dark. ArcheLab's own identity, with in-game cues as accents: rarity tier colors, HUD and menu shapes, Arche energy effects, and Descendant and item art from the API.
-- **Rarity accents.** The tier colors used in the UI are the same hex values the in-game test establishes for `<tier1>` to `<tier4>`. One source of truth: `src/data/chat-tags.json` feeds both the preview and the accent tokens. Tier colors used for text must pass WCAG AA on their background; otherwise they are used for fills, borders and glows only.
+- **Rarity accents.** The tier colors used in the UI are the same hex values the in-game test establishes for `<tier1>` to `<tier4>`. One source of truth: `src/data/chat-tags.json` feeds both the preview and the accent tokens. Tier colors used for text must pass WCAG AA on their background; otherwise they are used for fills, borders and glows only. T7SEN's first samples (15 October 2026) are recorded in `docs/SPEC.md` section 4.1 until the registry exists in Phase 1.
 - **Palette and type.** Proposed in Phase 0 (three directions), chosen by T7SEN, recorded in ADR and section 6 of this file.
 - **Fonts.** Free licenses that allow self-hosting. No NEXON or game fonts.
 - **Motion.** Arche energy effects are CSS or SVG, subtle, and disabled under `prefers-reduced-motion`.
@@ -130,7 +134,7 @@ Header, tool registry, tool cards, footer with the disclaimer and attribution. A
 
 - **Code.** TypeScript strict, kebab-case files, named exports, no magic numbers.
 - **Commits.** Conventional Commits, one concern per commit, on a branch; pull requests to `main`.
-- **ADRs.** `docs/adr/NNNN-kebab-title.md` with Context, Decision, Consequences, Alternatives.
+- **ADRs.** `docs/adr/NNNN-kebab-title.md` with Context, Decision, Consequences, Alternatives. Local only and gitignored; never committed.
 - **Walkthroughs.** `docs/walkthroughs/<subsystem>.md`: the code path, why it is shaped that way, what would break it.
 - **Copy.** Player-facing, short, sentence case. Game terms spelled as the game spells them.
 - **Legal text.** Footer on every page: "ArcheLab is an unofficial fan site. It is not affiliated with or endorsed by NEXON. The First Descendant is a trademark of NEXON. Data based on NEXON Open API."
@@ -154,13 +158,14 @@ None today. When player lookups ship, `NEXON_API_KEY` is server-only, set in Ver
 1. **Hobby caps pause the project.** Vercel Hobby has hard caps (including 1M function invocations, 4 hours of active CPU, 100 GB transfer) and pauses projects that exceed them. Static rendering keeps usage near zero; any change that adds per-request server work needs justification.
 2. **Image optimization cap.** Hobby includes a small image-optimization allowance. NEXON images bypass it (`unoptimized` or plain `<img>`).
 3. **Commercial use is banned on Hobby.** No ads, sponsorships, paid features, or affiliate links without T7SEN's decision to move hosts.
-4. **Toolchain on Vercel.** Vercel's build image listed Node 24 as its newest version and pnpm 6–10 as supported package managers as of mid-2026. Node 26 and pnpm 12 builds need a verified path (custom install command, or build in GitHub Actions and deploy prebuilt). Runtime code must also run on whatever Node version Vercel's functions use.
-5. **Game facts drift.** A patch can change or remove tags. The registry carries `verifiedPatch`; after each game patch, T7SEN re-runs the in-game test.
+4. **Toolchain on Vercel.** Verified 2026-10-15 against Vercel's docs: builds and functions offer Node 24.x (default) and 22.x only, pnpm 6–10 is supported, and Corepack is experimental. Vercel's build-utils reject an `engines.node` range that matches only Node 26 (`BUILD_UTILS_NODE_VERSION_INVALID`), in Vercel builds and in a local `vercel build`, so `package.json` carries no `engines.node`; Node is pinned in `.node-version`. Without `engines`, the function runtime comes from Project Settings (24.x). Runtime code must run on Node 24. Deploy path: `docs/adr/0003-deploy-path.md` (status Proposed).
+5. **Game facts drift.** A patch can change or remove tags. The registry carries `verifiedPatch`; after each game patch, T7SEN re-runs the in-game test. Chat markup is undocumented by NEXON: tag names and image ids (`<img id="..."/>`) look like the game's internal UI style and icon rows, found by players. Sourced research: `reports/TFD chat rich text tags.md` (local only).
 6. **XSS through shared links.** Decoded share codes and template text are untrusted. Render as text nodes only.
 7. **NEXON schema drift.** Metadata shapes change with game updates. Zod validation plus graceful degradation; never trust field presence.
 8. **Region restriction.** NEXON's developer portal rejects registration from Egypt. Do not suggest workarounds that misrepresent residence.
 9. **`localStorage` can throw.** Private windows and blocked storage. Wrap every access.
 10. **Two-way editor sync.** Converting between the visual editor and raw markup must round-trip through the engine, never through ad hoc string edits.
+11. **pnpm 12 defaults.** `minimumReleaseAge` is 1440 minutes, so pnpm prefers versions at least a day old. `strictDepBuilds` is on, so an install fails when a dependency's build script is not listed in `allowBuilds` in `pnpm-workspace.yaml`. Unrecognized keys in `pnpm-workspace.yaml` fail commands. Approve each build script deliberately, with a reason.
 
 ## 11. Known tech debt
 
