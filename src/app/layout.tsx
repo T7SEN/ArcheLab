@@ -37,7 +37,9 @@ export default function RootLayout({
       style={{ backgroundColor: shellBackground, colorScheme: "dark" }}
     >
       <body className="flex min-h-dvh flex-col bg-background text-foreground antialiased">
-        <TooltipProvider>
+        {/* Tooltips wait 700ms of hovering (shadcn's default is 0). Once one is open,
+            the next opens at once if it is within 400ms (Base UI's timeout). */}
+        <TooltipProvider delay={700}>
           <SiteHeader />
           <main className="flex-1">{children}</main>
           <SiteFooter />

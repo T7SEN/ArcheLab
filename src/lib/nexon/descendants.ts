@@ -16,14 +16,15 @@ const descendantSchema = z.object({
   descendant_image_url: z.string().startsWith(imageHost),
 });
 
-/** Portrait image URL by base Descendant name, for example `Bunny`. */
+/** Portrait image URL by Descendant name, for example `Bunny` or `Ultimate Bunny`. */
 export type PortraitUrls = Readonly<Record<string, string>>;
 
 /**
  * Picks each requested Descendant's portrait URL out of `descendant.json`.
  * Invalid entries are skipped one by one, so one malformed Descendant never
- * hides the others. Names must match exactly: `Bunny`, never `Ultimate Bunny`,
- * because chat icons show the base portrait (SKILL.md section 5.1).
+ * hides the others. Names must match exactly: portrait icons name the base
+ * Descendant (`Bunny`), and only a character ticket names an Ultimate
+ * (`Ultimate Bunny`; SKILL.md section 5.1).
  */
 export function portraitUrlsFrom(
   metadata: unknown,

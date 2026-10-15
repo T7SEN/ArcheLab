@@ -2,6 +2,7 @@
 
 import { RemoveFormatting, Search } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { GlareHover } from "@/components/react-bits/glare-hover";
 import {
   Accordion,
   AccordionContent,
@@ -18,16 +19,31 @@ import {
 import { sameStyle, type Style } from "@/features/chat/engine";
 import type { PortraitUrls } from "@/lib/nexon/descendants";
 import { chatRegistry } from "./chat-registry";
-import { filterImages, IconOptions } from "./icon-options";
+import {
+  filterImages,
+  iconGroupOf,
+  iconGroups,
+  IconOptions,
+  isPortrait,
+  isUntested,
+  PortraitOptions,
+  UntestedMark,
+} from "./icon-options";
 import { keepEditorFocus } from "./keep-editor-focus";
 import { stylePropsOf } from "./style-look";
 import { filterGroups, styleGroups, type StyleOption } from "./style-options";
 
 const groups = styleGroups(chatRegistry);
-const chatBackground = chatRegistry.data.chatBackground.hex;
-const iconsSection = "icons";
+const portraitsSection = "descendants";
+const iconSection = (group: string) => `icons-${group}`;
 /** Sections open on first view; the rest stay one click away. */
-const initiallyOpen = ["colors", "rarity", iconsSection];
+const initiallyOpen = [
+  "colors",
+  "rarity",
+  portraitsSection,
+  iconSection("currency"),
+  iconSection("missions"),
+];
 
 function describe(option: StyleOption): string {
   const parts = [
@@ -86,12 +102,21 @@ function OptionButton({
             onClick={() => {
               onPick(option.style);
             }}
-            className="relative flex min-h-7 min-w-7 items-center justify-center rounded-md border border-input px-1.5 text-xs transition-colors outline-none hover:border-ring/60 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-pressed:border-primary aria-pressed:ring-2 aria-pressed:ring-primary/60"
-            style={{ backgroundColor: chatBackground }}
+            className="relative flex min-h-7 min-w-7 items-center justify-center rounded-md border border-input bg-secondary/70 px-1.5 text-xs transition-colors outline-none hover:border-ring/60 hover:bg-accent focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-pressed:border-primary aria-pressed:ring-2 aria-pressed:ring-primary/60"
           />
         }
       >
         {face}
+        {/* Over the swatch, not around it: a wrapper would clip the pressed and focus rings. */}
+        {isColor ? (
+          <GlareHover
+            className="absolute inset-0"
+            borderRadius="inherit"
+            glareOpacity={0.45}
+            glareSize={70}
+            transitionDuration={500}
+          />
+        ) : null}
         {option.lowContrast ? (
           <span
             aria-hidden="true"
@@ -101,15 +126,20 @@ function OptionButton({
       </TooltipTrigger>
       <TooltipContent>
         <span className="grid gap-0.5">
-          <span className="font-medium">{option.label}</span>
-          <span className="font-mono">
-            &lt;{option.name}&gt; · +{option.cost} characters
+          <span className="font-medium text-foreground">{option.label}</span>
+          <span className="text-muted-foreground">
+            <code className="font-mono text-primary">
+              &lt;{option.name}&gt;
+            </code>{" "}
+            · +{option.cost} characters
           </span>
           {option.lowContrast ? (
-            <span>Hard to read on the chat background</span>
+            <span className="text-warning">
+              Hard to read on the chat background
+            </span>
           ) : null}
           {option.sameAs.length > 0 ? (
-            <span>
+            <span className="text-muted-foreground">
               Same as {option.sameAs.map((name) => `<${name}>`).join(", ")}
             </span>
           ) : null}
@@ -142,9 +172,19 @@ export function StylePicker({
   const searching = query.trim() !== "";
   const shownGroups = filterGroups(groups, query);
   const shownImages = filterImages(query);
+  const shownPortraits = shownImages.filter(isPortrait);
+  const shownIconGroups = iconGroups
+    .map((group) => ({
+      ...group,
+      images: shownImages.filter(
+        (image) => !isPortrait(image) && iconGroupOf(image) === group.id,
+      ),
+    }))
+    .filter((group) => group.images.length > 0);
   const shownSections = [
     ...shownGroups.map((group) => group.id),
-    ...(shownImages.length > 0 ? [iconsSection] : []),
+    ...(shownPortraits.length > 0 ? [portraitsSection] : []),
+    ...shownIconGroups.map((group) => iconSection(group.id)),
   ];
   const isActive = (style: Style | null): boolean =>
     active !== "mixed" && sameStyle(active, style);
@@ -214,26 +254,53 @@ export function StylePicker({
               </AccordionContent>
             </AccordionItem>
           ))}
-          {shownImages.length > 0 ? (
-            <AccordionItem value={iconsSection}>
+          {shownPortraits.length > 0 ? (
+            <AccordionItem value={portraitsSection}>
               <AccordionTrigger className="py-2 text-xs text-muted-foreground hover:no-underline">
-                Icons ({shownImages.length})
+                Descendants ({shownPortraits.length})
               </AccordionTrigger>
               <AccordionContent>
-                <IconOptions
-                  images={shownImages}
+                <PortraitOptions
+                  images={shownPortraits}
                   portraits={portraits}
                   onPick={onPickImage}
                 />
               </AccordionContent>
             </AccordionItem>
           ) : null}
+          {shownIconGroups.map((group) => (
+            <AccordionItem key={group.id} value={iconSection(group.id)}>
+              <AccordionTrigger className="py-2 text-xs text-muted-foreground hover:no-underline">
+                {group.title} ({group.images.length})
+              </AccordionTrigger>
+              <AccordionContent>
+                <IconOptions
+                  images={group.images}
+                  portraits={portraits}
+                  onPick={onPickImage}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          ))}
         </Accordion>
       )}
-      <p className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span aria-hidden="true" className="size-1.5 rounded-full bg-warning" />
-        Hard to read on the chat background.
-      </p>
+      <div className="grid gap-1.5 text-xs text-muted-foreground">
+        <p className="flex items-center gap-2">
+          <span
+            aria-hidden="true"
+            className="size-1.5 rounded-full bg-warning"
+          />
+          Hard to read on the chat background.
+        </p>
+        {shownImages.some(isUntested) ? (
+          <p className="flex items-center gap-2">
+            <span className="relative size-3.5">
+              <UntestedMark className="top-0 right-0" />
+            </span>
+            Not tested in game yet.
+          </p>
+        ) : null}
+      </div>
     </div>
   );
 }

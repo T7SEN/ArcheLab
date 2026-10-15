@@ -44,6 +44,9 @@
   /* The sticky header: a 0.75rem gap above the 44px navbar. The home hero slides up
      under it by this much, so its background reaches the top of the page. */
   --site-header-height: 3.5rem;
+  /* The gold ring of a character ticket in the chat preview. Matched by eye to
+     T7SEN's screenshots (test sheet Q5 to Q7), not sampled. */
+  --ticket-ring: #d9b25f;
 }
 
 @theme inline {
@@ -135,11 +138,46 @@
   overflow-wrap: anywhere;
 }
 
-/* Icons are much taller than text (T8); 2em is an approximation (chat-icons.ts). */
+/* The pickers draw icons 2em tall. */
 .chat-icon {
   display: inline-flex;
   height: 2em;
   vertical-align: middle;
+}
+
+/* In a chat line, icons are 26/12 of the cap height and end 3.5/12 of it below the
+   baseline, as measured in game (P15, iconHeightCaps in chat-icons.ts). An image's
+   baseline is its bottom edge; placeholders keep their text centered. */
+.chat-editor .chat-icon,
+.chat-line .chat-icon {
+  height: calc(26 / 12 * 1cap);
+}
+
+.chat-editor .chat-icon:has(> img),
+.chat-line .chat-icon:has(> img) {
+  vertical-align: calc(-3.5 / 12 * 1cap);
+}
+
+/* Descendant portraits are discs 46/12 of the cap height, ending 5/12 of it below the
+   baseline, with a light ring around a dark fill (Q1 to Q3; portraitHeightCaps in
+   chat-icons.ts). The API portrait is transparent around the Descendant. */
+.chat-editor .chat-icon-portrait:has(> img),
+.chat-line .chat-icon-portrait:has(> img) {
+  height: calc(46 / 12 * 1cap);
+  vertical-align: calc(-5 / 12 * 1cap);
+}
+
+.chat-editor .chat-icon-portrait img,
+.chat-line .chat-icon-portrait img {
+  border: calc(2 / 12 * 1cap) solid var(--muted-foreground);
+  border-radius: 50%;
+  background-color: var(--muted);
+}
+
+/* Character tickets: the same disc with a gold ring (Q5 to Q7). */
+.chat-editor .chat-icon-ticket img,
+.chat-line .chat-icon-ticket img {
+  border-color: var(--ticket-ring);
 }
 
 .chat-icon img {

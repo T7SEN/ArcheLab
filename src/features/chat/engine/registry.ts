@@ -47,7 +47,25 @@ const imageArtSchema = z.discriminatedUnion("kind", [
     kind: z.literal("descendant"),
     descendant: z.string().min(1),
   }),
+  // A character ticket: the portrait of the Descendant it shows, Ultimates included,
+  // drawn with the ticket's gold ring (T7SEN, 2026-10-15, test sheet Q8 to Q12).
+  z.strictObject({
+    kind: z.literal("ticket"),
+    descendant: z.string().min(1),
+  }),
   z.strictObject({ kind: z.literal("placeholder") }),
+  // Art from a page of NEXON's official site, linked from NEXON's CDNs and never
+  // copied (T7SEN, 2026-10-15, ADR 0012): guide images on the community CDN, and the
+  // Library's icons on the site's asset CDN.
+  z.strictObject({
+    kind: z.literal("nexon-site"),
+    url: z
+      .string()
+      .regex(
+        /^https:\/\/(dszw1qtcnsa5e\.cloudfront\.net\/community\/|tfdvod\.dn\.nexoncdn\.co\.kr\/img\/cbt\/library\/icons\/)/,
+      ),
+    page: z.string().startsWith("https://tfd.nexon.com/"),
+  }),
 ]);
 
 const imageSchema = z.strictObject({

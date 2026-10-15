@@ -6,7 +6,7 @@ import {
   MessageSquareText,
   Sparkles,
 } from "lucide-react";
-import { DotGrid } from "@/components/react-bits/dot-grid";
+import { HeroBackdrop } from "@/components/hero-backdrop";
 import { PixelCard } from "@/components/react-bits/pixel-card";
 import { ShinyText } from "@/components/react-bits/shiny-text";
 import { SpecularButton } from "@/components/react-bits/specular-button";
@@ -34,21 +34,7 @@ export default async function HomePage() {
       {/* The hero slides up under the floating navbar, so its background reaches the
           top of the page; its padding adds the header's height back. */}
       <section className="relative -mt-(--site-header-height) overflow-hidden border-b">
-        {/* React Bits effects take the palette's values: they draw with WebGL and canvas. */}
-        <div aria-hidden="true" className="absolute inset-0">
-          <DotGrid
-            baseColor={palette.mutedForeground}
-            activeColor={palette.primary}
-            dotSize={4}
-            gap={22}
-            fade={0.7}
-            opacity={0.45}
-          />
-        </div>
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -top-48 left-1/2 size-[44rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
-        />
+        <HeroBackdrop />
         <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-12 px-4 pt-[calc(var(--site-header-height)+4rem)] pb-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-center lg:pt-[calc(var(--site-header-height)+6rem)] lg:pb-24">
           <div>
             <Badge variant="secondary">

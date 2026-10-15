@@ -1,7 +1,7 @@
 {
   "version": 1,
   "status": "verified",
-  "verifiedPatch": null,
+  "verifiedPatch": "1.4.5",
   "verifiedOn": "2026-10-15",
   "rules": {
     "charLimit": 100,
@@ -595,7 +595,7 @@
       },
       "artVerified": true,
       "source": "in-game-test",
-      "notes": "T6, T7, T13 to T15. Art is the base Bunny portrait from the NEXON API, not Ultimate Bunny: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+      "notes": "T6, T7, T13 to T15. Art is the base Bunny portrait from the NEXON API, not Ultimate Bunny: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant. In chat it is round and much larger than other icons: a 46px circle beside 12px capitals (test sheet Q1, 2026-10-15)."
     },
     {
       "id": "BossIcon",
@@ -605,7 +605,7 @@
       },
       "artVerified": false,
       "source": "in-game-test",
-      "notes": "T11. Appearance not described yet."
+      "notes": "T11. A white horned emblem with no background (test sheet Q1, T7SEN's screenshot, 2026-10-15)."
     },
     {
       "id": "cash",
@@ -631,21 +631,832 @@
       "id": "RedCash",
       "label": "Caliber",
       "art": {
-        "kind": "placeholder"
+        "kind": "nexon-site",
+        "url": "https://dszw1qtcnsa5e.cloudfront.net/community/20240701/e87788df-a777-43fd-973a-06a289c240c9/image202407012330462.png",
+        "page": "https://tfd.nexon.com/en/guide/2594224"
       },
-      "artVerified": false,
+      "artVerified": true,
       "source": "in-game-test",
-      "notes": "T39. The Caliber icon, per T7SEN: a round gold-rimmed medallion with a violet emblem."
+      "notes": "T39. The Caliber icon, per T7SEN: a round gold-rimmed medallion with a violet emblem. Art: the Caliber image on NEXON's Currency guide page, linked from NEXON's CDN, never copied (T7SEN identified it on 2026-10-15; ADR 0012)."
     },
     {
       "id": "Icon_CharacterTicket_004_U01",
-      "label": "Character ticket 004 U01",
+      "label": "Ultimate Bunny character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Ultimate Bunny"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T40. Test sheet Q6 (T7SEN's screenshot, 2026-10-15): a round portrait with a gold ring: an armored figure in a dark helmet. The misspelling icon_chatacterticket_004_u01 does not work (T41). It shows Ultimate Bunny: T7SEN compared it with the portrait icon beside it (test sheet Q11, 2026-10-15). Art: the NEXON API portrait of Ultimate Bunny, drawn with a gold ring like the ticket (T7SEN's request, 2026-10-15); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_001_A01",
+      "label": "Lepic character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Lepic"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P10 (T7SEN, 2026-10-15). Test sheet Q5 (T7SEN's screenshot, 2026-10-15): a round portrait with a gold ring: a man with dark hair. Added at T7SEN's request the same day. It shows Lepic: T7SEN compared it with the portrait icon beside it (test sheet Q8, 2026-10-15). Art: the NEXON API portrait of Lepic, drawn with a gold ring like the ticket (T7SEN's request, 2026-10-15); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_002_A01",
+      "label": "Ajax character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Ajax"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P10 (T7SEN, 2026-10-15). Test sheet Q5 (T7SEN's screenshot, 2026-10-15): a round portrait with a gold ring: a helmeted figure. Added at T7SEN's request the same day. It shows Ajax: T7SEN compared it with the portrait icon beside it (test sheet Q9, 2026-10-15). Art: the NEXON API portrait of Ajax, drawn with a gold ring like the ticket (T7SEN's request, 2026-10-15); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_004_A01",
+      "label": "Bunny character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Bunny"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P11 (T7SEN, 2026-10-15). Test sheet Q6 (T7SEN's screenshot, 2026-10-15): a round portrait with a gold ring: a figure in a light helmet. Added at T7SEN's request the same day. It shows Bunny: T7SEN compared it with the portrait icon beside it (test sheet Q10, 2026-10-15). Art: the NEXON API portrait of Bunny, drawn with a gold ring like the ticket (T7SEN's request, 2026-10-15); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_006_A01",
+      "label": "Freyna character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Freyna"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P11 (T7SEN, 2026-10-15). Test sheet Q7 (T7SEN's screenshot, 2026-10-15): a round portrait with a gold ring: a woman with dark hair. Added at T7SEN's request the same day. It shows Freyna: T7SEN compared it with the portrait icon beside it (test sheet Q12, 2026-10-15). Art: the NEXON API portrait of Freyna, drawn with a gold ring like the ticket (T7SEN's request, 2026-10-15); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "IconNell1",
+      "label": "Nell",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Nell"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P1 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconLepic1",
+      "label": "Lepic",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Lepic"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P2 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconAjax1",
+      "label": "Ajax",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Ajax"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P3 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconViessa1",
+      "label": "Viessa",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Viessa"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06), also confirmed by a Reddit user (2026-09-22). Shows an icon in game: test sheet Part 8, P3 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconJayber1",
+      "label": "Jayber",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Jayber"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P3 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconFreyna1",
+      "label": "Freyna",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Freyna"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P3 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconGley1",
+      "label": "Gley",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Gley"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P4 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconSharen1",
+      "label": "Sharen",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Sharen"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P4 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconBlair1",
+      "label": "Blair",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Blair"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P4 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconValby1",
+      "label": "Valby",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Valby"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P4 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconKyle1",
+      "label": "Kyle",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Kyle"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P5 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconEsiemo1",
+      "label": "Esiemo",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Esiemo"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P5 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconEnzo1",
+      "label": "Enzo",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Enzo"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P5 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconYujin1",
+      "label": "Yujin",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Yujin"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P5 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconLuna1",
+      "label": "Luna",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Luna"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P6 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconHailey1",
+      "label": "Hailey",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Hailey"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P6 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconKeelan1",
+      "label": "Keelan",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Keelan"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P6 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconInes1",
+      "label": "Ines",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Ines"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P6 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconSerena1",
+      "label": "Serena",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Serena"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P7 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconHarris1",
+      "label": "Harris",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Harris"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P7 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconDia1",
+      "label": "Dia",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Dia"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P7 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconRaven1",
+      "label": "Raven",
+      "art": {
+        "kind": "descendant",
+        "descendant": "Raven"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06), also confirmed by a Reddit user (2026-09-22). Shows an icon in game: test sheet Part 8, P8 (T7SEN, 2026-10-15). Art is the NEXON API portrait of the base Descendant, as for IconBunny1: T7SEN confirmed on 2026-10-15 that portrait icons show the base Descendant."
+    },
+    {
+      "id": "IconGuide1",
+      "label": "Guide 1",
       "art": {
         "kind": "placeholder"
       },
       "artVerified": false,
       "source": "in-game-test",
-      "notes": "T40. Appearance not described yet. The misspelling icon_chatacterticket_004_u01 does not work (T41)."
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P1 (T7SEN, 2026-10-15). Test sheet Q2 (T7SEN's screenshot, 2026-10-15): a round portrait with a gray ring: a woman with auburn hair. Added at T7SEN's request the same day."
+    },
+    {
+      "id": "IconGuide2",
+      "label": "Guide 2",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06), also posted by a Reddit user (2026-09-22). Shows an icon in game: test sheet Part 8, P1 (T7SEN, 2026-10-15). Test sheet Q2 (T7SEN's screenshot, 2026-10-15): a round portrait with a gray ring: a woman with long reddish-brown hair. Added at T7SEN's request the same day."
+    },
+    {
+      "id": "IconAlpha1",
+      "label": "Alpha",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P1 (T7SEN, 2026-10-15). Test sheet Q2 (T7SEN's screenshot, 2026-10-15): a round portrait with a gray ring: a bearded man with dark hair. Added at T7SEN's request the same day."
+    },
+    {
+      "id": "IconAnais1",
+      "label": "Anais",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P2 (T7SEN, 2026-10-15). Test sheet Q2 (T7SEN's screenshot, 2026-10-15): a round portrait with a gray ring: a pale woman with white hair. Added at T7SEN's request the same day."
+    },
+    {
+      "id": "IconSilion1",
+      "label": "Silion",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P2 (T7SEN, 2026-10-15). Test sheet Q3 (T7SEN's screenshot, 2026-10-15): a round portrait with a gray ring: a man with dark hair. Added at T7SEN's request the same day."
+    },
+    {
+      "id": "IconAmelia1",
+      "label": "Amelia",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P2 (T7SEN, 2026-10-15). Test sheet Q3 (T7SEN's screenshot, 2026-10-15): a round portrait with a gray ring: a woman with brown hair. Added at T7SEN's request the same day."
+    },
+    {
+      "id": "IconNell2",
+      "label": "Nell 2",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06); a second Nell id besides IconNell1. Shows an icon in game: test sheet Part 8, P7 (T7SEN, 2026-10-15). Test sheet Q3 (T7SEN's screenshot, 2026-10-15): a round portrait with a gray ring: a woman with black hair, a different portrait from IconNell1. Added at T7SEN's request the same day."
+    },
+    {
+      "id": "Gold",
+      "label": "Gold",
+      "art": {
+        "kind": "nexon-site",
+        "url": "https://dszw1qtcnsa5e.cloudfront.net/community/20240701/c40537ea-74a7-446d-bab1-6ff7ded34515/image202407012330464.png",
+        "page": "https://tfd.nexon.com/en/guide/2594224"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P9 (T7SEN, 2026-10-15). Art: the Gold image on NEXON's Currency guide page, linked from NEXON's CDN, never copied (T7SEN identified it on 2026-10-15; ADR 0012)."
+    },
+    {
+      "id": "Qulipothium",
+      "label": "Qulipothium",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P9 (T7SEN, 2026-10-15). Test sheet Q4 (T7SEN's screenshot, 2026-10-15): a teal crystal. Added at T7SEN's request the same day."
+    },
+    {
+      "id": "DimensionalFragment",
+      "label": "Dimensional fragment",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P9 (T7SEN, 2026-10-15). Test sheet Q4 (T7SEN's screenshot, 2026-10-15): a red and black block. Added at T7SEN's request the same day."
+    },
+    {
+      "id": "HardBossIcon",
+      "label": "Hard boss icon",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Mission",
+      "label": "Mission",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Mission2",
+      "label": "Mission 2",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Mission3",
+      "label": "Mission 3",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Mission4",
+      "label": "Mission 4",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Mission5",
+      "label": "Mission 5",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Mission6",
+      "label": "Mission 6",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Mission_VoidFragmentField",
+      "label": "Void Fragment field mission",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Mission_VoidFusionField",
+      "label": "Void Fusion field mission",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Mission_VulgusPostField",
+      "label": "Vulgus Post field mission",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "QuestMain",
+      "label": "Main quest",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "SubVulgusPost",
+      "label": "Sub Vulgus Post",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Npc_Dungeon",
+      "label": "Dungeon NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Npc_Laboratory",
+      "label": "Laboratory NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Npc_MasteryRank_New",
+      "label": "Mastery Rank NPC (new)",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Npc_Workbench",
+      "label": "Workbench NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Npc_WorldMission",
+      "label": "World mission NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Npc1",
+      "label": "NPC 1",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Npc2",
+      "label": "NPC 2",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Npc3",
+      "label": "NPC 3",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Npc4",
+      "label": "NPC 4",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Npc5",
+      "label": "NPC 5",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Npc6",
+      "label": "NPC 6",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Camp",
+      "label": "Camp",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Door",
+      "label": "Door",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Blazer",
+      "label": "Fire",
+      "art": {
+        "kind": "nexon-site",
+        "url": "https://tfdvod.dn.nexoncdn.co.kr/img/cbt/library/icons/icon_elemental--Blazer.png",
+        "page": "https://tfd.nexon.com/en/library/descendants"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. NEXON's internal name for the Fire element. Art: NEXON's Blazer element icon from the Library on NEXON's site (icon_elemental--Blazer.png on the site's asset CDN), linked, never copied. Matched by NEXON's own file name; T7SEN approved using it on 2026-10-15 (ADR 0012). The chat shows the same icon: T7SEN's screenshot of test sheet Part 8, P15 (2026-10-15)."
+    },
+    {
+      "id": "Burst",
+      "label": "Burst",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Crush",
+      "label": "Crush",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Piercing",
+      "label": "Piercing",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Demonic",
+      "label": "Toxic",
+      "art": {
+        "kind": "nexon-site",
+        "url": "https://tfdvod.dn.nexoncdn.co.kr/img/cbt/library/icons/icon_elemental--Demonic.png",
+        "page": "https://tfd.nexon.com/en/library/descendants"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. NEXON's internal name for the Toxic element. Art: NEXON's Demonic element icon from the Library on NEXON's site (icon_elemental--Demonic.png on the site's asset CDN), linked, never copied. Matched by NEXON's own file name; T7SEN approved using it on 2026-10-15 (ADR 0012). The chat shows the same icon: T7SEN's screenshot of test sheet Part 8, P15 (2026-10-15)."
+    },
+    {
+      "id": "Electricity",
+      "label": "Electric",
+      "art": {
+        "kind": "nexon-site",
+        "url": "https://tfdvod.dn.nexoncdn.co.kr/img/cbt/library/icons/icon_elemental--Electricity.png",
+        "page": "https://tfd.nexon.com/en/library/descendants"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. NEXON's internal name for the Electric element. Art: NEXON's Electricity element icon from the Library on NEXON's site (icon_elemental--Electricity.png on the site's asset CDN), linked, never copied. Matched by NEXON's own file name; T7SEN approved using it on 2026-10-15 (ADR 0012). The chat shows the same icon: T7SEN's screenshot of test sheet Part 8, P15 (2026-10-15)."
+    },
+    {
+      "id": "Glacier",
+      "label": "Chill",
+      "art": {
+        "kind": "nexon-site",
+        "url": "https://tfdvod.dn.nexoncdn.co.kr/img/cbt/library/icons/icon_elemental--Glacier.png",
+        "page": "https://tfd.nexon.com/en/library/descendants"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. NEXON's internal name for the Chill element. Art: NEXON's Glacier element icon from the Library on NEXON's site (icon_elemental--Glacier.png on the site's asset CDN), linked, never copied. Matched by NEXON's own file name; T7SEN approved using it on 2026-10-15 (ADR 0012). The chat shows the same icon: T7SEN's screenshot of test sheet Part 8, P15 (2026-10-15)."
+    },
+    {
+      "id": "DeboneCooltime",
+      "label": "Debone cooltime",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "RandomOptionBan",
+      "label": "Random option ban",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "ReconstructedDevice",
+      "label": "Reconstructed Device",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "GamePad1",
+      "label": "Gamepad 1",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "GamePad2",
+      "label": "Gamepad 2",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "GamePad3",
+      "label": "Gamepad 3",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "T7SEN's icon list, 2026-10-15: shows an icon in game. Appearance not described yet. Listed in the 2024 DCInside list and Steam guide 3806145510."
+    },
+    {
+      "id": "Mouse0",
+      "label": "Mouse 0",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P12 (T7SEN, 2026-10-15). Test sheet Q4 (T7SEN's screenshot, 2026-10-15): a white computer mouse. Added at T7SEN's request the same day."
+    },
+    {
+      "id": "Mouse1",
+      "label": "Mouse 1",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 8, P12 (T7SEN, 2026-10-15). Test sheet Q4 (T7SEN's screenshot, 2026-10-15): a white computer mouse with a blue button. Added at T7SEN's request the same day."
+    },
+    {
+      "id": "Plain",
+      "label": "Non-Attribute",
+      "art": {
+        "kind": "nexon-site",
+        "url": "https://tfdvod.dn.nexoncdn.co.kr/img/cbt/library/icons/icon_elemental--Plain.png",
+        "page": "https://tfd.nexon.com/en/library/descendants"
+      },
+      "artVerified": true,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (Attribute, boss, mission, quest list); NEXON's internal name for the Non-Attribute element. Shows an icon in game: test sheet Part 8, P13 (T7SEN, 2026-10-15), where Fire, Chill, Toxic and NonAttribute showed as text. Test sheet Q1 (T7SEN's screenshot, 2026-10-15) shows it: NEXON's gray Non-Attribute hexagon. Art: NEXON's Plain element icon from the Library on NEXON's site (icon_elemental--Plain.png on the site's asset CDN), linked, never copied. Matched by NEXON's own file name; T7SEN approved using it on 2026-10-15 (ADR 0012). The chat shows the same icon (Q1)."
     }
   ],
   "channels": [
@@ -669,6 +1480,20 @@
       "hex": "#9FEA00",
       "source": "in-game-test",
       "notes": "Untagged text color, sampled. Same as <peagreen>."
+    },
+    {
+      "name": "whisper",
+      "label": "Whisper",
+      "hex": "#F771AD",
+      "source": "in-game-test",
+      "notes": "Untagged text color, sampled from T7SEN's screenshot (2026-10-15, PNG). A sent whisper reads `To [Name] : text`, all in this color."
+    },
+    {
+      "name": "party",
+      "label": "Party",
+      "hex": "#1DA5EB",
+      "source": "in-game-test",
+      "notes": "Untagged text color, sampled from T7SEN's screenshot (2026-10-15, PNG). A party message reads `[Party]Name.#1234 : text`, all in this color."
     }
   ],
   "chatBackground": {

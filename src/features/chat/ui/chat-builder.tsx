@@ -1,30 +1,28 @@
 "use client";
 
+import { cn } from "cn";
 import {
-  BadgeCheck,
   Check,
   ChevronDown,
   Code,
   Copy,
+  Eraser,
+  MessageSquareText,
   TriangleAlert,
 } from "lucide-react";
-import { useId, useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState, type CSSProperties } from "react";
+import { Counter } from "@/components/react-bits/counter";
+import { SpotlightCard } from "@/components/react-bits/spotlight-card";
+import { StarBorder } from "@/components/react-bits/star-border";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   count,
@@ -42,6 +40,7 @@ import { chatRegistry } from "./chat-registry";
 import { cleanMarkup, refusedNotice } from "./clean-markup";
 import { contrastRatio, minimumTextContrast } from "./contrast";
 import { commonGlyphPrefix } from "./editor-model";
+import { isUntested } from "./icon-options";
 import { MarkupPanel } from "./markup-panel";
 import { lookOf } from "./style-look";
 import { StylePicker } from "./style-picker";
@@ -53,20 +52,27 @@ interface Message {
 }
 
 const emptyMessage: Message = { markup: "", pieces: [] };
-const { channels, chatBackground, verifiedOn, status } = chatRegistry.data;
-
-const verifiedDate =
-  verifiedOn === null
-    ? null
-    : new Intl.DateTimeFormat("en-GB", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        timeZone: "UTC",
-      }).format(new Date(verifiedOn));
+const { channels, chatBackground } = chatRegistry.data;
 
 function styleName(style: Style): string {
   return style.type === "tag" ? style.name : style.id;
+}
+
+const listFormat = new Intl.ListFormat("en", { type: "conjunction" });
+
+/** The labels of icons in the message whose ids are not tested in game yet. */
+function untestedIcons(pieces: readonly Piece[]): string[] {
+  const labels = new Set<string>();
+  for (const piece of pieces) {
+    if (piece.kind !== "image") {
+      continue;
+    }
+    const image = chatRegistry.imagesById.get(piece.id.toLowerCase());
+    if (image !== undefined && isUntested(image)) {
+      labels.add(image.label);
+    }
+  }
+  return [...labels];
 }
 
 /** Styles in the message that are hard to read on the chat background. */
@@ -98,6 +104,14 @@ function lowContrastStyles(pieces: readonly Piece[]): string[] {
 
 const cardTitle = "font-display text-lg font-semibold tracking-wide";
 
+/** The message window's glass and violet edge, matching the home page's sample window. */
+const windowSurface = {
+  "--spotlight-card-surface":
+    "color-mix(in srgb, var(--card) 80%, transparent)",
+  "--spotlight-card-border":
+    "linear-gradient(to bottom right, color-mix(in srgb, var(--primary) 50%, transparent), var(--border), transparent)",
+} as CSSProperties;
+
 type CopyStatus = { kind: "idle" } | { kind: "done" | "failed"; text: string };
 
 interface ChatBuilderProps {
@@ -116,6 +130,8 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
   const refusedThisChange = useRef(false);
   const [message, setMessage] = useState<Message>(emptyMessage);
   const [channelName, setChannelName] = useState(channels[0]?.name ?? "");
+  // The editor sits on the site's surface; this shows the in-game chat panel instead.
+  const [gameBackground, setGameBackground] = useState(false);
   const [active, setActive] = useState<Style | null | "mixed">(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState<CopyStatus>({ kind: "idle" });
@@ -152,8 +168,14 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
         .map((issue) => issue.char),
     ),
   ];
+  const icons = untestedIcons(message.pieces);
   const hints = [
     ...lowContrastStyles(message.pieces),
+    ...(icons.length > 0
+      ? [
+          `Not tested in game yet: the ${listFormat.format(icons)} ${icons.length === 1 ? "icon" : "icons"}. The game may show ${icons.length === 1 ? "it" : "them"} as text.`,
+        ]
+      : []),
     ...(untested.length > 0
       ? [
           `Not tested in game yet: ${untested.join(" ")}. The game may not show ${untested.length === 1 ? "it" : "them"}.`,
@@ -185,6 +207,15 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
     updateNotice();
   };
 
+  // The editor's edit empties the message and stays undoable (Ctrl+Z); resetting the
+  // message too covers markup that renders as nothing, such as "<red></>".
+  const clear = (): void => {
+    editorRef.current?.clear();
+    setMessage(emptyMessage);
+    setCopyStatus({ kind: "idle" });
+    setNotice(null);
+  };
+
   const copy = async (text: string, what: string): Promise<void> => {
     try {
       await navigator.clipboard.writeText(text);
@@ -198,6 +229,8 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
   };
 
   const over = counted.overflowAt !== null;
+  // How full the message is, for the bar under the editor.
+  const usage = Math.min(100, (counted.used / counted.limit) * 100);
   const saved = asWritten.used - counted.used;
   const editorLabel = `${ids}-editor-label`;
   const counterId = `${ids}-counter`;
@@ -209,15 +242,31 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
     // it scrolls. Narrow screens: the style panel follows the message.
     <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
       <div className="grid min-w-0 gap-4 lg:sticky lg:top-20">
-        <Card>
-          <CardHeader>
-            <CardTitle className={cardTitle}>Message</CardTitle>
-            <CardDescription>
-              It looks here the way it looks in game. Select text, then pick a
-              style.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3">
+        {/* A floating chat window, like the home page's sample of the builder. */}
+        <SpotlightCard
+          className="rounded-2xl text-sm shadow-2xl shadow-primary/15 backdrop-blur-md"
+          style={windowSurface}
+        >
+          <div className="flex items-center justify-between gap-3 border-b px-4 py-3">
+            <h2 className={cn(cardTitle, "flex items-center gap-2")}>
+              <MessageSquareText
+                aria-hidden="true"
+                className="size-4 text-primary"
+              />
+              Message
+            </h2>
+            <span className="flex gap-1.5" aria-hidden="true">
+              <span className="size-2 rounded-full bg-border" />
+              <span className="size-2 rounded-full bg-border" />
+              <span className="size-2 rounded-full bg-primary/70" />
+            </span>
+          </div>
+          {/* minmax(0, 1fr): a long unbroken message must wrap, not widen the window. */}
+          <div className="grid grid-cols-1 gap-3 p-4">
+            <p className="text-muted-foreground">
+              Colors and sizes look the way they do in game. Select text, then
+              pick a style.
+            </p>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <span
                 id={channelLabel}
@@ -229,7 +278,9 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
                 aria-labelledby={channelLabel}
                 variant="outline"
                 size="sm"
-                spacing={0}
+                spacing={1}
+                // Five channels: on narrow screens the chips wrap instead of clipping.
+                className="flex-wrap"
                 value={[channelName]}
                 onValueChange={(value) => {
                   const next = value.at(0);
@@ -244,6 +295,7 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
                     key={channel.name}
                     value={channel.name}
                     aria-label={`${channel.label} chat`}
+                    className="rounded-full px-3 aria-pressed:border-primary/60 aria-pressed:bg-primary/15 aria-pressed:text-foreground"
                   >
                     <span
                       aria-hidden="true"
@@ -254,15 +306,33 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
+              {/* Base UI's documented pattern: the label wraps the switch. */}
+              <label className="ml-auto flex cursor-pointer items-center gap-2 text-xs font-medium text-muted-foreground">
+                <Switch
+                  size="sm"
+                  checked={gameBackground}
+                  onCheckedChange={setGameBackground}
+                />
+                Game background
+              </label>
             </div>
             <div>
               <p id={editorLabel} className="sr-only">
                 Message
               </p>
               <div
-                className="flex items-baseline gap-2 rounded-lg border border-input px-4 text-lg transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50"
+                data-game-background={gameBackground || undefined}
+                className={cn(
+                  "flex items-baseline gap-2 rounded-xl border px-4 text-lg transition-[background-color,border-color,box-shadow] focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
+                  gameBackground
+                    ? "border-input"
+                    : "border-border bg-background/60 shadow-[inset_0_1px_0_color-mix(in_srgb,var(--foreground)_6%,transparent),inset_0_12px_24px_-16px_color-mix(in_srgb,var(--background)_95%,transparent)]",
+                )}
                 style={{
-                  backgroundColor: chatBackground.hex,
+                  // Contrast hints always measure against the game's panel, shown or not.
+                  backgroundColor: gameBackground
+                    ? chatBackground.hex
+                    : undefined,
                   color: channelHex,
                 }}
               >
@@ -297,8 +367,8 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
                 {notice}
               </p>
               <p className="mt-2 text-xs text-muted-foreground">
-                Untagged text takes the channel&apos;s color. The font and icon
-                size are approximate.
+                Untagged text takes the channel&apos;s color. The font is
+                approximate.
               </p>
             </div>
             <Collapsible>
@@ -338,22 +408,35 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
                 </p>
               </CollapsibleContent>
             </Collapsible>
-          </CardContent>
-          <CardFooter className="flex-wrap items-center gap-3">
-            <Button
+          </div>
+          {/* Fills as the message nears the limit; the counter says the same in words. */}
+          <div aria-hidden="true" className="h-0.5 bg-border/60">
+            <div
+              className={cn(
+                "h-full transition-[width,background-color] duration-300",
+                over ? "bg-warning" : "bg-primary",
+              )}
+              style={{ width: `${String(usage)}%` }}
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-3 bg-background/40 px-4 py-3">
+            <StarBorder
               type="button"
-              size="lg"
               disabled={best === ""}
               onClick={() => void copy(best, "Markup")}
-              className="px-4"
+              radius={10}
+              thickness={1.5}
+              glow={0.6}
+              backgroundColor="color-mix(in srgb, var(--primary) 22%, var(--card))"
+              className="px-4 py-2.5 text-sm font-semibold"
             >
               {copyStatus.kind === "done" ? (
-                <Check aria-hidden="true" />
+                <Check aria-hidden="true" className="size-4" />
               ) : (
-                <Copy aria-hidden="true" />
+                <Copy aria-hidden="true" className="size-4" />
               )}
               {copyStatus.kind === "done" ? "Copied" : "Copy markup"}
-            </Button>
+            </StarBorder>
             {saved > 0 ? (
               <Button
                 type="button"
@@ -364,12 +447,29 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
                 Copy as written
               </Button>
             ) : null}
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              disabled={message.markup === "" && message.pieces.length === 0}
+              onClick={clear}
+              className="text-muted-foreground"
+            >
+              <Eraser aria-hidden="true" />
+              Clear
+            </Button>
             <div id={counterId} className="flex items-center gap-2 text-sm">
               <Badge
                 variant={over ? "destructive" : "secondary"}
                 className="font-mono"
               >
-                {counted.used} / {counted.limit}
+                {/* Screen readers get the plain number; the rolling digits are hidden. */}
+                <Counter
+                  value={counted.used}
+                  fontSize="inherit"
+                  intro={false}
+                />
+                {` / ${String(counted.limit)}`}
               </Badge>
               <span className={over ? "text-warning" : "text-muted-foreground"}>
                 {over
@@ -387,8 +487,8 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
             >
               {copyStatus.kind === "idle" ? "" : copyStatus.text}
             </p>
-          </CardFooter>
-        </Card>
+          </div>
+        </SpotlightCard>
 
         {hints.map((hint) => (
           <Alert key={hint} role="status">
@@ -396,34 +496,24 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
             <AlertDescription>{hint}</AlertDescription>
           </Alert>
         ))}
-        <p className="flex items-center gap-2 text-xs text-muted-foreground">
-          {status === "verified" ? (
-            <BadgeCheck aria-hidden="true" className="size-4 text-primary" />
-          ) : (
-            <Badge variant="destructive">Provisional</Badge>
-          )}
-          {verifiedDate === null
-            ? "Tags, colors and the chat limit are not verified in game yet."
-            : `Tags, colors and the ${String(chatRegistry.charLimit)}-character limit were verified in game on ${verifiedDate}.`}
-        </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className={cardTitle}>Style</CardTitle>
-          <CardDescription>
+      <SpotlightCard className="grid gap-4 py-4 text-sm">
+        <div className="grid gap-1 px-4">
+          <h2 className={cardTitle}>Style</h2>
+          <p className="text-muted-foreground">
             One style per run of text: a new pick replaces the old one.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="px-4">
           <StylePicker
             active={active}
             portraits={portraits}
             onPickStyle={(style) => editorRef.current?.applyStyle(style)}
             onPickImage={(id) => editorRef.current?.insertImage(id)}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </SpotlightCard>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { closeHistory } from "prosemirror-history";
 import { Slice, type Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorState, TextSelection } from "prosemirror-state";
 import { EditorView, type NodeView } from "prosemirror-view";
@@ -12,7 +13,7 @@ import {
   type Style,
 } from "@/features/chat/engine";
 import type { PortraitUrls } from "@/lib/nexon/descendants";
-import { portraitOf } from "./chat-icons";
+import { artUrlOf, chatIconClass } from "./chat-icons";
 import { chatRegistry } from "./chat-registry";
 import {
   docFromPieces,
@@ -37,6 +38,8 @@ const schema = createEditorSchema(chatRegistry);
 export interface ChatEditorHandle {
   applyStyle: (style: Style | null) => void;
   insertImage: (id: string) => void;
+  /** Empties the message as an ordinary edit, so undo brings it back. */
+  clear: () => void;
 }
 
 interface ChatEditorProps {
@@ -66,10 +69,10 @@ function imageView(portraits: PortraitUrls) {
     const image = chatRegistry.imagesById.get(id.toLowerCase());
     const label = image?.label ?? id;
     const dom = document.createElement("span");
-    dom.className = "chat-icon";
+    dom.className = chatIconClass(image);
     dom.contentEditable = "false";
     dom.title = `${label} icon`;
-    const src = portraitOf(image, portraits);
+    const src = artUrlOf(image, portraits);
     if (src === null) {
       dom.append(placeholderIcon(label));
     } else {
@@ -271,6 +274,16 @@ export function ChatEditor({
           insertImage(schema, id)(view.state, (tr) => {
             view.dispatch(tr);
           });
+          view.focus();
+        }
+      },
+      clear: () => {
+        const view = viewRef.current;
+        if (view !== null) {
+          // Its own undo step, even right after typing.
+          view.dispatch(
+            closeHistory(view.state.tr.delete(0, view.state.doc.content.size)),
+          );
           view.focus();
         }
       },
