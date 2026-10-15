@@ -102,9 +102,10 @@
 }
 
 /* Chat builder. Game colors arrive as inline styles from the registry. */
+/* The editor sits beside the sender label, inside the padded chat line. */
 .chat-editor .ProseMirror {
   min-height: 3.5rem;
-  padding: 0.875rem 1rem;
+  padding: 0.875rem 0;
   line-height: 2;
   outline: none;
 }

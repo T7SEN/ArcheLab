@@ -145,6 +145,28 @@ function option(
 }
 
 /**
+ * The groups and options matching a search, by label, tag name, same-looking names or
+ * group title, ignoring case. An empty search keeps everything.
+ */
+export function filterGroups(
+  groups: readonly StyleGroup[],
+  query: string,
+): StyleGroup[] {
+  const needle = query.trim().toLowerCase();
+  if (needle === "") {
+    return [...groups];
+  }
+  return groups.flatMap((group) => {
+    const options = group.options.filter((entry) =>
+      [entry.label, entry.name, ...entry.sameAs, group.title].some((text) =>
+        text.toLowerCase().includes(needle),
+      ),
+    );
+    return options.length === 0 ? [] : [{ ...group, options }];
+  });
+}
+
+/**
  * The style picker's groups. A run holds exactly one style, so bold, italic and the
  * text sizes are styles like the colors. Tags that render exactly the same appear
  * once, under the shortest name, which is also what the optimizer writes.

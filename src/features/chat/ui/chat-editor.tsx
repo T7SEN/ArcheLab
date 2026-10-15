@@ -92,14 +92,20 @@ function imageView(portraits: PortraitUrls) {
 
 /**
  * ProseMirror reads native selection changes only while it has focus. A keyboard user
- * can select (Shift+Home) and Tab to a picker button before that read happens, so a
- * picker first takes the selection the browser still shows inside the editor.
+ * can select (Shift+Home) and Tab away before that read happens, so the editor takes the
+ * selection the browser still shows when it loses focus, and again before a picker
+ * command.
+ *
+ * Only a non-empty browser selection is taken. The race only ever loses a range, and a
+ * collapsed browser selection can be stale: after Ctrl+A over styled text, ProseMirror
+ * holds the whole line while the browser reports a collapsed caret.
  */
 function syncSelectionFromDom(view: EditorView): void {
   const selection = view.dom.ownerDocument.getSelection();
   const { anchorNode, focusNode } = selection ?? {};
   if (
     selection === null ||
+    selection.isCollapsed ||
     anchorNode == null ||
     focusNode == null ||
     !view.dom.contains(anchorNode) ||
@@ -174,6 +180,14 @@ export function ChatEditor({
         "data-empty": String(state.doc.content.size === 0),
       }),
       nodeViews: { image: imageView(portraits) },
+      handleDOMEvents: {
+        // Take the visible selection while it is still in the editor: tabbing on into a
+        // text field (the style search) moves the browser's selection there.
+        blur: (blurred) => {
+          syncSelectionFromDom(blurred);
+          return false;
+        },
+      },
       // Copying from the editor gives chat markup; pasting text reads it as markup.
       clipboardTextSerializer: (slice) =>
         optimize(piecesFromFragment(slice.content), chatRegistry),

@@ -1,20 +1,30 @@
 "use client";
 
-import { BadgeCheck, Check, Copy, Gamepad2, TriangleAlert } from "lucide-react";
+import {
+  BadgeCheck,
+  Check,
+  ChevronDown,
+  Code,
+  Copy,
+  TriangleAlert,
+} from "lucide-react";
 import { useId, useMemo, useRef, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   count,
@@ -28,12 +38,10 @@ import {
 } from "@/features/chat/engine";
 import type { PortraitUrls } from "@/lib/nexon/descendants";
 import { ChatEditor, type ChatEditorHandle } from "./chat-editor";
-import { ChatPreview } from "./chat-preview";
 import { chatRegistry } from "./chat-registry";
 import { cleanMarkup, refusedNotice } from "./clean-markup";
 import { contrastRatio, minimumTextContrast } from "./contrast";
 import { commonGlyphPrefix } from "./editor-model";
-import { ImagePicker } from "./image-picker";
 import { MarkupPanel } from "./markup-panel";
 import { lookOf } from "./style-look";
 import { StylePicker } from "./style-picker";
@@ -99,7 +107,8 @@ interface ChatBuilderProps {
 /**
  * The chat-message builder (SPEC.md section 4.3). The engine's pieces are the single
  * source of truth: the editor and the markup panel each write them, and everything
- * else (counter, preview, hints, copy) reads them.
+ * else (counter, highlight, hints, copy) reads them. The editor itself is drawn as the
+ * in-game chat line, so it doubles as the preview.
  */
 export function ChatBuilder({ portraits }: ChatBuilderProps) {
   const ids = useId();
@@ -124,6 +133,7 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
   }, [message]);
   const counted = count(best, chatRegistry);
   const asWritten = count(message.markup, chatRegistry);
+  // What the game shows after its input box cuts the copied markup.
   const shown = useMemo(
     () => parse(truncateToLimit(best, chatRegistry), chatRegistry),
     [best],
@@ -182,7 +192,7 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
     } catch {
       setCopyStatus({
         kind: "failed",
-        text: "Copying failed. Select the markup and copy it yourself.",
+        text: "Copying failed. Open the markup, select it and copy it yourself.",
       });
     }
   };
@@ -192,62 +202,31 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
   const editorLabel = `${ids}-editor-label`;
   const counterId = `${ids}-counter`;
   const markupId = `${ids}-markup`;
-  const previewLabel = `${ids}-preview`;
+  const channelLabel = `${ids}-channel`;
 
   return (
-    // Two columns on wide screens: the message (editor right above its preview) and
-    // the markup on the left, the style picker beside them. On narrow screens the
-    // picker follows the message, so it stays next to the text it styles.
-    <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:grid-rows-[auto_auto_1fr] lg:items-start">
-      <Card className="lg:col-start-1 lg:row-start-1">
-        <CardHeader>
-          <CardTitle className={cardTitle}>Message</CardTitle>
-          <CardDescription>
-            Type your message, select text, then pick a style.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div>
-            <p id={editorLabel} className="sr-only">
-              Message
-            </p>
-            <div
-              className="overflow-hidden rounded-lg border border-input transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50"
-              style={{ backgroundColor: chatBackground.hex, color: channelHex }}
-            >
-              <ChatEditor
-                ref={editorRef}
-                pieces={message.pieces}
-                overflowGlyph={overflowGlyph}
-                portraits={portraits}
-                labelledBy={editorLabel}
-                describedBy={counterId}
-                onChange={onEditorChange}
-                onRefused={(chars) => {
-                  refusedThisChange.current = true;
-                  setNotice(refusedNotice(chars));
-                }}
-                onActiveStyle={setActive}
-              />
-            </div>
-            <p
-              aria-live="polite"
-              className="mt-2 text-sm text-warning empty:mt-0"
-            >
-              {notice}
-            </p>
-          </div>
-          <div>
-            <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-              <p
-                id={previewLabel}
-                className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
+    // Wide screens: the message on the left stays in view while the style panel beside
+    // it scrolls. Narrow screens: the style panel follows the message.
+    <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+      <div className="grid min-w-0 gap-4 lg:sticky lg:top-20">
+        <Card>
+          <CardHeader>
+            <CardTitle className={cardTitle}>Message</CardTitle>
+            <CardDescription>
+              It looks here the way it looks in game. Select text, then pick a
+              style.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <span
+                id={channelLabel}
+                className="text-xs font-medium text-muted-foreground"
               >
-                <Gamepad2 aria-hidden="true" className="size-3.5" />
-                In game
-              </p>
+                Channel
+              </span>
               <ToggleGroup
-                aria-label="Channel"
+                aria-labelledby={channelLabel}
                 variant="outline"
                 size="sm"
                 spacing={0}
@@ -276,123 +255,148 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
                 ))}
               </ToggleGroup>
             </div>
-            <div
-              role="group"
-              aria-labelledby={previewLabel}
-              className="overflow-hidden rounded-lg border"
-            >
-              <ChatPreview
-                pieces={shown}
-                channelHex={channelHex}
-                portraits={portraits}
-              />
+            <div>
+              <p id={editorLabel} className="sr-only">
+                Message
+              </p>
+              <div
+                className="flex items-baseline gap-2 rounded-lg border border-input px-4 text-lg transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50"
+                style={{
+                  backgroundColor: chatBackground.hex,
+                  color: channelHex,
+                }}
+              >
+                {/* A stand-in sender: the game's own sender format is not verified. */}
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 text-muted-foreground select-none"
+                >
+                  You:
+                </span>
+                <div className="min-w-0 flex-1">
+                  <ChatEditor
+                    ref={editorRef}
+                    pieces={message.pieces}
+                    overflowGlyph={overflowGlyph}
+                    portraits={portraits}
+                    labelledBy={editorLabel}
+                    describedBy={counterId}
+                    onChange={onEditorChange}
+                    onRefused={(chars) => {
+                      refusedThisChange.current = true;
+                      setNotice(refusedNotice(chars));
+                    }}
+                    onActiveStyle={setActive}
+                  />
+                </div>
+              </div>
+              <p
+                aria-live="polite"
+                className="mt-2 text-sm text-warning empty:mt-0"
+              >
+                {notice}
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Untagged text takes the channel&apos;s color. The font and icon
+                size are approximate.
+              </p>
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Untagged text takes the channel&apos;s color. The font and icon
-              size are approximate.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="lg:col-start-2 lg:row-span-3 lg:row-start-1">
-        <CardHeader>
-          <CardTitle className={cardTitle}>Style</CardTitle>
-          <CardDescription>
-            A run of text holds one style, so a new pick replaces the old one.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-5">
-          <StylePicker
-            active={active}
-            onPick={(style) => editorRef.current?.applyStyle(style)}
-          />
-          <Separator />
-          <ImagePicker
-            portraits={portraits}
-            onPick={(id) => editorRef.current?.insertImage(id)}
-          />
-        </CardContent>
-      </Card>
-
-      <Card className="lg:col-start-1 lg:row-start-2">
-        <CardHeader>
-          <CardTitle className={cardTitle}>Markup</CardTitle>
-          <CardDescription>
-            Edit it here, or copy it and paste it into the game.
-          </CardDescription>
-          <CardAction>
-            <Badge
-              variant={over ? "destructive" : "secondary"}
-              className="font-mono"
-            >
-              {counted.used} / {counted.limit}
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardContent className="grid gap-2">
-          <label htmlFor={markupId} className="sr-only">
-            Markup
-          </label>
-          <MarkupPanel
-            id={markupId}
-            value={message.markup}
-            overflowAt={asWritten.overflowAt}
-            describedBy={counterId}
-            onChange={onMarkupChange}
-          />
-          <p
-            id={counterId}
-            className={`text-sm ${over ? "text-warning" : "text-muted-foreground"}`}
-          >
-            {counted.used} of {counted.limit} characters.{" "}
-            {over
-              ? `${String(counted.used - counted.limit)} over the limit: the game cuts the highlighted part.`
-              : `${String(counted.remaining)} left.`}
-            {saved > 0
-              ? ` Copying the optimized markup saves ${String(saved)} characters.`
-              : ""}
-          </p>
-        </CardContent>
-        <CardFooter className="flex-wrap gap-3">
-          <Button
-            type="button"
-            disabled={best === ""}
-            onClick={() => void copy(best, "Markup")}
-          >
-            {copyStatus.kind === "done" ? (
-              <Check aria-hidden="true" />
-            ) : (
-              <Copy aria-hidden="true" />
-            )}
-            Copy markup
-          </Button>
-          {saved > 0 ? (
+            <Collapsible>
+              <CollapsibleTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="group/markup -ml-2 w-fit text-muted-foreground"
+                  />
+                }
+              >
+                <Code aria-hidden="true" />
+                Markup
+                <ChevronDown
+                  aria-hidden="true"
+                  className="transition-transform group-aria-expanded/markup:rotate-180"
+                />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-2 grid gap-2">
+                <label htmlFor={markupId} className="sr-only">
+                  Markup
+                </label>
+                <MarkupPanel
+                  id={markupId}
+                  value={message.markup}
+                  overflowAt={asWritten.overflowAt}
+                  describedBy={counterId}
+                  onChange={onMarkupChange}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Edit the markup directly if you like; the message follows.
+                  {saved > 0
+                    ? ` Copying the optimized markup saves ${String(saved)} characters.`
+                    : ""}
+                </p>
+              </CollapsibleContent>
+            </Collapsible>
+          </CardContent>
+          <CardFooter className="flex-wrap items-center gap-3">
             <Button
               type="button"
-              variant="outline"
-              onClick={() => void copy(message.markup, "Markup as written")}
+              size="lg"
+              disabled={best === ""}
+              onClick={() => void copy(best, "Markup")}
+              className="px-4"
             >
-              Copy as written
+              {copyStatus.kind === "done" ? (
+                <Check aria-hidden="true" />
+              ) : (
+                <Copy aria-hidden="true" />
+              )}
+              {copyStatus.kind === "done" ? "Copied" : "Copy markup"}
             </Button>
-          ) : null}
-          <p
-            aria-live="polite"
-            className={`text-sm ${copyStatus.kind === "failed" ? "text-warning" : "text-muted-foreground"}`}
-          >
-            {copyStatus.kind === "idle" ? "" : copyStatus.text}
-          </p>
-        </CardFooter>
-      </Card>
+            {saved > 0 ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                onClick={() => void copy(message.markup, "Markup as written")}
+              >
+                Copy as written
+              </Button>
+            ) : null}
+            <div id={counterId} className="flex items-center gap-2 text-sm">
+              <Badge
+                variant={over ? "destructive" : "secondary"}
+                className="font-mono"
+              >
+                {counted.used} / {counted.limit}
+              </Badge>
+              <span className={over ? "text-warning" : "text-muted-foreground"}>
+                {over
+                  ? `${String(counted.used - counted.limit)} over the limit: the game cuts the highlighted part.`
+                  : `${String(counted.remaining)} characters left.`}
+              </span>
+            </div>
+            <p
+              aria-live="polite"
+              className={
+                copyStatus.kind === "failed"
+                  ? "basis-full text-sm text-warning"
+                  : "sr-only"
+              }
+            >
+              {copyStatus.kind === "idle" ? "" : copyStatus.text}
+            </p>
+          </CardFooter>
+        </Card>
 
-      <div className="grid gap-3 lg:col-start-1 lg:row-start-3">
         {hints.map((hint) => (
           <Alert key={hint} role="status">
             <TriangleAlert aria-hidden="true" className="text-warning" />
             <AlertDescription>{hint}</AlertDescription>
           </Alert>
         ))}
-        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+        <p className="flex items-center gap-2 text-xs text-muted-foreground">
           {status === "verified" ? (
             <BadgeCheck aria-hidden="true" className="size-4 text-primary" />
           ) : (
@@ -403,6 +407,23 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
             : `Tags, colors and the ${String(chatRegistry.charLimit)}-character limit were verified in game on ${verifiedDate}.`}
         </p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className={cardTitle}>Style</CardTitle>
+          <CardDescription>
+            One style per run of text: a new pick replaces the old one.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <StylePicker
+            active={active}
+            portraits={portraits}
+            onPickStyle={(style) => editorRef.current?.applyStyle(style)}
+            onPickImage={(id) => editorRef.current?.insertImage(id)}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

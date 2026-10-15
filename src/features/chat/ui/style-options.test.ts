@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { chatRegistry } from "./chat-registry";
-import { styleGroups } from "./style-options";
+import { filterGroups, styleGroups } from "./style-options";
 
 const groups = styleGroups(chatRegistry);
 const options = groups.flatMap((group) => group.options);
@@ -95,5 +95,31 @@ describe("style picker options", () => {
         "QuestCommend",
       ].sort(),
     );
+  });
+});
+
+describe("style search", () => {
+  const names = (query: string): string[] =>
+    filterGroups(groups, query).flatMap((group) =>
+      group.options.map((entry) => entry.name),
+    );
+
+  it("keeps everything for an empty search", () => {
+    expect(filterGroups(groups, "  ")).toEqual(groups);
+  });
+
+  it("matches labels, tag names and same-looking names, ignoring case", () => {
+    expect(names("TIER4")).toEqual(["tier4"]);
+    expect(names("transcendent")).toEqual(["tier4"]);
+    // QuestEvent renders like Plain, so a search for it finds Plain.
+    expect(names("questevent")).toEqual(["Plain"]);
+  });
+
+  it("matches a group title, showing the whole group", () => {
+    expect(names("rarity")).toEqual(["tier1", "tier2", "tier3", "tier4"]);
+  });
+
+  it("drops groups with no match", () => {
+    expect(filterGroups(groups, "zzz")).toEqual([]);
   });
 });

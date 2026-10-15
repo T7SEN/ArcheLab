@@ -1,25 +1,33 @@
 "use client";
 
-import { RemoveFormatting } from "lucide-react";
-import type { MouseEvent, ReactNode } from "react";
+import { RemoveFormatting, Search } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { sameStyle, type Style } from "@/features/chat/engine";
+import type { PortraitUrls } from "@/lib/nexon/descendants";
 import { chatRegistry } from "./chat-registry";
+import { filterImages, IconOptions } from "./icon-options";
+import { keepEditorFocus } from "./keep-editor-focus";
 import { stylePropsOf } from "./style-look";
-import { styleGroups, type StyleOption } from "./style-options";
+import { filterGroups, styleGroups, type StyleOption } from "./style-options";
 
 const groups = styleGroups(chatRegistry);
 const chatBackground = chatRegistry.data.chatBackground.hex;
-
-/** Keeps the editor's focus and selection while a picker button is clicked. */
-export function keepEditorFocus(event: MouseEvent): void {
-  event.preventDefault();
-}
+const iconsSection = "icons";
+/** Sections open on first view; the rest stay one click away. */
+const initiallyOpen = ["colors", "rarity", iconsSection];
 
 function describe(option: StyleOption): string {
   const parts = [
@@ -55,7 +63,7 @@ function OptionButton({
     face = (
       <span
         aria-hidden="true"
-        className="block size-5 rounded-sm"
+        className="block size-4 rounded-[3px]"
         style={{ backgroundColor: option.look.color ?? undefined }}
       />
     );
@@ -78,7 +86,7 @@ function OptionButton({
             onClick={() => {
               onPick(option.style);
             }}
-            className="relative flex h-9 min-w-9 items-center justify-center rounded-md border border-input px-2 text-sm transition-colors outline-none hover:border-ring/60 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-pressed:border-primary aria-pressed:ring-2 aria-pressed:ring-primary/60"
+            className="relative flex min-h-7 min-w-7 items-center justify-center rounded-md border border-input px-1.5 text-xs transition-colors outline-none hover:border-ring/60 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-pressed:border-primary aria-pressed:ring-2 aria-pressed:ring-primary/60"
             style={{ backgroundColor: chatBackground }}
           />
         }
@@ -87,7 +95,7 @@ function OptionButton({
         {option.lowContrast ? (
           <span
             aria-hidden="true"
-            className="absolute -top-1 -right-1 size-2 rounded-full bg-warning ring-2 ring-card"
+            className="absolute -top-0.5 -right-0.5 size-1.5 rounded-full bg-warning ring-2 ring-card"
           />
         ) : null}
       </TooltipTrigger>
@@ -113,18 +121,52 @@ function OptionButton({
 
 interface StylePickerProps {
   active: Style | null | "mixed";
-  onPick: (style: Style | null) => void;
+  portraits: PortraitUrls;
+  onPickStyle: (style: Style | null) => void;
+  onPickImage: (id: string) => void;
 }
 
 /**
- * Every style the game supports, one button per look. A run holds exactly one style,
- * so picking one replaces the old one; "Channel color" removes it.
+ * Every style the game supports, one button per look, plus the verified icons. A run
+ * holds exactly one style, so picking one replaces the old one; "Channel color"
+ * removes it. A search narrows every section and opens the ones that match.
  */
-export function StylePicker({ active, onPick }: StylePickerProps) {
+export function StylePicker({
+  active,
+  portraits,
+  onPickStyle,
+  onPickImage,
+}: StylePickerProps) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState<string[]>(initiallyOpen);
+  const searching = query.trim() !== "";
+  const shownGroups = filterGroups(groups, query);
+  const shownImages = filterImages(query);
+  const shownSections = [
+    ...shownGroups.map((group) => group.id),
+    ...(shownImages.length > 0 ? [iconsSection] : []),
+  ];
   const isActive = (style: Style | null): boolean =>
     active !== "mixed" && sameStyle(active, style);
+
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-3">
+      <div className="relative">
+        <Search
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+        />
+        <Input
+          type="search"
+          aria-label="Search styles and icons"
+          placeholder="Search: red, rarity, gray, Bunny…"
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value);
+          }}
+          className="pl-8"
+        />
+      </div>
       <Button
         type="button"
         variant="outline"
@@ -132,39 +174,64 @@ export function StylePicker({ active, onPick }: StylePickerProps) {
         aria-pressed={isActive(null)}
         onMouseDown={keepEditorFocus}
         onClick={() => {
-          onPick(null);
+          onPickStyle(null);
         }}
         className="w-fit aria-pressed:border-primary aria-pressed:ring-2 aria-pressed:ring-primary/60"
       >
         <RemoveFormatting aria-hidden="true" />
         Channel color (no tag)
       </Button>
-      {groups.map((group) => (
-        <div
-          key={group.id}
-          role="group"
-          aria-labelledby={`style-group-${group.id}`}
+      {shownSections.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Nothing matches &ldquo;{query.trim()}&rdquo;.
+        </p>
+      ) : (
+        <Accordion
+          multiple
+          value={searching ? shownSections : open}
+          onValueChange={(value) => {
+            if (!searching) {
+              setOpen(value.map(String));
+            }
+          }}
         >
-          <h3
-            id={`style-group-${group.id}`}
-            className="text-xs font-medium text-muted-foreground"
-          >
-            {group.title}
-          </h3>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {group.options.map((option) => (
-              <OptionButton
-                key={option.key}
-                option={option}
-                pressed={isActive(option.style)}
-                onPick={onPick}
-              />
-            ))}
-          </div>
-        </div>
-      ))}
+          {shownGroups.map((group) => (
+            <AccordionItem key={group.id} value={group.id}>
+              <AccordionTrigger className="py-2 text-xs text-muted-foreground hover:no-underline">
+                {group.title} ({group.options.length})
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-wrap gap-1">
+                  {group.options.map((option) => (
+                    <OptionButton
+                      key={option.key}
+                      option={option}
+                      pressed={isActive(option.style)}
+                      onPick={onPickStyle}
+                    />
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+          {shownImages.length > 0 ? (
+            <AccordionItem value={iconsSection}>
+              <AccordionTrigger className="py-2 text-xs text-muted-foreground hover:no-underline">
+                Icons ({shownImages.length})
+              </AccordionTrigger>
+              <AccordionContent>
+                <IconOptions
+                  images={shownImages}
+                  portraits={portraits}
+                  onPick={onPickImage}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          ) : null}
+        </Accordion>
+      )}
       <p className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span aria-hidden="true" className="size-2 rounded-full bg-warning" />
+        <span aria-hidden="true" className="size-1.5 rounded-full bg-warning" />
         Hard to read on the chat background.
       </p>
     </div>
