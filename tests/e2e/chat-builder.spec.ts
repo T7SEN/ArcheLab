@@ -43,10 +43,15 @@ test("a style can be applied with the keyboard alone", async ({ page }) => {
   await editor.focus();
   await page.keyboard.type("Hi");
   await page.keyboard.press("Shift+Home");
-  // The picker follows the editor: "Channel color", then the first color, red.
-  await page.keyboard.press("Tab");
-  await page.keyboard.press("Tab");
-  await expect(page.getByRole("button", { name: /^Red, <red>/ })).toBeFocused();
+  // Tab straight on from the editor to the red button, as a keyboard user would.
+  const red = page.getByRole("button", { name: /^Red, <red>/ });
+  for (let step = 0; step < 10; step += 1) {
+    await page.keyboard.press("Tab");
+    if (await red.evaluate((button) => button === document.activeElement)) {
+      break;
+    }
+  }
+  await expect(red).toBeFocused();
   await page.keyboard.press("Enter");
 
   await expect(markup).toHaveValue("<red>Hi</>");

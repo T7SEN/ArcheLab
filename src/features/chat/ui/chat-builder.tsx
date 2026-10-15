@@ -178,8 +178,15 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
   const markupId = `${ids}-markup`;
 
   return (
-    <div className="mt-8 grid gap-6">
-      <HudPanel title="Message" titleId={`${ids}-message`}>
+    // Two columns on wide screens: the message (editor right above its preview) and
+    // the markup on the left, the style picker beside them. On narrow screens the
+    // picker follows the message, so it stays next to the text it styles.
+    <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_23rem] lg:grid-rows-[auto_auto_1fr] lg:items-start">
+      <HudPanel
+        title="Message"
+        titleId={`${ids}-message`}
+        className="lg:col-start-1 lg:row-start-1"
+      >
         <p id={editorLabel} className="sr-only">
           Message
         </p>
@@ -202,9 +209,61 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
             onActiveStyle={setActive}
           />
         </div>
-        <p aria-live="polite" className="mt-2 min-h-5 text-sm text-warn">
+        <p aria-live="polite" className="mt-2 text-sm text-warn empty:mt-0">
           {notice}
         </p>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+          <p
+            id={`${ids}-preview`}
+            className="text-xs font-semibold tracking-wider text-ink-muted uppercase"
+          >
+            In game
+          </p>
+          <fieldset className="flex flex-wrap gap-1.5">
+            <legend className="sr-only">Channel</legend>
+            {channels.map((channel) => (
+              <label
+                key={channel.name}
+                className="flex cursor-pointer items-center gap-1.5 border border-line px-2 py-0.5 text-xs has-checked:border-accent has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent"
+              >
+                <input
+                  type="radio"
+                  name={`${ids}-channel`}
+                  value={channel.name}
+                  checked={channel.name === channelName}
+                  onChange={() => {
+                    setChannelName(channel.name);
+                  }}
+                  className="sr-only"
+                />
+                <span
+                  aria-hidden="true"
+                  className="size-2.5"
+                  style={{ backgroundColor: channel.hex }}
+                />
+                {channel.label}
+              </label>
+            ))}
+          </fieldset>
+        </div>
+        <div className="mt-1.5" aria-labelledby={`${ids}-preview`} role="group">
+          <ChatPreview
+            pieces={shown}
+            channelHex={channelHex}
+            portraits={portraits}
+          />
+        </div>
+        <p className="mt-2 text-xs text-ink-muted">
+          Untagged text takes the channel&apos;s color. The font and icon size
+          are approximate.
+        </p>
+      </HudPanel>
+
+      <HudPanel
+        title="Style"
+        titleId={`${ids}-style`}
+        className="lg:col-start-2 lg:row-span-3 lg:row-start-1"
+      >
         <p className="text-sm text-ink-muted">
           Select text, then pick a style. A run of text holds one style, so a
           new pick replaces the old one.
@@ -221,49 +280,11 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
         </div>
       </HudPanel>
 
-      <HudPanel title="Preview" titleId={`${ids}-preview`}>
-        <fieldset>
-          <legend className="text-sm text-ink-muted">Channel</legend>
-          <div className="mt-1.5 flex flex-wrap gap-2">
-            {channels.map((channel) => (
-              <label
-                key={channel.name}
-                className="flex cursor-pointer items-center gap-2 border border-line px-3 py-1 text-sm has-checked:border-accent has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent"
-              >
-                <input
-                  type="radio"
-                  name={`${ids}-channel`}
-                  value={channel.name}
-                  checked={channel.name === channelName}
-                  onChange={() => {
-                    setChannelName(channel.name);
-                  }}
-                  className="sr-only"
-                />
-                <span
-                  aria-hidden="true"
-                  className="size-3"
-                  style={{ backgroundColor: channel.hex }}
-                />
-                {channel.label}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-        <div className="mt-3">
-          <ChatPreview
-            pieces={shown}
-            channelHex={channelHex}
-            portraits={portraits}
-          />
-        </div>
-        <p className="mt-2 text-xs text-ink-muted">
-          Untagged text takes the channel&apos;s color. The font and icon size
-          are approximate.
-        </p>
-      </HudPanel>
-
-      <HudPanel title="Markup" titleId={`${ids}-markup-title`}>
+      <HudPanel
+        title="Markup"
+        titleId={`${ids}-markup-title`}
+        className="lg:col-start-1 lg:row-start-2"
+      >
         <label htmlFor={markupId} className="sr-only">
           Markup
         </label>
@@ -313,26 +334,28 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
         </div>
       </HudPanel>
 
-      {hints.length > 0 ? (
-        <HudPanel title="Hints" titleId={`${ids}-hints`}>
-          <ul className="list-disc space-y-1 pl-5 text-sm text-ink-muted">
-            {hints.map((hint) => (
-              <li key={hint}>{hint}</li>
-            ))}
-          </ul>
-        </HudPanel>
-      ) : null}
+      <div className="grid gap-6 lg:col-start-1 lg:row-start-3">
+        {hints.length > 0 ? (
+          <HudPanel title="Hints" titleId={`${ids}-hints`}>
+            <ul className="list-disc space-y-1 pl-5 text-sm text-ink-muted">
+              {hints.map((hint) => (
+                <li key={hint}>{hint}</li>
+              ))}
+            </ul>
+          </HudPanel>
+        ) : null}
 
-      <p className="text-sm text-ink-muted">
-        {status === "verified" ? null : (
-          <span className="mr-2 border border-warn px-1.5 py-0.5 text-xs text-warn">
-            Provisional
-          </span>
-        )}
-        {verifiedDate === null
-          ? "Tags, colors and the chat limit are not verified in game yet."
-          : `Tags, colors and the ${String(chatRegistry.charLimit)}-character limit were verified in game on ${verifiedDate}.`}
-      </p>
+        <p className="text-sm text-ink-muted">
+          {status === "verified" ? null : (
+            <span className="mr-2 border border-warn px-1.5 py-0.5 text-xs text-warn">
+              Provisional
+            </span>
+          )}
+          {verifiedDate === null
+            ? "Tags, colors and the chat limit are not verified in game yet."
+            : `Tags, colors and the ${String(chatRegistry.charLimit)}-character limit were verified in game on ${verifiedDate}.`}
+        </p>
+      </div>
     </div>
   );
 }
