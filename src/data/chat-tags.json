@@ -671,6 +671,11 @@
       "notes": "Untagged text color, sampled. Same as <peagreen>."
     }
   ],
+  "chatBackground": {
+    "hex": "#212321",
+    "source": "in-game-test",
+    "notes": "The chat panel behind the text, sampled from T7SEN's first tier screenshot (PNG, HDR off). Contrast hints are measured against it."
+  },
   "characters": {
     "verifiedSymbols": "★☆♥♡✓→←↑↓█▓▒░■□●○♪※∞",
     "refused": ["✦", "➤", "⚡"],
