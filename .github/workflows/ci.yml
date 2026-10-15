@@ -6,6 +6,11 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Weekly production rebuild, so NEXON data in the built pages stays far inside
+  # the 30-day limit (Nexon API Terms §8.7, ADR 0008). GitHub runs schedules on
+  # the default branch, in UTC; the minute avoids the busy start of the hour.
+  schedule:
+    - cron: "17 4 * * 1"
 
 permissions:
   contents: read
@@ -48,17 +53,17 @@ jobs:
     name: Deploy
     needs: checks
     # Pull requests from forks get no secrets, so they get no preview.
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment:
-      name: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+      name: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
       url: ${{ steps.deploy.outputs.url }}
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_TARGET: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+      VERCEL_TARGET: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

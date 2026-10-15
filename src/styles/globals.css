@@ -1,26 +1,158 @@
 @import "tailwindcss";
+/* shadcn/ui (ADR 0009): its animations and state variants. */
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+/* ProseMirror's required editor styles (ADR 0007). */
+@import "prosemirror-view/style/prosemirror.css";
+
+/* The site is dark only: <html> carries the `dark` class, so shadcn's dark: variants apply. */
+@custom-variant dark (&:is(.dark *));
 
 /*
- * Design tokens: direction A (Signal) with direction B's (Rift) palette, chosen by
- * T7SEN on 2026-10-15 (SKILL.md section 6). UI colors come only from these
- * (AGENTS.md conventions), so Tailwind's default palette is removed. Rarity tier
- * accents come from src/data/chat-tags.json in Phase 1, not from here.
+ * Design tokens (SKILL.md section 6): ArcheLab's palette (direction B, Rift) on
+ * shadcn/ui's token names, chosen by T7SEN on 2026-10-15 (ADR 0004, ADR 0009). UI
+ * colors come only from these (AGENTS.md conventions), so Tailwind's default palette
+ * is removed. Game colors (chat tags, the chat background) come from
+ * src/data/chat-tags.json instead.
  *
- * --color-shell must equal shellBackground in tokens.ts: the root layout inlines that
+ * --background must equal shellBackground in tokens.ts: the root layout inlines that
  * value so the page is dark before this stylesheet loads (shell-background.test.ts).
  */
-@theme {
-  --color-*: initial;
-  --color-shell: #0a0812;
-  --color-surface: #141024;
-  --color-line: #2b2244;
-  --color-ink: #ece7f7;
-  --color-ink-muted: #a69dc3;
-  --color-accent: #a184ff;
+:root {
+  --background: #0a0812;
+  --foreground: #ece7f7;
+  --card: #141024;
+  --card-foreground: #ece7f7;
+  --popover: #1c1630;
+  --popover-foreground: #ece7f7;
+  --primary: #a184ff;
+  --primary-foreground: #0a0812;
+  --secondary: #1c1630;
+  --secondary-foreground: #ece7f7;
+  --muted: #1c1630;
+  --muted-foreground: #a69dc3;
+  /* shadcn's "accent" is the hover and active surface, not a brand color. */
+  --accent: #241c3d;
+  --accent-foreground: #ece7f7;
+  --destructive: #ff886d;
+  /* Warnings: overflow, refused characters, hard-to-read colors. */
+  --warning: #ff886d;
+  --border: #2b2244;
+  --input: #2b2244;
+  --ring: #a184ff;
+  --radius: 0.625rem;
 }
 
-/* Fonts load through next/font in the root layout (self-hosted, OFL). */
 @theme inline {
+  --color-*: initial;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Fonts load through next/font in the root layout (self-hosted, OFL). */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-rajdhani), ui-sans-serif, system-ui, sans-serif;
+  /* shadcn titles use font-heading. */
+  --font-heading: var(--font-rajdhani), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* Motion is decoration only (SKILL.md section 6). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Chat builder. Game colors arrive as inline styles from the registry. */
+/* The editor sits beside the sender label, inside the padded chat line. */
+.chat-editor .ProseMirror {
+  min-height: 3.5rem;
+  padding: 0.875rem 0;
+  line-height: 2;
+  outline: none;
+}
+
+.chat-editor .ProseMirror[data-empty="true"]::before {
+  content: attr(data-placeholder);
+  position: absolute;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+
+.chat-editor .ProseMirror-selectednode {
+  outline: 2px solid var(--ring);
+}
+
+.chat-overflow {
+  background-color: color-mix(in srgb, var(--warning) 35%, transparent);
+}
+
+.chat-line {
+  min-height: 3.5rem;
+  padding: 0.875rem 1rem;
+  line-height: 2;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Icons are much taller than text (T8); 2em is an approximation (chat-icons.ts). */
+.chat-icon {
+  display: inline-flex;
+  height: 2em;
+  vertical-align: middle;
+}
+
+.chat-icon img {
+  height: 100%;
+  width: auto;
+}
+
+.chat-icon-placeholder {
+  align-items: center;
+  padding: 0 0.4em;
+  border: 1px dashed var(--muted-foreground);
+  border-radius: calc(var(--radius) * 0.6);
+  color: var(--muted-foreground);
+  font-size: 0.75em;
+  font-style: normal;
+  font-weight: 400;
+  white-space: nowrap;
 }

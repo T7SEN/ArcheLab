@@ -13,6 +13,8 @@ describe("chat registry", () => {
     expect(registry.data.sizes).toHaveLength(6);
     expect(registry.charLimit).toBe(100);
     expect(registry.data.status).toBe("verified");
+    expect(registry.data.chatBackground.hex).toBe("#212321");
+    expect(registry.data.untaggedText.capHeightPx).toBe(13);
   });
 
   it("records every fact as an in-game test result", () => {
@@ -21,6 +23,8 @@ describe("chat registry", () => {
       ...registry.data.sizes,
       ...registry.data.images,
       ...registry.data.channels,
+      registry.data.chatBackground,
+      registry.data.untaggedText,
       registry.data.characters,
     ].map((entry) => entry.source);
     expect(new Set(sources)).toEqual(new Set(["in-game-test"]));
