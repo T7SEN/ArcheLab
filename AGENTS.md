@@ -45,11 +45,11 @@ ArcheLab is an unofficial tools hub for The First Descendant, a NEXON game. The 
 5. No scope additions, refactors, or improvements beyond the task. Flag them; T7SEN decides when they happen.
 6. Before using any API not documented in `SKILL.md`, verify it against the official docs for the pinned version.
 7. `docs/SPEC.md` is local only. Read it by path. Never commit, move, or delete it, and never remove its `.gitignore` entry. If it is missing, stop and ask; never recreate it.
-8. Never push to `main`. Work on a branch and open a pull request; T7SEN merges.
+8. Work directly in the local `main` checkout: edit and test files, but never commit, push, branch or open a pull request. T7SEN commits and pushes (set by T7SEN on 2026-10-15). Every push to `main` deploys production.
 
 ## Testing
 
-- `pnpm typecheck && pnpm lint && pnpm test` before every commit.
+- `pnpm typecheck && pnpm lint && pnpm test` after every change, so `main` is always ready for T7SEN to commit.
 - Engine changes need unit tests and property tests.
 - User flows: `pnpm test:e2e`.
 

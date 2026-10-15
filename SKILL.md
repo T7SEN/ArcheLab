@@ -182,7 +182,7 @@ Header, tool registry, tool cards, footer with the disclaimer and attribution. A
 ## 7. Conventions
 
 - **Code.** TypeScript strict, kebab-case files, named exports, no magic numbers.
-- **Commits.** Conventional Commits, one concern per commit, on a branch; pull requests to `main`.
+- **Commits.** T7SEN commits and pushes on `main` (AGENTS.md rule 8, since 2026-10-15). Agents edit and test the local checkout only, and can suggest a Conventional Commits message. Every push to `main` deploys production.
 - **ADRs.** `docs/adr/NNNN-kebab-title.md` with Context, Decision, Consequences, Alternatives. Local only and gitignored; never committed.
 - **Walkthroughs.** `docs/walkthroughs/<subsystem>.md`: the code path, why it is shaped that way, what would break it.
 - **Copy.** Player-facing, short, sentence case. Game terms spelled as the game spells them.
