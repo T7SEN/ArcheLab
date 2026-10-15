@@ -41,6 +41,9 @@
   --input: #2b2244;
   --ring: #a184ff;
   --radius: 0.625rem;
+  /* The sticky header: a 0.75rem gap above the 44px navbar. The home hero slides up
+     under it by this much, so its background reaches the top of the page. */
+  --site-header-height: 3.5rem;
 }
 
 @theme inline {

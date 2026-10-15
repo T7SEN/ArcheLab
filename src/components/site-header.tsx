@@ -1,29 +1,11 @@
-import { MessageSquareText } from "lucide-react";
-import Link from "next/link";
-import { SpecularButton } from "@/components/react-bits/specular-button";
+import { SiteNav } from "@/components/site-nav";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 overflow-x-clip border-b bg-background/80 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
-        <Link
-          href="/"
-          className="rounded-md font-display text-xl font-semibold tracking-wide text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
-        >
-          ArcheLab
-        </Link>
-        <nav aria-label="Tools">
-          <SpecularButton
-            href="/tools/chat"
-            size="sm"
-            radius={10}
-            className="px-3.5 py-2"
-          >
-            <MessageSquareText aria-hidden="true" className="size-4" />
-            Chat builder
-          </SpecularButton>
-        </nav>
-      </div>
+    // The navbar floats over the page: only its pills take clicks. The height is fixed
+    // (--site-header-height) because the home hero slides up under it by that much.
+    <header className="pointer-events-none sticky top-0 z-40 flex h-(--site-header-height) items-start justify-center px-4 pt-3">
+      <SiteNav />
     </header>
   );
 }

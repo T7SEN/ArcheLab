@@ -31,7 +31,9 @@ export default async function HomePage() {
   const portraits = await fetchPortraitUrls(["Bunny"]);
   return (
     <>
-      <section className="relative overflow-hidden border-b">
+      {/* The hero slides up under the floating navbar, so its background reaches the
+          top of the page; its padding adds the header's height back. */}
+      <section className="relative -mt-(--site-header-height) overflow-hidden border-b">
         {/* React Bits effects take the palette's values: they draw with WebGL and canvas. */}
         <div aria-hidden="true" className="absolute inset-0">
           <DotGrid
@@ -47,7 +49,7 @@ export default async function HomePage() {
           aria-hidden="true"
           className="pointer-events-none absolute -top-48 left-1/2 size-[44rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
         />
-        <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-12 px-4 py-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-center lg:py-24">
+        <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-12 px-4 pt-[calc(var(--site-header-height)+4rem)] pb-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-center lg:pt-[calc(var(--site-header-height)+6rem)] lg:pb-24">
           <div>
             <Badge variant="secondary">
               <Sparkles aria-hidden="true" />
