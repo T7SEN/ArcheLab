@@ -1,6 +1,6 @@
 # AGENTS.md — ArcheLab
 
-Read this at the start of every session. Operational reference: `SKILL.md`. Product spec: `docs/SPEC.md`, which is local only and gitignored. Sourced research reports live in `reports/` with their notes in `research_notes/`, both local only and gitignored; read `reports/TFD chat rich text tags.md` before touching chat tags.
+Read this at the start of every session. Operational reference: `SKILL.md`. Product spec: `docs/SPEC.md`, which is local only and gitignored. Sourced research reports live in `reports/` with their notes in `research_notes/`, both local only and gitignored. Before touching chat tags, read the verified in-game results in `docs/SPEC.md` section 4.1 and `reports/TFD in-game chat tests.md`, then `reports/TFD chat rich text tags.md` for sources. The in-game results supersede that report.
 
 ## Project
 
