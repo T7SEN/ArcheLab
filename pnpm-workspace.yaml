@@ -24,7 +24,8 @@ peerDependencyRules:
 
 # Written by pnpm on 2026-10-15: these exact versions were under a day old at install,
 # so pnpm recorded them as exceptions to the 24-hour minimumReleaseAge (ADR 0002).
-# Next.js 16.4.1 is a security release. Drop the list at the next pin refresh.
+# Next.js 16.4.1 is a security release. Drop the list once every entry is a day old,
+# after 2026-10-15 21:50 UTC (ADR 0002, Phase 2 refresh).
 minimumReleaseAgeExclude:
   - "@next/env@16.4.1"
   - "@next/eslint-plugin-next@16.4.1"
