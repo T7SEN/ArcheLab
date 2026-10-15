@@ -222,7 +222,13 @@ test("Caliber and Gold show art from NEXON's site", async ({ page }) => {
 });
 
 test("icons sit in their groups", async ({ page }) => {
-  await page.getByRole("button", { name: /^NPCs \(11\)$/ }).click();
+  // Bosses and missions starts open; Part 10 added the Wall Crasher boss id.
+  await expect(
+    page.getByRole("button", {
+      name: /^Wall Crasher boss icon, adds \d+ characters$/,
+    }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: /^NPCs \(29\)$/ }).click();
   await expect(
     page.getByRole("button", { name: /^NPC 1 icon, adds \d+ characters$/ }),
   ).toBeVisible();
@@ -241,7 +247,9 @@ test("icons sit in their groups", async ({ page }) => {
   await expect(
     page.getByRole("button", { name: /^Anais icon, adds \d+ characters$/ }),
   ).toBeVisible();
-  await page.getByRole("button", { name: /^Character tickets \(5\)$/ }).click();
+  await page
+    .getByRole("button", { name: /^Character tickets \(40\)$/ })
+    .click();
   await expect(
     page.getByRole("button", {
       // Ticket 001 shows Lepic (test sheet Q8).
@@ -252,7 +260,7 @@ test("icons sit in their groups", async ({ page }) => {
   const { editor, markup } = builder(page);
   await editor.click();
   await page
-    .getByRole("button", { name: /^Mouse and gamepad buttons \(5\)$/ })
+    .getByRole("button", { name: /^Mouse and gamepad buttons \(7\)$/ })
     .click();
   await page
     .getByRole("button", { name: /^Mouse 0 icon, adds 18 characters$/ })
@@ -266,7 +274,9 @@ test("character tickets show their Descendant's portrait in a gold ring", async 
 }) => {
   const { editor } = builder(page);
   await editor.click();
-  await page.getByRole("button", { name: /^Character tickets \(5\)$/ }).click();
+  await page
+    .getByRole("button", { name: /^Character tickets \(40\)$/ })
+    .click();
   // Ticket 004 U01 shows Ultimate Bunny (test sheet Q11).
   const ticket = page.getByRole("button", {
     name: /^Ultimate Bunny character ticket icon/,

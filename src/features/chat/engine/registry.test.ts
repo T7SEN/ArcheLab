@@ -94,20 +94,30 @@ describe("chat registry", () => {
       expect(registry.imagesById.has(id.toLowerCase()), id).toBe(true);
     }
 
-    // Q8 to Q12: whose portrait each character ticket shows.
-    expect(
-      Object.fromEntries(
-        registry.data.images.flatMap((image) =>
-          image.art.kind === "ticket" ? [[image.id, image.art.descendant]] : [],
-        ),
-      ),
-    ).toEqual({
-      Icon_CharacterTicket_001_A01: "Lepic",
-      Icon_CharacterTicket_002_A01: "Ajax",
-      Icon_CharacterTicket_004_A01: "Bunny",
-      Icon_CharacterTicket_004_U01: "Ultimate Bunny",
-      Icon_CharacterTicket_006_A01: "Freyna",
-    });
+    // Q8 to Q12 and Part 10: ticket numbers follow the base Descendants in NEXON's
+    // order with Bunny fourth; U01 shows the Ultimate (the guide prints 002's as u01).
+    const ticketOrder = [
+      ...["Lepic", "Ajax", "Viessa", "Bunny", "Jayber", "Freyna", "Gley"],
+      ...["Sharen", "Blair", "Valby", "Kyle", "Esiemo", "Enzo", "Yujin"],
+      ...["Luna", "Hailey", "Keelan", "Ines", "Serena", "Nell", "Harris"],
+      ...["Dia", "Raven"],
+    ];
+    const tickets = registry.data.images.flatMap((image) =>
+      image.art.kind === "ticket" ? [image] : [],
+    );
+    expect(tickets).toHaveLength(36);
+    for (const image of tickets) {
+      const match = /^Icon_CharacterTicket_(\d{3})_([AUu])01$/.exec(image.id);
+      expect(match, image.id).not.toBeNull();
+      const base = ticketOrder[Number(match?.[1]) - 1];
+      const who = match?.[2] === "A" ? base : `Ultimate ${base}`;
+      expect(image.art, image.id).toEqual({ kind: "ticket", descendant: who });
+      expect(image.label).toBe(`${who} character ticket`);
+    }
+
+    // All 167 ids in Steam guide 3806145510 work in game, plus Ultimate Hailey's
+    // ticket, predicted from the rule (R32); the builder offers all 168.
+    expect(registry.data.images).toHaveLength(168);
 
     // P13 and P14: these showed as text, so they are not ids.
     for (const id of ["Fire", "Chill", "Toxic", "NonAttribute", "Mission7"]) {

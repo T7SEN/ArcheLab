@@ -67,7 +67,11 @@ export function iconGroupOf(image: ImageEntry): IconGroupId {
   if (/^icon[a-z]+\d+$/.test(id)) {
     return "portraits";
   }
-  if (/^(hard)?bossicon$|^mission|^questmain$|^subvulguspost$/.test(id)) {
+  if (
+    /^(hard)?bossicon$|^boss_|^mission|^targetmission$|^quest|^subvulguspost$/.test(
+      id,
+    )
+  ) {
     return "missions";
   }
   if (id.startsWith("npc")) {
@@ -79,7 +83,8 @@ export function iconGroupOf(image: ImageEntry): IconGroupId {
   if (/^(mouse|gamepad)\d+$/.test(id)) {
     return "buttons";
   }
-  if (id.startsWith("icon_characterticket_")) {
+  // Both spellings: Icon_CharacterTicket_001_A01 and the older Icon_CharacterTicket01.
+  if (id.startsWith("icon_characterticket")) {
     return "tickets";
   }
   return "other";

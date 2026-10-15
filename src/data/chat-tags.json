@@ -1457,6 +1457,887 @@
       "artVerified": true,
       "source": "in-game-test",
       "notes": "Steam guide 3806145510 (Attribute, boss, mission, quest list); NEXON's internal name for the Non-Attribute element. Shows an icon in game: test sheet Part 8, P13 (T7SEN, 2026-10-15), where Fire, Chill, Toxic and NonAttribute showed as text. Test sheet Q1 (T7SEN's screenshot, 2026-10-15) shows it: NEXON's gray Non-Attribute hexagon. Art: NEXON's Plain element icon from the Library on NEXON's site (icon_elemental--Plain.png on the site's asset CDN), linked, never copied. Matched by NEXON's own file name; T7SEN approved using it on 2026-10-15 (ADR 0012). The chat shows the same icon (Q1)."
+    },
+    {
+      "id": "Boss_Wallcrasher",
+      "label": "Wall Crasher boss",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R1 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Mission_Rotation",
+      "label": "Mission rotation",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R1 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "MissionTarget",
+      "label": "Mission target",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R1 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "MissionEcive_01",
+      "label": "Mission Ecive 1",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R2 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "MissionEcive_02",
+      "label": "Mission Ecive 2",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R2 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "TargetMission",
+      "label": "Target mission",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R2 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "QuestNotice",
+      "label": "Quest notice",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R3 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "QuestSub",
+      "label": "Sub quest",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R3 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "QuestField",
+      "label": "Field quest",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R3 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "QuestBoostPass",
+      "label": "Quest boost pass",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R3 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_CommonShop",
+      "label": "Common shop NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R4 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_Craft",
+      "label": "Craft NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R4 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_Craft_New",
+      "label": "Craft NPC (new)",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R4 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_Laboratory_Control",
+      "label": "Laboratory control NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R5 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_LevelReset",
+      "label": "Level reset NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R5 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_Mail",
+      "label": "Mail NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R5 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_Mail_New",
+      "label": "Mail NPC (new)",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R6 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_MasteryRank",
+      "label": "Mastery Rank NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R6 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_PaintExtract",
+      "label": "Paint extract NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R6 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_Portal",
+      "label": "Portal NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R7 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_Quest",
+      "label": "Quest NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R7 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_Rune",
+      "label": "Rune NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R7 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_Supplier",
+      "label": "Supplier NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R7 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_Talk",
+      "label": "Talk NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R8 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_VoidBattle",
+      "label": "Void battle NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R8 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_Warehouse",
+      "label": "Warehouse NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R8 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_WeaponStore",
+      "label": "Weapon store NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R8 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Npc_VoidVesselDungeon",
+      "label": "Void Vessel dungeon NPC",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R9 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Default",
+      "label": "Default",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R9 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Research",
+      "label": "Research",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R9 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Ship",
+      "label": "Ship",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R9 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "MapBattleZone",
+      "label": "Map battle zone",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R10 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "MapField",
+      "label": "Map field",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R10 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "NeutralizeFilter",
+      "label": "Neutralize filter",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R10 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Caution",
+      "label": "Caution",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R10 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Emphasis",
+      "label": "Emphasis",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R11 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "HighpowerRounds",
+      "label": "High-Power Rounds",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R11 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Minigame",
+      "label": "Minigame",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R11 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Icon_Reverse",
+      "label": "Reverse",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R11 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "StatReverse",
+      "label": "Stat reverse",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R12 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "VoidVault",
+      "label": "Void Vault",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R12 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "OnslaughtMode1",
+      "label": "Onslaught mode 1",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R12 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "OnslaughtMode2",
+      "label": "Onslaught mode 2",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R12 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "CharacterRecommend",
+      "label": "Character recommend",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R13 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Weekday",
+      "label": "Weekday",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R13 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "PickupWeapon",
+      "label": "Pick up weapon",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R13 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Help3",
+      "label": "Help 3",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R13 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "RiskReward",
+      "label": "Risk reward",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R14 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Mouse2",
+      "label": "Mouse 2",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R14 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Mouse3",
+      "label": "Mouse 3",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R14 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Icon_CharacterTicket01",
+      "label": "Character ticket 01",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R14 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Icon_CharacterTicket02",
+      "label": "Character ticket 02",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R15 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Icon_CharacterTicket03",
+      "label": "Character ticket 03",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R15 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Icon_CharacterTicket04",
+      "label": "Character ticket 04",
+      "art": {
+        "kind": "placeholder"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R16 (T7SEN, 2026-10-15). Appearance not described yet."
+    },
+    {
+      "id": "Icon_CharacterTicket_003_A01",
+      "label": "Viessa character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Viessa"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R17 (T7SEN, 2026-10-15). It shows Viessa, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Viessa, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_005_A01",
+      "label": "Jayber character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Jayber"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R17 (T7SEN, 2026-10-15). It shows Jayber, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Jayber, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_007_A01",
+      "label": "Gley character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Gley"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R18 (T7SEN, 2026-10-15). It shows Gley, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Gley, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_008_A01",
+      "label": "Sharen character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Sharen"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R18 (T7SEN, 2026-10-15). It shows Sharen, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Sharen, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_009_A01",
+      "label": "Blair character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Blair"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R19 (T7SEN, 2026-10-15). It shows Blair, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Blair, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_010_A01",
+      "label": "Valby character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Valby"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R19 (T7SEN, 2026-10-15). It shows Valby, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Valby, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_011_A01",
+      "label": "Kyle character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Kyle"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R20 (T7SEN, 2026-10-15). It shows Kyle, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Kyle, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_012_A01",
+      "label": "Esiemo character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Esiemo"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R20 (T7SEN, 2026-10-15). It shows Esiemo, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Esiemo, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_013_A01",
+      "label": "Enzo character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Enzo"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R21 (T7SEN, 2026-10-15). It shows Enzo, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Enzo, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_014_A01",
+      "label": "Yujin character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Yujin"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R21 (T7SEN, 2026-10-15). It shows Yujin, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Yujin, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_015_A01",
+      "label": "Luna character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Luna"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R22 (T7SEN, 2026-10-15). It shows Luna, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Luna, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_016_A01",
+      "label": "Hailey character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Hailey"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R22 (T7SEN, 2026-10-15). It shows Hailey, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Hailey, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_017_A01",
+      "label": "Keelan character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Keelan"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R23 (T7SEN, 2026-10-15). It shows Keelan, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Keelan, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_018_A01",
+      "label": "Ines character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Ines"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R23 (T7SEN, 2026-10-15). It shows Ines, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Ines, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_019_A01",
+      "label": "Serena character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Serena"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R24 (T7SEN, 2026-10-15). It shows Serena, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Serena, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_020_A01",
+      "label": "Nell character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Nell"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R24 (T7SEN, 2026-10-15). It shows Nell, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Nell, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_021_A01",
+      "label": "Harris character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Harris"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R25 (T7SEN, 2026-10-15). It shows Harris, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Harris, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_022_A01",
+      "label": "Dia character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Dia"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R25 (T7SEN, 2026-10-15). It shows Dia, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Dia, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_023_A01",
+      "label": "Raven character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Raven"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R26 (T7SEN, 2026-10-15). It shows Raven, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Raven, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_001_U01",
+      "label": "Ultimate Lepic character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Ultimate Lepic"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R26 (T7SEN, 2026-10-15). It shows Ultimate Lepic, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Ultimate Lepic, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_002_u01",
+      "label": "Ultimate Ajax character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Ultimate Ajax"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). The guide prints it with a lowercase u. Shows an icon in game: test sheet Part 10, R27 (T7SEN, 2026-10-15). It shows Ultimate Ajax, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Ultimate Ajax, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_003_U01",
+      "label": "Ultimate Viessa character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Ultimate Viessa"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R27 (T7SEN, 2026-10-15). It shows Ultimate Viessa, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Ultimate Viessa, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_006_U01",
+      "label": "Ultimate Freyna character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Ultimate Freyna"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R28 (T7SEN, 2026-10-15). It shows Ultimate Freyna, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Ultimate Freyna, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_007_U01",
+      "label": "Ultimate Gley character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Ultimate Gley"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R28 (T7SEN, 2026-10-15). It shows Ultimate Gley, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Ultimate Gley, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_008_U01",
+      "label": "Ultimate Sharen character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Ultimate Sharen"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R29 (T7SEN, 2026-10-15). It shows Ultimate Sharen, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Ultimate Sharen, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_009_U01",
+      "label": "Ultimate Blair character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Ultimate Blair"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R29 (T7SEN, 2026-10-15). It shows Ultimate Blair, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Ultimate Blair, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_010_U01",
+      "label": "Ultimate Valby character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Ultimate Valby"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R30 (T7SEN, 2026-10-15). It shows Ultimate Valby, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Ultimate Valby, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_012_U01",
+      "label": "Ultimate Esiemo character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Ultimate Esiemo"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R30 (T7SEN, 2026-10-15). It shows Ultimate Esiemo, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Ultimate Esiemo, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_014_U01",
+      "label": "Ultimate Yujin character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Ultimate Yujin"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R31 (T7SEN, 2026-10-15). It shows Ultimate Yujin, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Ultimate Yujin, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_015_U01",
+      "label": "Ultimate Luna character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Ultimate Luna"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Steam guide 3806145510 (updated 2026-10-06). Shows an icon in game: test sheet Part 10, R31 (T7SEN, 2026-10-15). It shows Ultimate Luna, as the ticket order predicts (T7SEN). Art: the NEXON API portrait of Ultimate Luna, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
+    },
+    {
+      "id": "Icon_CharacterTicket_016_U01",
+      "label": "Ultimate Hailey character ticket",
+      "art": {
+        "kind": "ticket",
+        "descendant": "Ultimate Hailey"
+      },
+      "artVerified": false,
+      "source": "in-game-test",
+      "notes": "Not in Steam guide 3806145510: predicted from the ticket rule, since Hailey is the 16th base Descendant and the only one with an Ultimate whose U01 ticket the guide leaves out. Shows Ultimate Hailey in game: test sheet R32 (T7SEN, 2026-10-15). Art: the NEXON API portrait of Ultimate Hailey, drawn with a gold ring like the ticket (ADR 0014); not compared picture for picture with the in-game ticket."
     }
   ],
   "channels": [
