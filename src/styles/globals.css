@@ -44,6 +44,9 @@
   /* The sticky header: a 0.75rem gap above the 44px navbar. The home hero slides up
      under it by this much, so its background reaches the top of the page. */
   --site-header-height: 3.5rem;
+  /* The hero dot grid's resting dots: darker than --muted-foreground, so a dot beside a
+     line of text never reads as part of it (T7SEN, 2026-10-16). */
+  --dot-grid: #565162;
   /* The gold ring of a character ticket in the chat preview. Matched by eye to
      T7SEN's screenshots (test sheet Q5 to Q7), not sampled. */
   --ticket-ring: #d9b25f;
@@ -93,6 +96,10 @@
   }
   html {
     @apply font-sans;
+    /* Links to a section glide there (T7SEN, 2026-10-16). Moving between pages stays
+       instant: the root layout's data-scroll-behavior lets Next.js switch this off for
+       route changes. */
+    scroll-behavior: smooth;
   }
 }
 
@@ -104,6 +111,9 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  html {
+    scroll-behavior: auto;
   }
 }
 
@@ -230,5 +240,28 @@
 @media (min-width: 64rem) {
   .card-carousel-track {
     grid-auto-columns: calc((100% - 3rem) / 4);
+  }
+}
+
+/*
+ * Text that sits on the hero's dot grid (HeroBackdrop): a soft patch of the page
+ * background behind it, so no dot shows inside or between its lines (T7SEN,
+ * 2026-10-16). Only for text without a background of its own: the patch paints above
+ * an element's own background. The hero sections clip it (overflow-hidden).
+ */
+@utility text-scrim {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -0.75rem -1.5rem;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(
+      closest-side,
+      color-mix(in srgb, var(--background) 92%, transparent) 65%,
+      transparent
+    );
   }
 }

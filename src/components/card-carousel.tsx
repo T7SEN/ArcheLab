@@ -65,6 +65,8 @@ interface CardCarouselProps {
   icon: ReactNode;
   title: string;
   description: ReactNode;
+  /** A link before the buttons, such as the page that lists every card. */
+  action?: ReactNode;
   /** The cards, one `<li>` each. */
   children: ReactNode;
   /** How long each page shows while the carousel rotates. */
@@ -82,6 +84,7 @@ export function CardCarousel({
   icon,
   title,
   description,
+  action,
   children,
   seconds = 6,
 }: CardCarouselProps) {
@@ -224,7 +227,16 @@ export function CardCarousel({
         icon={icon}
         title={title}
         description={description}
-        action={controls}
+        action={
+          action === undefined ? (
+            controls
+          ) : (
+            <div className="flex flex-wrap items-center gap-3">
+              {action}
+              {controls}
+            </div>
+          )
+        }
       />
       {/* Announced only when the page turns by hand: rotation would be too chatty. */}
       <p className="sr-only" aria-live={rotating ? "off" : "polite"}>

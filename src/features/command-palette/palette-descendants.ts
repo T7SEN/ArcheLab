@@ -1,25 +1,18 @@
-import { descendantChatIds } from "@/features/chat/ui/descendant-icons";
-import { shareHash } from "@/features/chat/ui/share-link";
+import type { DescendantLink } from "@/lib/nexon/descendant-page";
 import type { PaletteDescendant } from "./site-commands";
 
 /**
  * The Descendants the palette offers, as plain data for the server layout to hand the
- * client provider, so pages without the builder never load the chat registry: each
- * one with a chat icon, linking to the builder with that icon (ADR 0015, ADR 0022).
+ * client provider: each one opens its page, A–Z (ADR 0022, ADR 0023).
  */
-export function paletteDescendants(): PaletteDescendant[] {
-  return [...descendantChatIds()]
-    .flatMap(([name, id]) => {
-      const hash = shareHash(`<img id="${id}"/>`, "normal");
-      return hash === null
-        ? []
-        : [
-            {
-              name,
-              href: `/tools/chat${hash}`,
-              ultimate: name.startsWith("Ultimate "),
-            },
-          ];
-    })
+export function paletteDescendants(
+  descendants: readonly DescendantLink[],
+): PaletteDescendant[] {
+  return descendants
+    .map((descendant) => ({
+      name: descendant.name,
+      href: `/descendants/${descendant.slug}`,
+      ultimate: descendant.ultimate,
+    }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }

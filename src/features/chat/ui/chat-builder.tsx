@@ -72,8 +72,6 @@ interface Message {
 const emptyMessage: Message = { markup: "", pieces: [] };
 /** The palette's styles: the picker's groups, built once. */
 const paletteStyleGroups = styleGroups(chatRegistry);
-/** The builder's icons include every Descendant, so the palette's Descendants step aside. */
-const hidesDescendants = ["descendants"] as const;
 const { channels, chatBackground } = chatRegistry.data;
 const channelNames = channels.map((channel) => channel.name);
 
@@ -345,7 +343,9 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
   const usage = Math.min(100, (counted.used / counted.limit) * 100);
   const saved = asWritten.used - counted.used;
   // The builder's own commands in the palette while it is open (ADR 0022): its
-  // buttons and switches first, its styles and icons after the site's commands.
+  // buttons and switches first, its styles and icons after the site's pages and
+  // tools but before its Descendants (order 30), so "bunny" then Enter inserts the
+  // icon rather than leaving for Bunny's page (ADR 0023).
   usePaletteSource("chat-actions", 0, () =>
     chatActionCommands(
       {
@@ -379,19 +379,14 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
       },
     ),
   );
-  usePaletteSource(
-    "chat-inserts",
-    40,
-    () => [
-      ...styleCommands(paletteStyleGroups, (style) =>
-        editorRef.current?.applyStyle(style),
-      ),
-      ...iconCommands(chatRegistry.data.images, (id) =>
-        editorRef.current?.insertImage(id),
-      ),
-    ],
-    hidesDescendants,
-  );
+  usePaletteSource("chat-inserts", 25, () => [
+    ...styleCommands(paletteStyleGroups, (style) =>
+      editorRef.current?.applyStyle(style),
+    ),
+    ...iconCommands(chatRegistry.data.images, (id) =>
+      editorRef.current?.insertImage(id),
+    ),
+  ]);
   const editorLabel = `${ids}-editor-label`;
   const counterId = `${ids}-counter`;
   const markupId = `${ids}-markup`;

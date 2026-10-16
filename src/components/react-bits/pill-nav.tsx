@@ -4,7 +4,8 @@
  * PillNav from React Bits (https://reactbits.dev/components/pill-nav), adapted for
  * ArcheLab: colors from the design tokens (the light theme and the color props are
  * gone), Next.js links, a logo node instead of an image URL, a trailing pill (the
- * search button, ADR 0022), class merging with cn,
+ * search button, ADR 0022), a section mark for pages under a link (ADR 0023), a fold
+ * by CSS until the links are measured (`foldBelow`, ADR 0010), class merging with cn,
  * lint fixes and named export (ADR 0009).
  * Copyright (c) 2026 David Haz. MIT + Commons Clause License Condition v1.0, see
  * LICENSE.md in this folder.
@@ -43,6 +44,11 @@ export interface PillNavProps {
   trailing?: ReactNode;
   items: PillNavItem[];
   activeHref?: string;
+  /**
+   * How the active link is marked: `page` when it is the page shown, `section` when the
+   * page shown sits under it (`aria-current="true"`, with the same look).
+   */
+  activeKind?: "page" | "section";
   defaultActiveIndex?: number;
   onItemClick?: (
     item: PillNavItem,
@@ -59,6 +65,12 @@ export interface PillNavProps {
   stretch?: number;
   intro?: boolean;
   collapse?: "auto" | "always" | "never";
+  /**
+   * With `collapse="auto"`: the screen width, in px, below which the links fold. Until
+   * PillNav has measured the fold, and without JavaScript, CSS folds the links below it,
+   * so the first paint fits a phone. Without it, the links show until measured.
+   */
+  foldBelow?: number;
   onMenuToggle?: (open: boolean) => void;
   ariaLabel?: string;
   className?: string;
@@ -67,7 +79,7 @@ export interface PillNavProps {
 
 interface LinkProps {
   className: string;
-  "aria-current"?: "page";
+  "aria-current"?: "page" | "true";
   "aria-label"?: string;
   tabIndex?: number;
   onClick?: (event: ReactMouseEvent<HTMLElement>) => void;
@@ -163,7 +175,7 @@ const LIST =
   "m-0 flex h-full list-none items-stretch gap-[var(--pn-item-gap,2px)] p-0";
 const SLOT = "group/slot flex";
 const ITEM =
-  "relative isolate inline-flex h-full cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap rounded-full border-0 px-[var(--pn-x)] [background:none] [font-family:inherit] [font-size:inherit] [line-height:inherit] font-medium tracking-[-0.005em] text-[var(--pn-text)] no-underline outline-none transition-[color] duration-[250ms] ease-[ease] group-data-[lit]/slot:text-[var(--pn-strong)] aria-[current=page]:text-[var(--pn-strong)] group-data-[items=pill]/nav:[background:var(--pn-tile)] group-data-[items=pill]/nav:[box-shadow:var(--pn-tile-rim)] group-data-[items=pill]/nav:text-[var(--pn-strong)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--pn-ring)] motion-reduce:transition-none";
+  "relative isolate inline-flex h-full cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap rounded-full border-0 px-[var(--pn-x)] [background:none] [font-family:inherit] [font-size:inherit] [line-height:inherit] font-medium tracking-[-0.005em] text-[var(--pn-text)] no-underline outline-none transition-[color] duration-[250ms] ease-[ease] group-data-[lit]/slot:text-[var(--pn-strong)] aria-[current=page]:text-[var(--pn-strong)] aria-[current=true]:text-[var(--pn-strong)] group-data-[items=pill]/nav:[background:var(--pn-tile)] group-data-[items=pill]/nav:[box-shadow:var(--pn-tile-rim)] group-data-[items=pill]/nav:text-[var(--pn-strong)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--pn-ring)] motion-reduce:transition-none";
 const FACE =
   "inline-flex items-center gap-[0.45em] transition-transform duration-[360ms] ease-[cubic-bezier(0.22,1,0.36,1)] [&_svg]:h-[1.15em] [&_svg]:w-[1.15em] [&_svg]:flex-none group-data-[on]/slot:-translate-y-[var(--pn-roll)] group-data-[on]/slot:duration-500 group-data-[hover]/slot:-translate-y-[var(--pn-roll)] group-data-[hover]/slot:duration-500 motion-reduce:transition-none";
 const FACE_ALT =
@@ -190,9 +202,32 @@ const PANEL =
   "absolute inset-x-0 top-0 z-[1] box-border rounded-[24px] px-[6px] pb-[6px] pt-[calc(var(--pn-h)_+_10px)] group-data-[layout=joined]/nav:pt-[calc(var(--pn-h)_+_4px)]";
 const MENU = "m-0 flex list-none flex-col gap-[2px] p-0";
 const ROW =
-  "box-border flex h-[calc(var(--pn-h)_+_2px)] w-full cursor-pointer items-center gap-[10px] rounded-[18px] border-0 px-[16px] text-left [background:none] [font-family:inherit] text-[length:calc(var(--pn-font)_+_1px)] leading-none font-medium text-[var(--pn-strong)] no-underline outline-none transition-[background-color] duration-200 ease-[ease] [&_svg]:h-[1.15em] [&_svg]:w-[1.15em] [&_svg]:flex-none hover:[background:var(--pn-row-hover)] aria-[current=page]:[background:var(--pn-pill)] aria-[current=page]:[box-shadow:var(--pn-pill-shadow)] aria-[current=page]:text-[var(--pn-pill-ink)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--pn-ring)] motion-reduce:transition-none";
+  "box-border flex h-[calc(var(--pn-h)_+_2px)] w-full cursor-pointer items-center gap-[10px] rounded-[18px] border-0 px-[16px] text-left [background:none] [font-family:inherit] text-[length:calc(var(--pn-font)_+_1px)] leading-none font-medium text-[var(--pn-strong)] no-underline outline-none transition-[background-color] duration-200 ease-[ease] [&_svg]:h-[1.15em] [&_svg]:w-[1.15em] [&_svg]:flex-none hover:[background:var(--pn-row-hover)] aria-[current=page]:[background:var(--pn-pill)] aria-[current=page]:[box-shadow:var(--pn-pill-shadow)] aria-[current=page]:text-[var(--pn-pill-ink)] aria-[current=true]:[background:var(--pn-pill)] aria-[current=true]:[box-shadow:var(--pn-pill-shadow)] aria-[current=true]:text-[var(--pn-pill-ink)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--pn-ring)] motion-reduce:transition-none";
+// The measuring copy sits in a zero-width clipped box, so it never widens the page: a
+// fourth link put it past a 390px phone's edge (ADR 0024). The copy keeps its natural
+// width (w-max), which is what the fold check reads.
 const MEASURE =
-  "pointer-events-none invisible absolute left-0 top-0 flex gap-[2px]";
+  "pointer-events-none invisible absolute left-0 top-0 flex w-0 overflow-hidden";
+
+/**
+ * The fold before PillNav has measured it, and without JavaScript: the bar and the menu
+ * button are both in the page, and the screen width hides one. Below `foldBelow` the nav
+ * takes its folded layout, the same as ROOT's and the trailing pill's
+ * `data-[collapsed]` classes. Unlayered, these rules win over Tailwind's utilities.
+ */
+const foldCss = (foldBelow: number) => {
+  const nav = `nav[data-fold-below="${String(foldBelow)}"]`;
+  return (
+    `@media (width < ${String(foldBelow)}px) {` +
+    `${nav} { display: flex; width: 100%; justify-content: space-between; }` +
+    `${nav} > [data-part="bar"] { display: none; }` +
+    `${nav} > [data-part="trailing"] { margin-left: auto; }` +
+    `}` +
+    `@media (width >= ${String(foldBelow)}px) {` +
+    `${nav} > [data-part="toggle"] { display: none; }` +
+    `}`
+  );
+};
 
 const EASE_OUT = "cubic-bezier(0.22, 1, 0.36, 1)";
 
@@ -212,6 +247,7 @@ const PillNav = ({
   trailing,
   items,
   activeHref,
+  activeKind = "page",
   defaultActiveIndex = 0,
   onItemClick,
   layout = "split",
@@ -224,6 +260,7 @@ const PillNav = ({
   stretch = 0.5,
   intro = true,
   collapse = "auto",
+  foldBelow,
   onMenuToggle,
   ariaLabel = "Main",
   className,
@@ -241,7 +278,6 @@ const PillNav = ({
   const markRef = useRef<HTMLSpanElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const measureRef = useRef<HTMLDivElement>(null);
   const measureListRef = useRef<HTMLDivElement>(null);
   const slotRefs = useRef<(HTMLLIElement | null)[]>([]);
   const engineRef = useRef<Engine | null>(null);
@@ -249,7 +285,13 @@ const PillNav = ({
   const slideRef = useRef(false);
   const pendingRef = useRef<boolean | null>(null);
   const [selected, setSelected] = useState(defaultActiveIndex);
-  const [collapsed, setCollapsed] = useState(collapse === "always");
+  // Null until measured, when the fold is left to foldCss: the server's HTML and the
+  // first render on the client.
+  const [collapsed, setCollapsed] = useState<boolean | null>(
+    collapse === "auto" && foldBelow !== undefined
+      ? null
+      : collapse === "always",
+  );
   const [open, setOpen] = useState(false);
   const [panelShown, setPanelShown] = useState(false);
 
@@ -257,6 +299,7 @@ const PillNav = ({
   const activeIndex = controlled
     ? items.findIndex((item) => item.href === activeHref)
     : selected;
+  const activeCurrent = activeKind === "section" ? "true" : "page";
   const joined = layout === "joined";
   const hasLogo = Boolean(logo);
   const hasTrailing = Boolean(trailing);
@@ -291,7 +334,8 @@ const PillNav = ({
 
   useEffect(() => {
     const root = rootRef.current;
-    if (!root) return undefined;
+    // Unmeasured, the layout effect below is about to settle the fold.
+    if (!root || collapsed === null) return undefined;
     const reduce = prefersReducedMotion();
     const state = {
       x0: 0,
@@ -611,7 +655,7 @@ const PillNav = ({
 
   useLayoutEffect(() => {
     const root = rootRef.current;
-    const measureEl = measureRef.current;
+    const measureEl = measureListRef.current;
     if (!root || !measureEl) return undefined;
     const evaluate = () => {
       if (collapse === "always" || collapse === "never") {
@@ -659,7 +703,7 @@ const PillNav = ({
 
   useLayoutEffect(() => {
     const root = rootRef.current;
-    if (!root || !introRef.current) return;
+    if (!root || !introRef.current || collapsed === null) return;
     if (pendingRef.current !== null && pendingRef.current !== collapsed) return;
     pendingRef.current = null;
     introRef.current = false;
@@ -860,6 +904,7 @@ const PillNav = ({
       data-layout={layout}
       data-items={itemStyle}
       data-collapsed={collapsed ? "" : undefined}
+      data-fold-below={collapsed === null ? foldBelow : undefined}
       data-open={open ? "" : undefined}
       data-panel={panelShown ? "" : undefined}
       style={{ ...vars, ...style }}
@@ -882,7 +927,11 @@ const PillNav = ({
       )}
 
       {!collapsed && (
-        <div ref={barRef} className={cn(BAR, !joined && SURFACE)}>
+        <div
+          ref={barRef}
+          className={cn(BAR, !joined && SURFACE)}
+          data-part="bar"
+        >
           <div
             ref={trackRef}
             className={TRACK}
@@ -921,7 +970,7 @@ const PillNav = ({
                     {
                       className: ITEM,
                       "aria-current":
-                        index === activeIndex ? "page" : undefined,
+                        index === activeIndex ? activeCurrent : undefined,
                       "aria-label": item.ariaLabel,
                       onClick: (event) => {
                         choose(item, index, event);
@@ -969,17 +1018,19 @@ const PillNav = ({
             !joined && SURFACE,
             "group-data-[collapsed]/nav:ml-auto",
           )}
+          data-part="trailing"
         >
           {trailing}
           {!joined && <span className={RIM} />}
         </span>
       )}
 
-      {collapsed && (
+      {collapsed !== false && (
         <button
           ref={toggleRef}
           type="button"
           className={cn(TOGGLE, joined ? TOGGLE_BARE : SURFACE)}
+          data-part="toggle"
           aria-expanded={open}
           aria-controls={panelId}
           aria-label={open ? "Close menu" : "Open menu"}
@@ -1002,7 +1053,8 @@ const PillNav = ({
                   item,
                   {
                     className: ROW,
-                    "aria-current": index === activeIndex ? "page" : undefined,
+                    "aria-current":
+                      index === activeIndex ? activeCurrent : undefined,
                     tabIndex: open ? undefined : -1,
                     onClick: (event) => {
                       choose(item, index, event);
@@ -1020,8 +1072,8 @@ const PillNav = ({
         </div>
       )}
 
-      <div ref={measureRef} className={MEASURE} aria-hidden="true">
-        <div ref={measureListRef} className={LIST}>
+      <div className={MEASURE} aria-hidden="true">
+        <div ref={measureListRef} className={`${LIST} w-max`}>
           {items.map((item) => (
             <span key={item.href} className={INK_ITEM}>
               {face(item)}
@@ -1031,6 +1083,10 @@ const PillNav = ({
       </div>
 
       {joined && <span className={ROOT_RIM} />}
+
+      {collapsed === null && foldBelow !== undefined && (
+        <style>{foldCss(foldBelow)}</style>
+      )}
     </nav>
   );
 };

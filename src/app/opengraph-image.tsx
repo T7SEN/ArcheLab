@@ -10,6 +10,6 @@ export const contentType = ogContentType;
 export default function Image() {
   return ogImage({
     title: "Tools for The First Descendant",
-    subtitle: "Free and fan-made, built on NEXON's game data.",
+    subtitle: "Free, fan-made tools for Descendants.",
   });
 }

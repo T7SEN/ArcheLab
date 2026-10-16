@@ -22,6 +22,7 @@ describe("design tokens mirrored in TypeScript", () => {
       border: "border",
       mutedForeground: "muted-foreground",
       primary: "primary",
+      dotGrid: "dot-grid",
     };
     for (const [key, name] of Object.entries(names)) {
       expect(token(name), name).toBe(

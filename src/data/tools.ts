@@ -44,7 +44,7 @@ export const tools: readonly Tool[] = [
     cta: "Open the builder",
     features: [
       "Every verified color, rarity color and text size",
-      "Icons, with NEXON portraits for Descendants",
+      "Icons, with portraits for Descendants",
       "Counts the way the game does, against the chat limit",
     ],
   },

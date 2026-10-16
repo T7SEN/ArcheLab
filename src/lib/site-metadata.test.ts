@@ -1,14 +1,16 @@
 import { describe, expect, it } from "vitest";
 import robots from "@/app/robots";
-import sitemap from "@/app/sitemap";
-import { allPages } from "@/data/site-pages";
+import { allPages, siteHrefs } from "@/data/site-pages";
 import { pageMetadata, siteImage, siteUrl } from "./site-metadata";
 
 describe("search engines", () => {
-  it("the sitemap lists every page at the public address", () => {
-    expect(sitemap().map((entry) => entry.url)).toEqual(
-      allPages.map((page) => new URL(page.href, siteUrl).toString()),
-    );
+  it("the sitemap lists every page, then every Descendant's and weapon's", () => {
+    expect(siteHrefs(["raven", "ultimate-bunny"], ["monster-hunter"])).toEqual([
+      ...allPages.map((page) => page.href),
+      "/descendants/raven",
+      "/descendants/ultimate-bunny",
+      "/weapons/monster-hunter",
+    ]);
   });
 
   it("robots.txt allows every page and points at the sitemap", () => {

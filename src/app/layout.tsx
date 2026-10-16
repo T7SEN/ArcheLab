@@ -6,6 +6,9 @@ import { SiteHeader } from "@/components/site-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PaletteProvider } from "@/features/command-palette/palette-provider";
 import { paletteDescendants } from "@/features/command-palette/palette-descendants";
+import { paletteWeapons } from "@/features/command-palette/palette-weapons";
+import { fetchDescendantSummaries } from "@/lib/nexon/descendant-page";
+import { fetchWeaponSummaries } from "@/lib/nexon/weapon-page";
 import { siteDescription, siteName, siteUrl } from "@/lib/site-metadata";
 import { shellBackground } from "@/styles/tokens";
 import "@/styles/globals.css";
@@ -31,14 +34,25 @@ export const viewport: Viewport = {
   themeColor: shellBackground,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
+  // NEXON's Descendants and weapons for the palette, fetched once while the pages are
+  // prerendered (ADR 0023, ADR 0024). Empty when NEXON can't be reached.
+  const [descendantList, weaponList] = await Promise.all([
+    fetchDescendantSummaries(),
+    fetchWeaponSummaries(),
+  ]);
+  const descendants = paletteDescendants(descendantList);
+  const weapons = paletteWeapons(weaponList);
   return (
     // The inline background paints before the stylesheet loads, so there is no white flash.
     // The site is dark only; `dark` turns on shadcn's dark variants (ADR 0009).
+    // data-scroll-behavior: Next.js 16 turns off the CSS smooth scrolling while it
+    // changes pages, so only in-page jumps glide (ADR 0023).
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`dark ${inter.variable} ${rajdhani.variable}`}
       style={{ backgroundColor: shellBackground, colorScheme: "dark" }}
     >
@@ -47,7 +61,7 @@ export default function RootLayout({
             the next opens at once if it is within 400ms (Base UI's timeout). */}
         <TooltipProvider delay={700}>
           {/* The command palette (ADR 0022): Ctrl+K or the navbar's search button. */}
-          <PaletteProvider descendants={paletteDescendants()}>
+          <PaletteProvider descendants={descendants} weapons={weapons}>
             <SiteHeader />
             <main className="flex-1">{children}</main>
             <SiteFooter />

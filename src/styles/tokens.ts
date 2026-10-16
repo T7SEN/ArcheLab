@@ -9,6 +9,8 @@ export const palette = {
   border: "#2b2244",
   mutedForeground: "#a69dc3",
   primary: "#a184ff",
+  /** The hero dot grid's resting dots, darker than text (--dot-grid). */
+  dotGrid: "#565162",
 } as const;
 
 /** Page background, inlined on <html> so the first paint is dark before any stylesheet loads. */

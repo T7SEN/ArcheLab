@@ -1,14 +1,25 @@
-import { UserRound } from "lucide-react";
+import { Crosshair, UserRound } from "lucide-react";
 import { allPages, legalPages } from "@/data/site-pages";
 import { tools } from "@/data/tools";
 import type { PaletteCommand } from "./commands";
 
-/** A Descendant the palette offers: picking it opens the builder with its icon. */
+/** A Descendant the palette offers: picking it opens the Descendant's page. */
 export interface PaletteDescendant {
   readonly name: string;
-  /** The builder with a share link holding the Descendant's chat icon. */
+  /** The Descendant's page. */
   readonly href: string;
   readonly ultimate: boolean;
+}
+
+/** A weapon the palette offers: picking it opens the weapon's page. */
+export interface PaletteWeapon {
+  readonly name: string;
+  /** The weapon's page. */
+  readonly href: string;
+  /** Its tier's rarity name, such as "Transcendent", shown beside it and searchable. */
+  readonly tier: string;
+  /** Its type, which a search also matches: "hand cannon" finds every Hand Cannon. */
+  readonly type: string;
 }
 
 const legalHrefs = new Set(legalPages.map((page) => page.href));
@@ -39,17 +50,32 @@ export function toolCommands(): PaletteCommand[] {
   }));
 }
 
-/** Each Descendant with a chat icon, opening the builder with that icon. */
+/** Each Descendant, opening its page. */
 export function descendantCommands(
   descendants: readonly PaletteDescendant[],
 ): PaletteCommand[] {
   return descendants.map((descendant) => ({
-    id: `descendant:${descendant.name}`,
+    id: `descendant:${descendant.href}`,
     label: descendant.name,
     group: "Descendants",
     icon: UserRound,
-    keywords: ["descendant", "icon", "portrait"],
+    keywords: ["descendant"],
     ...(descendant.ultimate ? { hint: "Ultimate" } : {}),
     action: { kind: "go", href: descendant.href },
+  }));
+}
+
+/** Each weapon, opening its page (ADR 0024). */
+export function weaponCommands(
+  weapons: readonly PaletteWeapon[],
+): PaletteCommand[] {
+  return weapons.map((weapon) => ({
+    id: `weapon:${weapon.href}`,
+    label: weapon.name,
+    group: "Weapons",
+    icon: Crosshair,
+    keywords: ["weapon", weapon.type, weapon.tier],
+    hint: weapon.tier,
+    action: { kind: "go", href: weapon.href },
   }));
 }

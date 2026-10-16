@@ -57,30 +57,52 @@ test("the carousels show NEXON's Descendants and weapons", async ({ page }) => {
   await counterOf(page, "Weapons");
 });
 
-test("picking a Descendant opens the builder with its icon", async ({
-  page,
-}) => {
+test("picking a Descendant opens their page", async ({ page }) => {
   // Reduced motion keeps the carousel from turning under the pointer.
   await page.emulateMedia({ reducedMotion: "reduce" });
-  for (const [name, markup] of [
-    ["Bunny", '<img id="IconBunny1"/>'],
-    ["Bunny Ultimate", '<img id="Icon_CharacterTicket_004_U01"/>'],
+  for (const [name, path, heading] of [
+    ["Bunny", "/descendants/bunny", "Bunny"],
+    ["Bunny Ultimate", "/descendants/ultimate-bunny", "Ultimate Bunny"],
   ] as const) {
     await page.goto("/");
     await page
-      .getByRole("link", {
-        name: `${name}: start a chat message with this Descendant's icon`,
-        // Exact, to keep the two Bunny cards apart.
-        exact: true,
-      })
+      .getByRole("list", { name: "Descendants" })
+      // Named by the card's text, name then badge; exact keeps the two Bunnys apart.
+      .getByRole("link", { name, exact: true })
       .click();
-    await expect(page).toHaveURL(/\/tools\/chat$/);
-    await expect(page.getByText("Opened a shared message.")).toBeVisible();
-    await page.getByRole("button", { name: "Markup", exact: true }).click();
-    await expect(
-      page.getByRole("textbox", { name: "Markup", exact: true }),
-    ).toHaveValue(markup);
+    await expect(page).toHaveURL(new RegExp(`${path}$`));
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(heading);
   }
+});
+
+test("picking a weapon opens its page", async ({ page }) => {
+  // Reduced motion keeps the carousel from turning under the pointer.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const card = page
+    .getByRole("list", { name: "Weapons" })
+    .getByRole("link")
+    .first();
+  const name = await card.locator(".font-display").innerText();
+  await card.click();
+  await expect(page).toHaveURL(/\/weapons\/[a-z0-9-]+$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(name);
+});
+
+test("the Weapons carousel links to the index", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "All weapons" }).click();
+  await expect(page).toHaveURL(/\/weapons$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Weapons");
+});
+
+test("the Descendants carousel links to the index", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "All Descendants" }).click();
+  await expect(page).toHaveURL(/\/descendants$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Descendants",
+  );
 });
 
 test("a carousel turns by hand, on its own, and stays put when paused", async ({

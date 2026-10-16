@@ -59,10 +59,9 @@ export default async function HomePage() {
               Tools for The First Descendant
             </ShinyText>
           </h1>
-          <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            Fan-made tools for Descendants, built on NEXON&apos;s game data.
-            Start with the chat message builder; Descendant and weapon builds
-            are next.
+          <p className="text-scrim mt-5 max-w-xl text-lg text-muted-foreground">
+            Fan-made tools for Descendants. Start with the chat message builder;
+            Descendant and weapon builds are next.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <StarBorder

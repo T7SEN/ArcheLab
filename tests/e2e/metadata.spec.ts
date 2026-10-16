@@ -6,7 +6,12 @@ import { siteUrl } from "../../src/lib/site-metadata";
 // the sitemap. Absolute URLs point at the public address; the files are fetched from
 // the local server by path.
 
-for (const { href } of allPages) {
+// Every listed page, and one page of each dynamic route.
+for (const href of [
+  ...allPages.map((page) => page.href),
+  "/descendants/raven",
+  "/weapons/monster-hunter",
+]) {
   test(`${href} has its canonical address and a link preview`, async ({
     page,
     request,
@@ -67,5 +72,12 @@ test("robots.txt points at a sitemap of every page", async ({ request }) => {
     expect(sitemap).toContain(
       `<loc>${new URL(href, siteUrl).toString()}</loc>`,
     );
+  }
+  // Then every Descendant's and weapon's page, from NEXON's lists (ADR 0023, 0024).
+  for (const slug of ["raven", "ultimate-bunny"]) {
+    expect(sitemap).toContain(`<loc>${siteUrl}/descendants/${slug}</loc>`);
+  }
+  for (const slug of ["monster-hunter", "thunder-cage"]) {
+    expect(sitemap).toContain(`<loc>${siteUrl}/weapons/${slug}</loc>`);
   }
 });

@@ -1,6 +1,8 @@
 import "server-only";
 import { z } from "zod";
+import { descendantSlug, fetchDescendantSummaries } from "./descendant-page";
 import { fetchMetadataSet, nexonImageUrl } from "./metadata";
+import { fetchWeaponSummaries, weaponSlug } from "./weapon-page";
 
 /**
  * The home page's Descendant and weapon carousels (ADR 0018): data from NEXON's
@@ -28,6 +30,8 @@ export type DescendantEntry = z.infer<typeof descendantSchema>;
 export type WeaponEntry = z.infer<typeof weaponSchema>;
 
 export interface DescendantItem {
+  /** The Descendant's page: `/descendants/<slug>` (ADR 0023). */
+  readonly slug: string;
   readonly name: string;
   readonly imageUrl: string;
   /** Named "Ultimate …" in NEXON's data. */
@@ -35,6 +39,8 @@ export interface DescendantItem {
 }
 
 export interface WeaponItem {
+  /** The weapon's page: `/weapons/<slug>` (ADR 0024). */
+  readonly slug: string;
   readonly name: string;
   readonly imageUrl: string;
   readonly type: string;
@@ -68,6 +74,7 @@ export function descendantShowcase(
   const items = [...entries]
     .sort((a, b) => Number(b.descendant_id) - Number(a.descendant_id))
     .map((entry) => ({
+      slug: descendantSlug(entry.descendant_name),
       name: entry.descendant_name,
       imageUrl: entry.descendant_image_url,
       ultimate: entry.descendant_name.startsWith("Ultimate "),
@@ -95,6 +102,7 @@ export function weaponShowcase(
   }
   return {
     items: [...best.values()].map((entry) => ({
+      slug: weaponSlug(entry.weapon_name),
       name: entry.weapon_name,
       imageUrl: entry.image_url,
       type: entry.weapon_type,
@@ -110,12 +118,29 @@ export async function fetchShowcase(): Promise<{
   descendants: DescendantShowcase;
   weapons: WeaponShowcase;
 }> {
-  const [descendants, weapons] = await Promise.all([
-    fetchMetadataSet("descendant", descendantSchema),
-    fetchMetadataSet("weapon", weaponSchema),
+  const [descendants, weapons, descendantPages, weaponPages] =
+    await Promise.all([
+      fetchMetadataSet("descendant", descendantSchema),
+      fetchMetadataSet("weapon", weaponSchema),
+      fetchDescendantSummaries(),
+      fetchWeaponSummaries(),
+    ]);
+  // Cards link to pages, which validate NEXON's data more strictly than the carousel
+  // does: a card whose page wasn't built would lead to a 404, so it is left out.
+  const built = new Set([
+    ...descendantPages.map((page) => `d:${page.slug}`),
+    ...weaponPages.map((page) => `w:${page.slug}`),
   ]);
+  const descendantShow = descendantShowcase(descendants);
+  const weaponShow = weaponShowcase(weapons);
   return {
-    descendants: descendantShowcase(descendants),
-    weapons: weaponShowcase(weapons),
+    descendants: {
+      ...descendantShow,
+      items: descendantShow.items.filter((item) => built.has(`d:${item.slug}`)),
+    },
+    weapons: {
+      ...weaponShow,
+      items: weaponShow.items.filter((item) => built.has(`w:${item.slug}`)),
+    },
   };
 }

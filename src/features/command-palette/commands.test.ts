@@ -6,10 +6,12 @@ import {
   type PaletteSource,
 } from "./commands";
 import { paletteDescendants } from "./palette-descendants";
+import { paletteWeapons } from "./palette-weapons";
 import {
   descendantCommands,
   pageCommands,
   toolCommands,
+  weaponCommands,
 } from "./site-commands";
 import { allPages } from "@/data/site-pages";
 import { tools } from "@/data/tools";
@@ -122,16 +124,21 @@ describe("the site's commands", () => {
     }
   });
 
-  it("offer each Descendant with a chat icon, opening the builder with it", () => {
-    const descendants = paletteDescendants();
-    expect(descendants.map((entry) => entry.name)).toContain("Bunny");
-    const bunny = descendants.find((entry) => entry.name === "Bunny");
-    const ultimate = descendants.find(
-      (entry) => entry.name === "Ultimate Bunny",
-    );
-    expect(bunny?.href).toMatch(/^\/tools\/chat#m=.+&c=normal$/);
-    expect(bunny?.ultimate).toBe(false);
-    expect(ultimate?.ultimate).toBe(true);
+  it("offer each Descendant A–Z, opening its page", () => {
+    const descendants = paletteDescendants([
+      { slug: "ultimate-bunny", name: "Ultimate Bunny", ultimate: true },
+      { slug: "raven", name: "Raven", ultimate: false },
+      { slug: "bunny", name: "Bunny", ultimate: false },
+    ]);
+    expect(descendants).toEqual([
+      { name: "Bunny", href: "/descendants/bunny", ultimate: false },
+      { name: "Raven", href: "/descendants/raven", ultimate: false },
+      {
+        name: "Ultimate Bunny",
+        href: "/descendants/ultimate-bunny",
+        ultimate: true,
+      },
+    ]);
 
     const commands = descendantCommands(descendants);
     expect(commands).toHaveLength(descendants.length);
@@ -141,5 +148,51 @@ describe("the site's commands", () => {
     expect(commands.every((entry) => matchesCommand(entry, "descendant"))).toBe(
       true,
     );
+  });
+
+  it("offer each weapon A–Z with its tier, opening its page and found by type", () => {
+    const weapons = paletteWeapons([
+      {
+        slug: "thunder-cage",
+        name: "Thunder Cage",
+        imageUrl: "",
+        tier: "Tier3",
+        type: "Hand Cannon",
+        rounds: "Impact Rounds",
+      },
+      {
+        slug: "monster-hunter",
+        name: "Monster Hunter",
+        imageUrl: "",
+        tier: "Tier4",
+        type: "Assault Rifle",
+        rounds: "General Rounds",
+      },
+    ]);
+    expect(weapons).toEqual([
+      {
+        name: "Monster Hunter",
+        href: "/weapons/monster-hunter",
+        tier: "Transcendent",
+        type: "Assault Rifle",
+      },
+      {
+        name: "Thunder Cage",
+        href: "/weapons/thunder-cage",
+        tier: "Ultimate",
+        type: "Hand Cannon",
+      },
+    ]);
+
+    const commands = weaponCommands(weapons);
+    expect(commands.at(0)).toMatchObject({
+      label: "Monster Hunter",
+      group: "Weapons",
+      hint: "Transcendent",
+      action: { kind: "go", href: "/weapons/monster-hunter" },
+    });
+    expect(
+      commands.filter((entry) => matchesCommand(entry, "hand cannon")),
+    ).toHaveLength(1);
   });
 });

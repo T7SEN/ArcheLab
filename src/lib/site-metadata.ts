@@ -7,7 +7,7 @@ export const siteName = "ArcheLab";
 
 /** The home page's description, and the default for pages without their own. */
 export const siteDescription =
-  "Free, fan-made tools for The First Descendant, built on NEXON's game data. Start with the chat message builder.";
+  "Free, fan-made tools for The First Descendant. Start with the chat message builder.";
 
 /**
  * The site's link preview image, drawn by `src/app/opengraph-image.tsx`. Pages without

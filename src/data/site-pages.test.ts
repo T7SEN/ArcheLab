@@ -1,7 +1,13 @@
 import { readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { allPages, legalPages, sitePages } from "./site-pages";
+import {
+  allPages,
+  dynamicRoutes,
+  legalPages,
+  navbarCurrent,
+  sitePages,
+} from "./site-pages";
 
 const appDir = fileURLToPath(new URL("../app/", import.meta.url));
 
@@ -26,10 +32,24 @@ function appRoutes(): string[] {
     );
 }
 
+const isDynamic = (route: string): boolean => route.includes("[");
+
 describe("site pages", () => {
   it("lists every page under src/app, so each one gets a navbar or footer link", () => {
     const listed = allPages.map((page) => page.href).sort();
-    expect(listed).toEqual(appRoutes().sort());
+    expect(listed).toEqual(
+      appRoutes()
+        .filter((route) => !isDynamic(route))
+        .sort(),
+    );
+  });
+
+  it("lists every dynamic route and where its pages come from", () => {
+    const dynamic = appRoutes().filter(isDynamic).sort();
+    expect(Object.keys(dynamicRoutes).sort()).toEqual(dynamic);
+    for (const [route, source] of Object.entries(dynamicRoutes)) {
+      expect(source, route).not.toBe("");
+    }
   });
 
   it("lists each page once", () => {
@@ -42,5 +62,25 @@ describe("site pages", () => {
     for (const page of legalPages) {
       expect(navbar).not.toContain(page.href);
     }
+  });
+});
+
+describe("navbarCurrent", () => {
+  it("marks a navbar page itself, or the section a page sits under", () => {
+    expect(navbarCurrent("/")).toEqual({ href: "/", page: true });
+    expect(navbarCurrent("/descendants")).toEqual({
+      href: "/descendants",
+      page: true,
+    });
+    expect(navbarCurrent("/descendants/ultimate-bunny")).toEqual({
+      href: "/descendants",
+      page: false,
+    });
+  });
+
+  it("marks nothing outside the navbar, and Home is no page's section", () => {
+    expect(navbarCurrent("/privacy")).toBeNull();
+    expect(navbarCurrent("/descendantsx")).toBeNull();
+    expect(navbarCurrent("/this-page-does-not-exist")).toBeNull();
   });
 });

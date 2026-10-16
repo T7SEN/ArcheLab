@@ -106,7 +106,7 @@ export function CommandPalette({
                 <Autocomplete.Input
                   aria-label="Search pages, tools and commands"
                   aria-describedby={hintsId}
-                  placeholder="Search pages, tools, Descendants…"
+                  placeholder="Search pages, tools, Descendants, weapons…"
                   className="h-13 w-full bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground"
                 />
                 <Dialog.Close
@@ -119,7 +119,7 @@ export function CommandPalette({
 
               <div className="min-h-0 flex-1 [scroll-padding-block:0.5rem] overflow-y-auto overscroll-contain p-2">
                 <Autocomplete.Empty className="px-3 py-10 text-center text-muted-foreground empty:p-0">
-                  Nothing matches. Try a page, a tool or a Descendant.
+                  Nothing matches. Try a page, a tool, a Descendant or a weapon.
                 </Autocomplete.Empty>
                 <Autocomplete.List className="grid gap-2">
                   {(group: PaletteGroup) => (

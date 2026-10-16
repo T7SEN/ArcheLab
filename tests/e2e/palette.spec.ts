@@ -57,17 +57,26 @@ test("a coming-soon tool shows but can't be picked", async ({ page }) => {
   await expect(page.getByText("Nothing matches")).toBeVisible();
 });
 
-test("a Descendant opens the builder with its icon", async ({ page }) => {
+test("a Descendant opens its page", async ({ page }) => {
   await page.goto("/");
   const search = await openWithShortcut(page);
   await search.fill("ultimate bunny");
   await page.getByRole("option", { name: /^Ultimate Bunny/ }).click();
-  await expect(page).toHaveURL(/\/tools\/chat$/);
-  await expect(page.getByText("Opened a shared message.")).toBeVisible();
-  await page.getByRole("button", { name: "Markup", exact: true }).click();
-  await expect(
-    page.getByRole("textbox", { name: "Markup", exact: true }),
-  ).toHaveValue('<img id="Icon_CharacterTicket_004_U01"/>');
+  await expect(page).toHaveURL(/\/descendants\/ultimate-bunny$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Ultimate Bunny",
+  );
+});
+
+test("a weapon opens its page", async ({ page }) => {
+  await page.goto("/");
+  const search = await openWithShortcut(page);
+  await search.fill("monster hunter");
+  await page.getByRole("option", { name: /^Monster Hunter/ }).click();
+  await expect(page).toHaveURL(/\/weapons\/monster-hunter$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Monster Hunter",
+  );
 });
 
 test.describe("on the chat builder", () => {
@@ -84,10 +93,10 @@ test.describe("on the chat builder", () => {
     await page.keyboard.type("hi ");
     const search = await openWithShortcut(page);
     await search.fill("bunny");
-    // The builder's own icons stand in for the site's Descendants group.
-    await expect(page.getByRole("group", { name: "Descendants" })).toHaveCount(
-      0,
-    );
+    // The builder's icons come first; the site's Descendants follow them.
+    await expect(
+      page.getByRole("group", { name: "Descendants" }),
+    ).toBeVisible();
     await expect(
       page.getByRole("option", { name: "Bunny +22", exact: true }),
     ).toHaveAttribute("data-highlighted", "");
@@ -99,6 +108,24 @@ test.describe("on the chat builder", () => {
     await expect(
       page.getByRole("textbox", { name: "Markup", exact: true }),
     ).toHaveValue('hi <img id="IconBunny1"/>!');
+  });
+
+  test("a Descendant's name inserts their portrait, not a character ticket", async ({
+    page,
+  }) => {
+    await page.getByRole("textbox", { name: "Message" }).click();
+    const search = await openWithShortcut(page);
+    // The registry lists Lepic's ticket before the portrait; the palette doesn't.
+    await search.fill("lepic");
+    await expect(
+      page.getByRole("option", { name: "Lepic +22", exact: true }),
+    ).toHaveAttribute("data-highlighted", "");
+    await page.keyboard.press("Enter");
+    await expect(search).toHaveCount(0);
+    await page.getByRole("button", { name: "Markup", exact: true }).click();
+    await expect(
+      page.getByRole("textbox", { name: "Markup", exact: true }),
+    ).toHaveValue('<img id="IconLepic1"/>');
   });
 
   test("its actions switch the channel and clear the message", async ({

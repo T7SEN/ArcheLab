@@ -42,17 +42,29 @@ describe("the home page's game showcase", () => {
     ]);
     expect(showcase.items).toEqual([
       {
+        slug: "ultimate-ajax",
         name: "Ultimate Ajax",
         imageUrl: `${imageHost}101000010`,
         ultimate: true,
       },
       {
+        slug: "ultimate-lepic",
         name: "Ultimate Lepic",
         imageUrl: `${imageHost}101000004`,
         ultimate: true,
       },
-      { name: "Ajax", imageUrl: `${imageHost}101000002`, ultimate: false },
-      { name: "Lepic", imageUrl: `${imageHost}101000001`, ultimate: false },
+      {
+        slug: "ajax",
+        name: "Ajax",
+        imageUrl: `${imageHost}101000002`,
+        ultimate: false,
+      },
+      {
+        slug: "lepic",
+        name: "Lepic",
+        imageUrl: `${imageHost}101000001`,
+        ultimate: false,
+      },
     ]);
     expect(showcase.groups).toBe(2);
     expect(showcase.ultimates).toBe(2);
@@ -67,12 +79,14 @@ describe("the home page's game showcase", () => {
     ]);
     expect(showcase.items).toEqual([
       {
+        slug: "rifle-b",
         name: "Rifle B",
         imageUrl: `${imageHost}3`,
         type: "Assault Rifle",
         roundsType: "General Rounds",
       },
       {
+        slug: "pistol",
         name: "Pistol",
         imageUrl: `${imageHost}2`,
         type: "Handgun",

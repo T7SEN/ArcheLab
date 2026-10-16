@@ -16,9 +16,9 @@
    - `src/app/favicon.ico`, committed and redrawn from `icon.svg` by `pnpm favicon` (`scripts/make-favicon.mjs`).
 
    Next.js links all three from every page's head.
-6. `src/app/robots.ts` and `src/app/sitemap.ts` serve `/robots.txt` and `/sitemap.xml`; the sitemap maps `allPages` (navbar and legal pages) onto `siteUrl`.
+6. `src/app/robots.ts` and `src/app/sitemap.ts` serve `/robots.txt` and `/sitemap.xml`; the sitemap maps `siteHrefs` (the navbar and legal pages, then every Descendant's and every weapon's page from NEXON's lists, ADR 0023 and ADR 0024) onto `siteUrl`.
 7. Tests:
-   - `src/lib/site-metadata.test.ts` checks the sitemap against `allPages`, robots.txt, and `pageMetadata`'s fields.
+   - `src/lib/site-metadata.test.ts` checks `siteHrefs` against `allPages` and Descendant slugs, robots.txt, and `pageMetadata`'s fields.
    - `logo-mark.test.ts` checks the ICO's frames.
    - `tests/e2e/metadata.spec.ts` loads each navbar page and checks its canonical address, `og:url`, card type and preview image (fetched by path, so a local build works). It also fetches every icon and checks robots.txt and the sitemap.
 

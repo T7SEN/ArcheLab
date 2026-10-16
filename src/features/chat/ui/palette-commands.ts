@@ -149,12 +149,22 @@ export function styleCommands(
   );
 }
 
-/** Every chat icon, inserted at the cursor when picked. */
+/**
+ * Every chat icon, inserted at the cursor when picked. Descendant portraits come first,
+ * as in the icon picker, then the rest; each part keeps the registry's order. The
+ * palette highlights the first match, and the registry lists some character tickets
+ * before the portraits, so "lepic" then Enter inserted Lepic's ticket instead of
+ * `IconLepic1` (found 2026-10-16).
+ */
 export function iconCommands(
   images: readonly ImageEntry[],
   insert: (id: string) => void,
 ): PaletteCommand[] {
-  return images.map((image) => {
+  const ordered = [
+    ...images.filter((image) => isPortrait(image)),
+    ...images.filter((image) => !isPortrait(image)),
+  ];
+  return ordered.map((image) => {
     const cost = imageTag(image.id).length;
     const groupTitle =
       iconGroups.find((entry) => entry.id === iconGroupOf(image))?.title ?? "";

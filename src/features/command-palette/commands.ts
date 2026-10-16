@@ -25,8 +25,8 @@ export interface PaletteCommand {
 }
 
 /**
- * Where commands come from (ADR 0022). The site's pages, tools and Descendants are
- * built in; a page adds its own while it is open (the chat builder's actions, styles
+ * Where commands come from (ADR 0022). The site's pages, tools, Descendants and weapons
+ * are built in; a page adds its own while it is open (the chat builder's actions, styles
  * and icons), and later sources, such as builds from the database, plug in the same way.
  */
 export interface PaletteSource {

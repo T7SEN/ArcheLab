@@ -1,8 +1,9 @@
-import { Crosshair, UsersRound } from "lucide-react";
+import { ArrowRight, Crosshair, UsersRound } from "lucide-react";
+import Link from "next/link";
 import type { CSSProperties } from "react";
+import { buttonVariants } from "@/components/ui/button";
+import { RoundsIcon } from "@/features/weapons/rounds-icon";
 import { chatRegistry } from "@/features/chat/ui/chat-registry";
-import { descendantChatIds } from "@/features/chat/ui/descendant-icons";
-import { shareHash } from "@/features/chat/ui/share-link";
 import type {
   DescendantItem,
   DescendantShowcase,
@@ -10,9 +11,6 @@ import type {
   WeaponShowcase,
 } from "@/lib/nexon/showcase";
 import { CardCarousel } from "./card-carousel";
-
-/** The chat image id that shows each Descendant (ADR 0014). */
-const chatIdByName = descendantChatIds();
 
 /** The game's own color for Ultimate characters, verified in game (chat-tags.json). */
 const ultimateColor =
@@ -44,7 +42,16 @@ export function GameShowcase({ descendants, weapons }: GameShowcaseProps) {
         <CardCarousel
           icon={<UsersRound />}
           title="Descendants"
-          description={`All ${String(descendants.items.length)} Descendants in NEXON's data, newest first, with the ${String(descendants.ultimates)} Ultimates in gold. Pick one to start a chat message with their icon.`}
+          description={`All ${String(descendants.items.length)} Descendants, newest first, with the ${String(descendants.ultimates)} Ultimates in gold. Pick one for their stats, skills and modules.`}
+          action={
+            <Link
+              href="/descendants"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              All Descendants
+              <ArrowRight aria-hidden="true" />
+            </Link>
+          }
         >
           {descendants.items.map((item) => (
             <li key={item.name}>
@@ -57,8 +64,17 @@ export function GameShowcase({ descendants, weapons }: GameShowcaseProps) {
         <CardCarousel
           icon={<Crosshair />}
           title="Weapons"
-          description={`${String(weapons.total)} weapons in ${String(weapons.types)} types. Each card shows the highest tier of its type.`}
+          description={`${String(weapons.total)} weapons in ${String(weapons.types)} types. Each card shows the highest tier of its type; pick one for its page.`}
           seconds={7}
+          action={
+            <Link
+              href="/weapons"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              All weapons
+              <ArrowRight aria-hidden="true" />
+            </Link>
+          }
         >
           {weapons.items.map((item) => (
             <li key={item.name}>
@@ -72,14 +88,16 @@ export function GameShowcase({ descendants, weapons }: GameShowcaseProps) {
 }
 
 function DescendantCard({ item }: { item: DescendantItem }) {
-  const id = chatIdByName.get(item.name);
-  const hash =
-    id === undefined ? null : shareHash(`<img id="${id}"/>`, "normal");
   const shortName = item.ultimate
     ? item.name.slice("Ultimate ".length)
     : item.name;
-  const content = (
-    <>
+  return (
+    // Named by its visible text, name then badge, so speech input can say what it sees
+    // (WCAG 2.5.3): "Hailey Ultimate".
+    <Link
+      href={`/descendants/${item.slug}`}
+      className={`group ${cardClass} transition-colors outline-none hover:border-ring/60 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset`}
+    >
       <span
         className="relative block aspect-[4/3] overflow-hidden"
         style={item.ultimate ? goldGlow : violetGlow}
@@ -113,26 +131,16 @@ function DescendantCard({ item }: { item: DescendantItem }) {
           </span>
         ) : null}
       </span>
-    </>
-  );
-  return hash === null ? (
-    <div className={cardClass}>{content}</div>
-  ) : (
-    <a
-      href={`/tools/chat${hash}`}
-      // The visible name comes first, then the badge, so speech input can say what it
-      // sees (WCAG 2.5.3): "Hailey Ultimate", not "Ultimate Hailey".
-      aria-label={`${shortName}${item.ultimate ? " Ultimate" : ""}: start a chat message with this Descendant's icon`}
-      className={`group ${cardClass} transition-colors outline-none hover:border-ring/60 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset`}
-    >
-      {content}
-    </a>
+    </Link>
   );
 }
 
 function WeaponCard({ item }: { item: WeaponItem }) {
   return (
-    <figure className={cardClass}>
+    <Link
+      href={`/weapons/${item.slug}`}
+      className={`group ${cardClass} transition-colors outline-none hover:border-ring/60 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset`}
+    >
       <span
         className="grid aspect-[4/3] place-items-center p-6"
         style={violetGlow}
@@ -143,17 +151,20 @@ function WeaponCard({ item }: { item: WeaponItem }) {
           alt=""
           loading="lazy"
           decoding="async"
-          className="max-h-full w-auto max-w-full object-contain"
+          className="max-h-full w-auto max-w-full object-contain transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none"
         />
       </span>
-      <figcaption className="grid gap-0.5 border-t border-border px-4 py-3">
+      <span className="grid gap-0.5 border-t border-border px-4 py-3">
         <span className="truncate font-display text-lg font-semibold tracking-wide">
           {item.name}
         </span>
-        <span className="text-xs text-muted-foreground">
-          {item.type} · {item.roundsType}
+        {/* Keeps the name and the type apart in the card's text for assistive tech. */}{" "}
+        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          {item.type} ·
+          <RoundsIcon rounds={item.roundsType} className="size-3.5" />
+          {item.roundsType}
         </span>
-      </figcaption>
-    </figure>
+      </span>
+    </Link>
   );
 }

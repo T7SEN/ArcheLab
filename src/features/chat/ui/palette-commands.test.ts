@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { matchesCommand } from "@/features/command-palette/commands";
 import { chatRegistry } from "./chat-registry";
 import {
   chatActionCommands,
@@ -110,5 +111,29 @@ describe("styles and icons", () => {
     expect(bunny).toMatchObject({ label: "Bunny", hint: "+22" });
     run(bunny?.action);
     expect(insert).toHaveBeenCalledWith("IconBunny1");
+  });
+
+  it("list Descendant portraits first, so a name finds the portrait before a ticket", () => {
+    const commands = iconCommands(chatRegistry.data.images, vi.fn());
+    const portraits = chatRegistry.data.images.filter(
+      (image) => image.art.kind === "descendant",
+    );
+    expect(portraits.length).toBeGreaterThan(0);
+    expect(
+      commands.slice(0, portraits.length).map((entry) => entry.id),
+    ).toEqual(portraits.map((image) => `icon:${image.id}`));
+    // The palette highlights the first match: for every Descendant, their portrait.
+    for (const portrait of portraits) {
+      const first = commands.find((entry) =>
+        matchesCommand(entry, portrait.label.toLowerCase()),
+      );
+      expect(first?.id, portrait.label).toBe(`icon:${portrait.id}`);
+    }
+    // Everything else keeps the registry's order.
+    expect(commands.slice(portraits.length).map((entry) => entry.id)).toEqual(
+      chatRegistry.data.images
+        .filter((image) => image.art.kind !== "descendant")
+        .map((image) => `icon:${image.id}`),
+    );
   });
 });
