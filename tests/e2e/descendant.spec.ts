@@ -38,6 +38,20 @@ test("Raven's page shows the hero, stats, skills, modules and research", async (
     modules.getByRole("heading", { name: "Nightfall" }),
   ).toBeVisible();
   await expect(modules.getByText("Transcendent").first()).toBeVisible();
+  // Ancestor modules are a tier of their own, not Transcendent (T7SEN, 2026-10-16).
+  const resolve = modules
+    .getByRole("listitem")
+    .filter({ has: page.getByRole("heading", { name: "Shadow's Resolve" }) });
+  await expect(
+    resolve.getByText("Ancestors", { exact: true }).first(),
+  ).toBeVisible();
+  await expect(resolve.getByText("Transcendent", { exact: true })).toHaveCount(
+    0,
+  );
+  // Each module's name opens its details on the modules index (ADR 0025).
+  await expect(
+    modules.getByRole("link", { name: "Nightfall", exact: true }),
+  ).toHaveAttribute("href", "/modules?module=nightfall");
 
   const research = page.getByRole("region", { name: "Research" });
   await expect(

@@ -68,7 +68,11 @@ export function SiteFooter() {
         <FooterColumn title="Site">
           {sitePages.map((page) => (
             <li key={page.href}>
-              <Link href={page.href} className={linkClass}>
+              <Link
+                href={page.href}
+                prefetch={page.prefetch}
+                className={linkClass}
+              >
                 <LinkIcon icon={page.icon} />
                 {page.label}
               </Link>

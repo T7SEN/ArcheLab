@@ -22,7 +22,11 @@ export function SiteNav() {
       logoAlt="ArcheLab"
       trailing={<PaletteButton />}
       // Labels only: the footer shows the pages' icons.
-      items={sitePages.map(({ href, label }) => ({ href, label }))}
+      items={sitePages.map(({ href, label, prefetch }) => ({
+        href,
+        label,
+        prefetch,
+      }))}
       // A path outside the navbar matches no link, so nothing is marked.
       activeHref={current?.href ?? pathname}
       activeKind={current?.page === false ? "section" : "page"}

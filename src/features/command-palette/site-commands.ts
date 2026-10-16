@@ -1,7 +1,8 @@
-import { Crosshair, UserRound } from "lucide-react";
+import { Cpu, Crosshair, UserRound } from "lucide-react";
 import { allPages, legalPages } from "@/data/site-pages";
 import { tools } from "@/data/tools";
 import type { PaletteCommand } from "./commands";
+import type { PaletteModule } from "./palette-modules";
 
 /** A Descendant the palette offers: picking it opens the Descendant's page. */
 export interface PaletteDescendant {
@@ -77,5 +78,20 @@ export function weaponCommands(
     keywords: ["weapon", weapon.type, weapon.tier],
     hint: weapon.tier,
     action: { kind: "go", href: weapon.href },
+  }));
+}
+
+/** Each module, opening its details on the modules index (ADR 0025). */
+export function moduleCommands(
+  modules: readonly PaletteModule[],
+): PaletteCommand[] {
+  return modules.map((module) => ({
+    id: `module:${module.slug}`,
+    label: module.name,
+    group: "Modules",
+    icon: Cpu,
+    keywords: ["module", module.tier, ...module.keywords],
+    hint: module.tier,
+    action: { kind: "go", href: `/modules?module=${module.slug}` },
   }));
 }

@@ -5,12 +5,16 @@
  * its rounds icon: ATR-0 Prototype and Emperor's Guard Lance (Enhanced Ammo) carry
  * `EnhancedRounds`, Malicious Dominator (Impact Rounds) `ImpactRounds`, Raging Light
  * (High-Power Rounds) `HighpowerRounds`, Monster Hunter (General Rounds) `GeneralRounds`.
+ * Modules name Enhanced Ammo "Special Rounds": the Library's modules page
+ * (https://tfd.nexon.com/en/library/modules) shows `EnhancedRounds` beside "Special
+ * Rounds" in its Firearm filter (checked 2026-10-16).
  */
 const libraryIcons = "https://tfdvod.dn.nexoncdn.co.kr/img/cbt/library/icons/";
 
 const roundsIconFiles: ReadonlyMap<string, string> = new Map([
   ["General Rounds", "icon_bullet--GeneralRounds.png"],
   ["Enhanced Ammo", "icon_bullet--EnhancedRounds.png"],
+  ["Special Rounds", "icon_bullet--EnhancedRounds.png"],
   ["Impact Rounds", "icon_bullet--ImpactRounds.png"],
   ["High-Power Rounds", "icon_bullet--HighpowerRounds.png"],
 ]);

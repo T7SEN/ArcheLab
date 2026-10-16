@@ -13,8 +13,10 @@ import {
 import { CommandPalette } from "./command-palette";
 import type { PaletteCommand, PaletteSource } from "./commands";
 import { isPaletteShortcut } from "./shortcut";
+import { loadPaletteModules, type PaletteModule } from "./palette-modules";
 import {
   descendantCommands,
+  moduleCommands,
   pageCommands,
   toolCommands,
   weaponCommands,
@@ -33,7 +35,8 @@ const PaletteContext = createContext<PaletteContextValue | null>(null);
 /**
  * The command palette for every page (ADR 0022): it holds the open state and the
  * command sources, and opens on Ctrl+K or ⌘K anywhere, the chat editor included.
- * `descendants` and `weapons` are plain data the server layout builds once per build.
+ * `descendants` and `weapons` are plain data the server layout builds once per build;
+ * the modules load the first time the palette opens (`palette-modules.ts`).
  */
 export function PaletteProvider({
   descendants,
@@ -53,6 +56,24 @@ export function PaletteProvider({
     openRef.current = open;
   });
   const [registered, setRegistered] = useState<readonly PaletteSource[]>([]);
+  const [modules, setModules] = useState<readonly PaletteModule[] | null>(null);
+
+  // The modules come from a static file, asked for when the palette first opens; their
+  // group appears once it arrives, and a failure is asked for again on the next opening.
+  useEffect(() => {
+    if (!open || modules !== null) {
+      return;
+    }
+    let current = true;
+    void loadPaletteModules().then((list) => {
+      if (current && list !== null) {
+        setModules(list);
+      }
+    });
+    return () => {
+      current = false;
+    };
+  }, [open, modules]);
 
   const register = useCallback((source: PaletteSource) => {
     setRegistered((current) => [
@@ -74,9 +95,14 @@ export function PaletteProvider({
         commands: () => descendantCommands(descendants),
       },
       { id: "weapons", order: 35, commands: () => weaponCommands(weapons) },
+      {
+        id: "modules",
+        order: 40,
+        commands: () => (modules === null ? [] : moduleCommands(modules)),
+      },
     ];
     return [...builtIn, ...registered];
-  }, [descendants, weapons, registered]);
+  }, [descendants, weapons, modules, registered]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {

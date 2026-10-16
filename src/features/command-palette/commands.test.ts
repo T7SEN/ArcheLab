@@ -6,9 +6,11 @@ import {
   type PaletteSource,
 } from "./commands";
 import { paletteDescendants } from "./palette-descendants";
+import { readModuleList } from "./palette-modules";
 import { paletteWeapons } from "./palette-weapons";
 import {
   descendantCommands,
+  moduleCommands,
   pageCommands,
   toolCommands,
   weaponCommands,
@@ -194,5 +196,35 @@ describe("the site's commands", () => {
     expect(
       commands.filter((entry) => matchesCommand(entry, "hand cannon")),
     ).toHaveLength(1);
+  });
+
+  it("offer each module with its tier, opening its details and found by type", () => {
+    const modules = readModuleList({
+      modules: [
+        {
+          slug: "multi-trigger-rifling",
+          name: "Multi-Trigger Rifling",
+          tier: "Rare",
+          keywords: ["General Rounds", "Multi-Hit Chance"],
+        },
+      ],
+    });
+    expect(modules).not.toBeNull();
+    const commands = moduleCommands(modules ?? []);
+    expect(commands.at(0)).toMatchObject({
+      label: "Multi-Trigger Rifling",
+      group: "Modules",
+      hint: "Rare",
+      action: { kind: "go", href: "/modules?module=multi-trigger-rifling" },
+    });
+    expect(
+      commands.filter((entry) => matchesCommand(entry, "multi-hit chance")),
+    ).toHaveLength(1);
+  });
+
+  it("ignore a module list that isn't one", () => {
+    expect(readModuleList(null)).toBeNull();
+    expect(readModuleList({ modules: [{ slug: "x" }] })).toBeNull();
+    expect(readModuleList({ modules: [] })).toEqual([]);
   });
 });

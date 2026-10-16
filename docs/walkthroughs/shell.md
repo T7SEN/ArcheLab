@@ -40,6 +40,7 @@
 - Changing the navbar's size (PillNav `size`) or the header's top gap without updating `--site-header-height`. The header would clip or pad the pills, and the hero would no longer line up with the top of the page.
 - Changing `logoPath` without `src/app/icon.svg`, or `palette.primary` or `palette.background` without the favicon's hex values. The unit test catches both.
 - Putting text beside the navbar's logo, or making it wider. The links fold into the menu sooner; the e2e menu tests use 260px and need the fold above it.
+- Giving a heavy page a navbar entry without `prefetch: false`: Next.js prefetches every navbar and footer link on every page (the modules index's data is about 35 KB compressed; ADR 0025).
 - Adding, removing or renaming a navbar page, or changing the pills' sizes or font, without measuring the fold again and updating `navbarFoldBelow`. The first paint would fold at the old width and switch at hydration. The e2e first-paint test fails.
 - Changing the folded layout (ROOT's or the trailing pill's `data-[collapsed]` classes) without `foldCss`, which repeats it for the first paint. The e2e first-paint test compares the two.
 - Rendering the toggle only when `collapsed` is true, or dropping the `<style>`: phones get the unfolded links until hydration again. The e2e 390px test without JavaScript fails.

@@ -120,6 +120,7 @@ for (const javaScriptEnabled of [true, false]) {
           "/descendants/raven",
           "/weapons",
           "/weapons/monster-hunter",
+          "/modules",
         ]) {
           await page.goto(path);
           const nav = page.getByRole("navigation", { name: "Main" });
@@ -182,7 +183,7 @@ test("the navbar's first paint folds and lays out as PillNav measures it", async
 test("on a narrow screen the navbar links fold into a menu", async ({
   page,
 }) => {
-  // Today's four links and the search pill fold at 549px and below (ADR 0024).
+  // Today's five links and the search pill fold at 641px and below (ADR 0025).
   await page.setViewportSize({ width: 260, height: 700 });
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Main" });
@@ -205,7 +206,7 @@ test("on a narrow screen the navbar links fold into a menu", async ({
 
 test("the navbar menu also closes with reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  // Today's four links and the search pill fold at 549px and below (ADR 0024).
+  // Today's five links and the search pill fold at 641px and below (ADR 0025).
   await page.setViewportSize({ width: 260, height: 700 });
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Main" });

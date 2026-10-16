@@ -6,10 +6,12 @@ import { fetchMetadataSet, nexonImageUrl } from "./metadata";
 import { recipeFor, researchFor, type Recipe } from "./recipe";
 import {
   fetchMaterials,
+  fetchModules,
   fetchResearch,
   fetchStats,
   numericId,
   type MaterialRecord,
+  type ModuleRecord,
   type ResearchRecord,
   type StatRecord,
 } from "./shared-sets";
@@ -45,26 +47,7 @@ const descendantSchema = z.object({
   ),
 });
 
-const moduleSchema = z.object({
-  module_id: id,
-  module_name: z.string().min(1),
-  image_url: nexonImageUrl,
-  module_type: z.string().min(1).nullable(),
-  module_tier_id: z.string().regex(/^Tier\d+$/),
-  module_socket_type: z.string().min(1).nullable(),
-  available_descendant_id: z.array(id),
-  available_module_slot_type: z.array(z.string().min(1)),
-  module_stat: z.array(
-    z.object({
-      level: z.number().int().nonnegative(),
-      module_capacity: z.number(),
-      value: z.string().nullable(),
-    }),
-  ),
-});
-
 export type DescendantRecord = z.infer<typeof descendantSchema>;
-export type ModuleRecord = z.infer<typeof moduleSchema>;
 
 /** The NEXON sets a Descendant's page reads. */
 export interface DescendantSets {
@@ -105,11 +88,11 @@ export interface DescendantModule {
   readonly type: string | null;
   readonly socket: string | null;
   readonly slots: readonly string[];
-  /** Capacity at the lowest and the highest level NEXON lists. */
+  /** Capacity at the lowest and the highest level NEXON lists, or null for none. */
   readonly capacity: {
     readonly from: { readonly level: number; readonly value: number };
     readonly to: { readonly level: number; readonly value: number };
-  };
+  } | null;
   /** The effect text at the highest level, or null when NEXON gives none. */
   readonly effect: string | null;
   /**
@@ -316,10 +299,13 @@ export function descendantPageFrom(
           type: module.module_type,
           socket: module.module_socket_type,
           slots: module.available_module_slot_type,
-          capacity: {
-            from: { level: first.level, value: first.module_capacity },
-            to: { level: last.level, value: last.module_capacity },
-          },
+          capacity:
+            first.module_capacity === null || last.module_capacity === null
+              ? null
+              : {
+                  from: { level: first.level, value: first.module_capacity },
+                  to: { level: last.level, value: last.module_capacity },
+                },
           effect,
           transcendent:
             module.module_tier_id === "Tier4" &&
@@ -383,8 +369,8 @@ export function descendantPageFrom(
 
 // One fetch of each set per build worker (Next.js prerenders in several), however many
 // pages use it. Every page's palette lists the Descendants, so descendant.json is
-// fetched on its own; `module.json` only for Descendant pages, and the stat, research
-// and material sets through `shared-sets.ts`, shared with the weapon pages.
+// fetched on its own; the module, stat, research and material sets come through
+// `shared-sets.ts`, shared with the modules index and the weapon pages.
 let descendantsPromise: Promise<DescendantRecord[]> | null = null;
 let setsPromise: Promise<DescendantSets> | null = null;
 
@@ -397,7 +383,7 @@ function fetchDescendantSets(): Promise<DescendantSets> {
   setsPromise ??= Promise.all([
     fetchDescendants(),
     fetchStats(),
-    fetchMetadataSet("module", moduleSchema),
+    fetchModules(),
     fetchResearch(),
     fetchMaterials(),
   ]).then(([descendants, stats, modules, research, materials]) => ({
@@ -408,6 +394,22 @@ function fetchDescendantSets(): Promise<DescendantSets> {
     materials,
   }));
   return setsPromise;
+}
+
+/** Each Descendant's link by NEXON id, for pages that name who can equip a module. */
+export function descendantLinksById(
+  descendants: readonly DescendantRecord[],
+): Map<string, DescendantLink> {
+  return new Map(
+    descendants.map((entry) => [entry.descendant_id, linkTo(entry)]),
+  );
+}
+
+/** Each Descendant's link by NEXON id, fetched while pages are prerendered (ADR 0025). */
+export async function fetchDescendantLinks(): Promise<
+  Map<string, DescendantLink>
+> {
+  return descendantLinksById(await fetchDescendants());
 }
 
 /** Every Descendant, newest first, fetched while pages are prerendered (ADR 0023). */

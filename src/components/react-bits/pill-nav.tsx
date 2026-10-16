@@ -30,6 +30,8 @@ export interface PillNavItem {
   href: string;
   icon?: ReactNode;
   ariaLabel?: string;
+  /** False keeps Next.js from prefetching the page (a large one). */
+  prefetch?: false;
 }
 
 export interface PillNavProps {
@@ -885,7 +887,7 @@ const PillNav = ({
   };
 
   const link = (item: PillNavItem, props: LinkProps, children: ReactNode) => (
-    <Link href={item.href} {...props}>
+    <Link href={item.href} prefetch={item.prefetch} {...props}>
       {children}
     </Link>
   );

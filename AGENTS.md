@@ -22,12 +22,13 @@ ArcheLab is an unofficial tools hub for The First Descendant, a NEXON game. The 
 | `src/features/command-palette` | The command palette: command sources, the Ctrl+K dialog, the navbar's search button |
 | `src/features/descendants` | Descendant pages: skills, exclusive modules; the index grid and its filters |
 | `src/features/weapons` | Weapon pages: the grouped base stats, rounds icons; the index grid and its filters |
+| `src/features/modules` | The modules index: the grid, its filters, a module's details in the grid and its levels |
 | `src/features/game-data` | Shared by Descendant and weapon pages: the level slider, research recipe, rarity, page sections, previous and next, index filters in the URL |
 | `src/lib/nexon` | Server-only NEXON data layer: fetch, validate, cache metadata |
 | `src/lib` | Also: page metadata and the public address (`site-metadata.ts`), link preview images (`og-image.tsx`) |
 | `src/assets` | Files read at build time: the Rajdhani font for link previews, with its license |
 | `scripts` | Maintenance scripts: `make-favicon.mjs` (`pnpm favicon`) |
-| `src/data` | Versioned data: chat tag registry, the site's page list, the tool registry, Arche types NEXON's data leaves out, rounds icons |
+| `src/data` | Versioned data: chat tag registry, the site's page list, the tool registry, Arche types NEXON's data leaves out, rounds and module icons, melee modules, module tiers |
 | `src/components` | Shared UI: hub shell, tool cards; `ui/` holds the shadcn/ui components, `react-bits/` the adapted React Bits effects |
 | `src/styles` | Tailwind v4 theme and design tokens |
 | `tests/e2e` | Playwright tests |

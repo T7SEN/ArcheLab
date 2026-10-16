@@ -1,3 +1,4 @@
+import { moduleTypeTier } from "@/data/module-tiers";
 import { chatRegistry } from "@/features/chat/ui/chat-registry";
 
 export interface Rarity {
@@ -18,4 +19,21 @@ export function rarityOf(tierId: string): Rarity | null {
     tag === undefined ? undefined : /\((\w+) rarity\)/.exec(tag.label)?.[1];
   const hex = tag?.hex ?? null;
   return hex === null || name === undefined ? null : { name, hex };
+}
+
+/**
+ * A module's tier as the game names and colors it: Ancestors or Trigger for those
+ * modules, tiers of their own in the color of the rarity they share it with
+ * (`src/data/module-tiers.ts`), otherwise its rarity.
+ */
+export function moduleTierOf(
+  tierId: string,
+  moduleType: string | null,
+): Rarity | null {
+  const own = moduleTypeTier(moduleType);
+  if (own === null) {
+    return rarityOf(tierId);
+  }
+  const color = rarityOf(own.colorOf);
+  return color === null ? null : { name: own.name, hex: color.hex };
 }

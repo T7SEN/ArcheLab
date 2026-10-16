@@ -3,8 +3,9 @@ import { z } from "zod";
 import { fetchMetadataSet, nexonImageUrl } from "./metadata";
 
 /**
- * The NEXON sets both the Descendant and the weapon pages read (ADR 0023, ADR 0024):
- * stat names, research recipes and materials. Each is fetched once per build worker,
+ * The NEXON sets more than one page reads (ADR 0023, ADR 0024, ADR 0025): stat names,
+ * research recipes and materials for Descendant and weapon pages, and modules for
+ * Descendant pages and the modules index. Each is fetched once per build worker,
  * however many pages use it, and each schema reads only the fields the pages use.
  */
 
@@ -45,13 +46,38 @@ export const materialSchema = z.object({
   acquisition_detail: z.array(z.string()),
 });
 
+export const moduleSchema = z.object({
+  module_id: numericId,
+  module_name: z.string().min(1),
+  image_url: nexonImageUrl,
+  module_type: z.string().min(1).nullable(),
+  module_tier_id: z.string().regex(/^Tier\d+$/),
+  module_socket_type: z.string().min(1).nullable(),
+  // Only the modules index reads these two. A change to them leaves that module off
+  // the index (`moduleGroups`) without taking it off its Descendant's page.
+  module_class: z.string().min(1).nullable().catch(null),
+  available_weapon_type: z.array(z.string().min(1)).nullable().catch(null),
+  available_descendant_id: z.array(numericId),
+  available_module_slot_type: z.array(z.string().min(1)),
+  module_stat: z.array(
+    z.object({
+      level: z.number().int().nonnegative(),
+      // Null for Trigger modules, which take no capacity (2026-10-16).
+      module_capacity: z.number().nullable(),
+      value: z.string().nullable(),
+    }),
+  ),
+});
+
 export type StatRecord = z.infer<typeof statSchema>;
 export type ResearchRecord = z.infer<typeof researchSchema>;
 export type MaterialRecord = z.infer<typeof materialSchema>;
+export type ModuleRecord = z.infer<typeof moduleSchema>;
 
 let statsPromise: Promise<StatRecord[]> | null = null;
 let researchPromise: Promise<ResearchRecord[]> | null = null;
 let materialsPromise: Promise<MaterialRecord[]> | null = null;
+let modulesPromise: Promise<ModuleRecord[]> | null = null;
 
 /** `stat.json`: stat names by id. */
 export function fetchStats(): Promise<StatRecord[]> {
@@ -69,4 +95,10 @@ export function fetchResearch(): Promise<ResearchRecord[]> {
 export function fetchMaterials(): Promise<MaterialRecord[]> {
   materialsPromise ??= fetchMetadataSet("consumable-material", materialSchema);
   return materialsPromise;
+}
+
+/** `module.json`: every module, with its capacity and effect at each level. */
+export function fetchModules(): Promise<ModuleRecord[]> {
+  modulesPromise ??= fetchMetadataSet("module", moduleSchema);
+  return modulesPromise;
 }

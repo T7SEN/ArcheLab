@@ -2,6 +2,10 @@ import { ArrowDown, ArrowRight, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { GameShowcase } from "@/components/game-showcase";
+import {
+  ModuleShowcase,
+  type ModuleTierTile,
+} from "@/components/module-showcase";
 import { HeroBackdrop } from "@/components/hero-backdrop";
 import { ShinyText } from "@/components/react-bits/shiny-text";
 import { StarBorder } from "@/components/react-bits/star-border";
@@ -9,6 +13,8 @@ import { ComingSoonTools, FeaturedTool } from "@/components/tool-cards";
 import { Badge } from "@/components/ui/badge";
 import { tools } from "@/data/tools";
 import { ChatShowcase } from "@/features/chat/ui/chat-showcase";
+import { tierOptions, versionTier } from "@/features/modules/module-tiers";
+import { fetchModuleGroups } from "@/lib/nexon/module-index";
 import { fetchShowcase } from "@/lib/nexon/showcase";
 import { pageMetadata, siteDescription } from "@/lib/site-metadata";
 import { palette } from "@/styles/tokens";
@@ -29,10 +35,31 @@ const comingSoon = tools.flatMap((tool) =>
 export default async function HomePage() {
   // Fetched once while the page is prerendered (ADR 0008, ADR 0018). The Descendant
   // portraits also serve the chat builder's sample window.
-  const showcase = await fetchShowcase();
+  const [showcase, moduleGroups] = await Promise.all([
+    fetchShowcase(),
+    fetchModuleGroups(),
+  ]);
   const portraits = Object.fromEntries(
     showcase.descendants.items.map((item) => [item.name, item.imageUrl]),
   );
+  // A tile per module tier (ADR 0025): how many modules have a version of that tier,
+  // as the index's tier filter counts them, and the first one's art, A–Z.
+  const moduleTiers: ModuleTierTile[] = tierOptions(
+    moduleGroups.flatMap((group) => group.variants),
+  ).flatMap((tier) => {
+    const holders = moduleGroups.flatMap((group) =>
+      group.variants.filter(
+        (variant) => versionTier(variant).name === tier.name,
+      ),
+    );
+    const first = holders.at(0);
+    const count = moduleGroups.filter((group) =>
+      group.variants.some((variant) => versionTier(variant).name === tier.name),
+    ).length;
+    return first === undefined
+      ? []
+      : [{ ...tier, count, imageUrl: first.imageUrl }];
+  });
   // A live sample for each tool that has one, by slug.
   const samples: Record<string, ReactNode> = {
     chat: <ChatShowcase portraits={portraits} />,
@@ -101,6 +128,7 @@ export default async function HomePage() {
           descendants={showcase.descendants}
           weapons={showcase.weapons}
         />
+        <ModuleShowcase tiers={moduleTiers} total={moduleGroups.length} />
       </div>
     </>
   );

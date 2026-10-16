@@ -1,4 +1,5 @@
 import {
+  Cpu,
   Crosshair,
   House,
   MessageSquareText,
@@ -15,6 +16,11 @@ export interface SitePage {
   label: string;
   /** Shown beside the label in the footer; the navbar shows labels only. */
   icon: LucideIcon;
+  /**
+   * False for a page too heavy to prefetch from every page's navbar and footer: the
+   * modules index's data is about 35 KB compressed, 368 KB to parse (ADR 0025).
+   */
+  prefetch?: false;
 }
 
 /**
@@ -30,6 +36,8 @@ export const sitePages: readonly SitePage[] = [
   { href: "/descendants", label: "Descendants", icon: UsersRound },
   // Every weapon, with filters (ADR 0024); each one's page is under it.
   { href: "/weapons", label: "Weapons", icon: Crosshair },
+  // Every module, with filters; each opens in a panel on the index (ADR 0025).
+  { href: "/modules", label: "Modules", icon: Cpu, prefetch: false },
 ];
 
 /**
@@ -38,7 +46,7 @@ export const sitePages: readonly SitePage[] = [
  * runs; this width folds the first paint before that. A change to `sitePages` moves the
  * fold, and `shell.spec.ts` fails until this matches it again.
  */
-export const navbarFoldBelow = 550;
+export const navbarFoldBelow = 642;
 
 /** The legal pages, linked from every page's footer rather than the navbar (ADR 0021). */
 export const legalPages: readonly SitePage[] = [

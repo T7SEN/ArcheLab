@@ -169,3 +169,15 @@ test("the footer maps the site", async ({ page }) => {
     );
   }
 });
+
+test("the Modules section lists the tiers and opens each one's modules", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const tiers = page.getByRole("list", { name: "Module tiers" });
+  // Ancestors and Trigger first, then the rarities (T7SEN, 2026-10-16).
+  await expect(tiers.getByRole("link").first()).toContainText("Ancestors");
+  await tiers.getByRole("link", { name: /^Trigger/ }).click();
+  await expect(page).toHaveURL(/\/modules\?tier=Trigger$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Modules");
+});

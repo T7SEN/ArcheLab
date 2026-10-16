@@ -238,3 +238,15 @@ test("with reduced motion it still opens pages", async ({ page }) => {
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL("/terms");
 });
+
+test("a module opens its details on the modules index", async ({ page }) => {
+  await page.goto("/");
+  const search = await openWithShortcut(page);
+  // The Modules group loads when the palette first opens (ADR 0025).
+  await search.fill("multi-trigger rifling");
+  await page.getByRole("option", { name: /^Multi-Trigger Rifling/ }).click();
+  await expect(page).toHaveURL(/\/modules\?module=multi-trigger-rifling$/);
+  await expect(
+    page.getByRole("region", { name: "Multi-Trigger Rifling", exact: true }),
+  ).toBeVisible();
+});
