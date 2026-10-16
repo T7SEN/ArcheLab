@@ -3,7 +3,8 @@
 /*
  * PillNav from React Bits (https://reactbits.dev/components/pill-nav), adapted for
  * ArcheLab: colors from the design tokens (the light theme and the color props are
- * gone), Next.js links, a logo node instead of an image URL, class merging with cn,
+ * gone), Next.js links, a logo node instead of an image URL, a trailing pill (the
+ * search button, ADR 0022), class merging with cn,
  * lint fixes and named export (ADR 0009).
  * Copyright (c) 2026 David Haz. MIT + Commons Clause License Condition v1.0, see
  * LICENSE.md in this folder.
@@ -35,6 +36,11 @@ export interface PillNavProps {
   logo?: ReactNode;
   logoAlt?: string;
   logoHref?: string;
+  /**
+   * A round pill after the links, such as a search button: it fills the pill, which
+   * stays beside the menu button when the links fold.
+   */
+  trailing?: ReactNode;
   items: PillNavItem[];
   activeHref?: string;
   defaultActiveIndex?: number;
@@ -203,6 +209,7 @@ const PillNav = ({
   logo,
   logoAlt,
   logoHref = "/",
+  trailing,
   items,
   activeHref,
   defaultActiveIndex = 0,
@@ -230,6 +237,7 @@ const PillNav = ({
   const inkRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLSpanElement>(null);
   const logoRef = useRef<HTMLSpanElement>(null);
+  const trailingRef = useRef<HTMLSpanElement>(null);
   const markRef = useRef<HTMLSpanElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -251,6 +259,7 @@ const PillNav = ({
     : selected;
   const joined = layout === "joined";
   const hasLogo = Boolean(logo);
+  const hasTrailing = Boolean(trailing);
   const fill = hoverEffect === "fill";
   const glide = !fill && (hoverEffect === "glide" || indicator === "pill");
 
@@ -618,11 +627,18 @@ const PillNav = ({
         (parseFloat(styles.paddingRight) || 0);
       const listWidth = measureListRef.current?.offsetWidth ?? 0;
       const logoWidth = logoRef.current?.offsetWidth ?? 0;
+      const trailingWidth = trailingRef.current?.offsetWidth ?? 0;
       const pad = readVar(root, "--pn-pad");
       const gap = readVar(root, "--pn-gap");
       const need = joined
-        ? pad * 2 + (hasLogo ? logoWidth + 2 : 0) + listWidth
-        : (hasLogo ? logoWidth + gap : 0) + listWidth + pad * 2;
+        ? pad * 2 +
+          (hasLogo ? logoWidth + 2 : 0) +
+          listWidth +
+          (hasTrailing ? trailingWidth + 2 : 0)
+        : (hasLogo ? logoWidth + gap : 0) +
+          listWidth +
+          pad * 2 +
+          (hasTrailing ? trailingWidth + gap : 0);
       const next = need > available + 0.5;
       if (introRef.current && next !== collapsed) pendingRef.current = next;
       setCollapsed(next);
@@ -639,7 +655,7 @@ const PillNav = ({
     return () => {
       observer.disconnect();
     };
-  }, [collapse, collapsed, joined, hasLogo, size]);
+  }, [collapse, collapsed, joined, hasLogo, hasTrailing, size]);
 
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -676,6 +692,7 @@ const PillNav = ({
       );
     };
     pop(logoRef.current, 0);
+    pop(trailingRef.current, 60);
     if (collapsed) {
       pop(toggleRef.current, 120);
       return;
@@ -941,6 +958,21 @@ const PillNav = ({
           </div>
           {!joined && <span className={RIM} />}
         </div>
+      )}
+
+      {hasTrailing && (
+        // Folded, it moves to the right, beside the menu button.
+        <span
+          ref={trailingRef}
+          className={cn(
+            LOGO,
+            !joined && SURFACE,
+            "group-data-[collapsed]/nav:ml-auto",
+          )}
+        >
+          {trailing}
+          {!joined && <span className={RIM} />}
+        </span>
       )}
 
       {collapsed && (

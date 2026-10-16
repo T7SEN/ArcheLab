@@ -71,7 +71,7 @@ for (const reducedMotion of ["no-preference", "reduce"] as const) {
 test("on a narrow screen the navbar links fold into a menu", async ({
   page,
 }) => {
-  // Today's two links fold at 278px and below (ADR 0010).
+  // Today's two links and the search pill fold at 330px and below (ADR 0022).
   await page.setViewportSize({ width: 260, height: 700 });
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Main" });
@@ -93,7 +93,7 @@ test("on a narrow screen the navbar links fold into a menu", async ({
 
 test("the navbar menu also closes with reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  // Today's two links fold at 278px and below (ADR 0010).
+  // Today's two links and the search pill fold at 330px and below (ADR 0022).
   await page.setViewportSize({ width: 260, height: 700 });
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Main" });

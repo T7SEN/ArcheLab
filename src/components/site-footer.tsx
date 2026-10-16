@@ -1,3 +1,4 @@
+import { Database, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { LogoMark } from "@/components/logo-mark";
@@ -15,7 +16,15 @@ export const footerText =
 export const attributionText = "Data based on NEXON Open API.";
 
 const linkClass =
-  "rounded-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50";
+  "inline-flex items-start gap-2 rounded-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50";
+
+/**
+ * A footer link's icon: the link's own color, so it lights up with the label. It sits on
+ * the label's first line (16px icon, 20px line) when a narrow column wraps the label.
+ */
+function LinkIcon({ icon: Icon }: { icon: LucideIcon }) {
+  return <Icon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />;
+}
 
 /**
  * Every page's footer (ADR 0018): ArcheLab's mark and a line, a sitemap from the tool registry,
@@ -41,11 +50,16 @@ export function SiteFooter() {
             <li key={tool.slug}>
               {tool.status === "live" ? (
                 <Link href={tool.href} className={linkClass}>
+                  <LinkIcon icon={tool.icon} />
                   {tool.name}
                 </Link>
               ) : (
-                <span className="text-muted-foreground">
-                  {tool.name} <span className="text-xs text-primary">soon</span>
+                <span className="inline-flex items-start gap-2 text-muted-foreground">
+                  <LinkIcon icon={tool.icon} />
+                  <span>
+                    {tool.name}{" "}
+                    <span className="text-xs text-primary">soon</span>
+                  </span>
                 </span>
               )}
             </li>
@@ -55,6 +69,7 @@ export function SiteFooter() {
           {sitePages.map((page) => (
             <li key={page.href}>
               <Link href={page.href} className={linkClass}>
+                <LinkIcon icon={page.icon} />
                 {page.label}
               </Link>
             </li>
@@ -64,6 +79,7 @@ export function SiteFooter() {
           {legalPages.map((page) => (
             <li key={page.href}>
               <Link href={page.href} className={linkClass}>
+                <LinkIcon icon={page.icon} />
                 {page.label}
               </Link>
             </li>
@@ -77,6 +93,7 @@ export function SiteFooter() {
               rel="noreferrer"
               className={linkClass}
             >
+              <LinkIcon icon={Database} />
               NEXON Open API
             </a>
           </li>

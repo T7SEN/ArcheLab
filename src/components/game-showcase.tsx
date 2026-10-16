@@ -1,6 +1,7 @@
 import { Crosshair, UsersRound } from "lucide-react";
 import type { CSSProperties } from "react";
 import { chatRegistry } from "@/features/chat/ui/chat-registry";
+import { descendantChatIds } from "@/features/chat/ui/descendant-icons";
 import { shareHash } from "@/features/chat/ui/share-link";
 import type {
   DescendantItem,
@@ -10,19 +11,8 @@ import type {
 } from "@/lib/nexon/showcase";
 import { CardCarousel } from "./card-carousel";
 
-/**
- * The chat image id that shows each Descendant: the portrait icon for a base
- * Descendant, the Ultimate's character ticket for an Ultimate (ADR 0014).
- */
-const chatIdByName = new Map<string, string>();
-for (const image of chatRegistry.data.images) {
-  if (image.art.kind === "descendant" || image.art.kind === "ticket") {
-    const name = image.art.descendant;
-    if (image.art.kind === "descendant" || !chatIdByName.has(name)) {
-      chatIdByName.set(name, image.id);
-    }
-  }
-}
+/** The chat image id that shows each Descendant (ADR 0014). */
+const chatIdByName = descendantChatIds();
 
 /** The game's own color for Ultimate characters, verified in game (chat-tags.json). */
 const ultimateColor =

@@ -52,6 +52,13 @@ import { isUntested } from "./icon-options";
 import { MarkupPanel } from "./markup-panel";
 import { readShareHash, shareHash } from "./share-link";
 import { lookOf } from "./style-look";
+import { usePaletteSource } from "@/features/command-palette/palette-provider";
+import {
+  chatActionCommands,
+  iconCommands,
+  styleCommands,
+} from "./palette-commands";
+import { styleGroups } from "./style-options";
 import { StylePicker } from "./style-picker";
 import type { SavedTemplate } from "./personal-templates";
 import { TemplatesSheet } from "./templates-sheet";
@@ -63,6 +70,10 @@ interface Message {
 }
 
 const emptyMessage: Message = { markup: "", pieces: [] };
+/** The palette's styles: the picker's groups, built once. */
+const paletteStyleGroups = styleGroups(chatRegistry);
+/** The builder's icons include every Descendant, so the palette's Descendants step aside. */
+const hidesDescendants = ["descendants"] as const;
 const { channels, chatBackground } = chatRegistry.data;
 const channelNames = channels.map((channel) => channel.name);
 
@@ -333,6 +344,54 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
   // How full the message is, for the bar under the editor.
   const usage = Math.min(100, (counted.used / counted.limit) * 100);
   const saved = asWritten.used - counted.used;
+  // The builder's own commands in the palette while it is open (ADR 0022): its
+  // buttons and switches first, its styles and icons after the site's commands.
+  usePaletteSource("chat-actions", 0, () =>
+    chatActionCommands(
+      {
+        canCopy: best !== "",
+        canCopyWritten: saved > 0,
+        canShare: linkHash !== null,
+        canClear: !(message.markup === "" && message.pieces.length === 0),
+        channel: channelName,
+        channels,
+        gameBackground,
+      },
+      {
+        copyMarkup: () => void copy(best, "markup"),
+        copyWritten: () => void copy(message.markup, "written"),
+        copyLink: () => {
+          if (linkHash !== null) {
+            void copy(
+              `${window.location.origin}${window.location.pathname}${linkHash}`,
+              "link",
+            );
+          }
+        },
+        clear,
+        openTemplates: () => {
+          setTemplatesOpen(true);
+        },
+        setChannel: setChannelName,
+        toggleGameBackground: () => {
+          setGameBackground((current) => !current);
+        },
+      },
+    ),
+  );
+  usePaletteSource(
+    "chat-inserts",
+    40,
+    () => [
+      ...styleCommands(paletteStyleGroups, (style) =>
+        editorRef.current?.applyStyle(style),
+      ),
+      ...iconCommands(chatRegistry.data.images, (id) =>
+        editorRef.current?.insertImage(id),
+      ),
+    ],
+    hidesDescendants,
+  );
   const editorLabel = `${ids}-editor-label`;
   const counterId = `${ids}-counter`;
   const markupId = `${ids}-markup`;

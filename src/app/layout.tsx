@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { PaletteProvider } from "@/features/command-palette/palette-provider";
+import { paletteDescendants } from "@/features/command-palette/palette-descendants";
 import { siteDescription, siteName, siteUrl } from "@/lib/site-metadata";
 import { shellBackground } from "@/styles/tokens";
 import "@/styles/globals.css";
@@ -44,9 +46,12 @@ export default function RootLayout({
         {/* Tooltips wait 700ms of hovering (shadcn's default is 0). Once one is open,
             the next opens at once if it is within 400ms (Base UI's timeout). */}
         <TooltipProvider delay={700}>
-          <SiteHeader />
-          <main className="flex-1">{children}</main>
-          <SiteFooter />
+          {/* The command palette (ADR 0022): Ctrl+K or the navbar's search button. */}
+          <PaletteProvider descendants={paletteDescendants()}>
+            <SiteHeader />
+            <main className="flex-1">{children}</main>
+            <SiteFooter />
+          </PaletteProvider>
         </TooltipProvider>
       </body>
     </html>

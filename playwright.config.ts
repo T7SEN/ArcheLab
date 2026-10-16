@@ -15,16 +15,17 @@ export default defineConfig({
   },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    // Share links must round-trip across browsers (Phase 3 acceptance, ADR 0015).
+    // Share links must round-trip across browsers (Phase 3 acceptance, ADR 0015), and
+    // the command palette must open, pick and give focus back in each (ADR 0022).
     {
       name: "firefox",
       use: { ...devices["Desktop Firefox"] },
-      testMatch: /share\.spec\.ts/,
+      testMatch: /(share|palette)\.spec\.ts/,
     },
     {
       name: "webkit",
       use: { ...devices["Desktop Safari"] },
-      testMatch: /share\.spec\.ts/,
+      testMatch: /(share|palette)\.spec\.ts/,
     },
   ],
   // Serves the production build, so run `pnpm build` first.
