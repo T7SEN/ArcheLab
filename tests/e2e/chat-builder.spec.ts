@@ -19,6 +19,9 @@ async function openMarkup(page: Page): Promise<void> {
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/tools/chat");
+  // The editor mounts once the page has hydrated. A click before that is lost, which
+  // made tests time out under load.
+  await expect(builder(page).editor).toBeVisible();
 });
 
 test("the home page links to the builder", async ({ page }) => {

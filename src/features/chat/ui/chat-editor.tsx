@@ -40,6 +40,10 @@ export interface ChatEditorHandle {
   insertImage: (id: string) => void;
   /** Empties the message as an ordinary edit, so undo brings it back. */
   clear: () => void;
+  /** Replaces the message as one ordinary edit (a template), so undo brings the old one back. */
+  replace: (pieces: readonly Piece[]) => void;
+  /** The editable element, for returning focus to it from a dialog. */
+  element: () => HTMLElement | null;
 }
 
 interface ChatEditorProps {
@@ -287,6 +291,21 @@ export function ChatEditor({
           view.focus();
         }
       },
+      replace: (pieces) => {
+        const view = viewRef.current;
+        if (view !== null) {
+          view.dispatch(
+            closeHistory(
+              view.state.tr.replaceWith(
+                0,
+                view.state.doc.content.size,
+                fragmentFromPieces(schema, pieces),
+              ),
+            ),
+          );
+        }
+      },
+      element: () => viewRef.current?.dom ?? null,
     }),
     [],
   );

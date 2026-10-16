@@ -7,10 +7,18 @@ import {
   Code,
   Copy,
   Eraser,
+  Link2,
   MessageSquareText,
   TriangleAlert,
 } from "lucide-react";
-import { useId, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { Counter } from "@/components/react-bits/counter";
 import { SpotlightCard } from "@/components/react-bits/spotlight-card";
 import { StarBorder } from "@/components/react-bits/star-border";
@@ -42,8 +50,11 @@ import { contrastRatio, minimumTextContrast } from "./contrast";
 import { commonGlyphPrefix } from "./editor-model";
 import { isUntested } from "./icon-options";
 import { MarkupPanel } from "./markup-panel";
+import { readShareHash, shareHash } from "./share-link";
 import { lookOf } from "./style-look";
 import { StylePicker } from "./style-picker";
+import type { SavedTemplate } from "./personal-templates";
+import { TemplatesSheet } from "./templates-sheet";
 
 interface Message {
   /** The markup panel's text, as written. */
@@ -53,6 +64,7 @@ interface Message {
 
 const emptyMessage: Message = { markup: "", pieces: [] };
 const { channels, chatBackground } = chatRegistry.data;
+const channelNames = channels.map((channel) => channel.name);
 
 function styleName(style: Style): string {
   return style.type === "tag" ? style.name : style.id;
@@ -112,7 +124,17 @@ const windowSurface = {
     "linear-gradient(to bottom right, color-mix(in srgb, var(--primary) 50%, transparent), var(--border), transparent)",
 } as CSSProperties;
 
-type CopyStatus = { kind: "idle" } | { kind: "done" | "failed"; text: string };
+type CopyTarget = "markup" | "written" | "link";
+
+type CopyStatus =
+  | { kind: "idle" }
+  | { kind: "done" | "failed"; target: CopyTarget; text: string };
+
+/** A line under the message: removed characters and broken links warn; the rest informs. */
+interface Notice {
+  readonly text: string;
+  readonly tone: "info" | "warning";
+}
 
 interface ChatBuilderProps {
   portraits: PortraitUrls;
@@ -133,8 +155,11 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
   // The editor sits on the site's surface; this shows the in-game chat panel instead.
   const [gameBackground, setGameBackground] = useState(false);
   const [active, setActive] = useState<Style | null | "mixed">(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
   const [copyStatus, setCopyStatus] = useState<CopyStatus>({ kind: "idle" });
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+  // Set by a pick, so the closing sheet returns focus to the editor, not its button.
+  const pickedTemplate = useRef(false);
 
   const channelHex =
     channels.find((channel) => channel.name === channelName)?.hex ?? "#FFFFFF";
@@ -199,7 +224,7 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
   const onMarkupChange = (text: string): void => {
     const { markup, refused } = cleanMarkup(text, chatRegistry);
     if (refused.length > 0) {
-      setNotice(refusedNotice(refused));
+      setNotice({ text: refusedNotice(refused), tone: "warning" });
       refusedThisChange.current = true;
     }
     setMessage({ markup, pieces: parse(markup, chatRegistry) });
@@ -209,6 +234,26 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
 
   // The editor's edit empties the message and stays undoable (Ctrl+Z); resetting the
   // message too covers markup that renders as nothing, such as "<red></>".
+  const pickTemplate = (template: SavedTemplate): void => {
+    const hadMessage = message.markup !== "";
+    // Stored text is untrusted: it is cleaned like pasted markup (ADR 0017).
+    const { markup } = cleanMarkup(template.markup, chatRegistry);
+    editorRef.current?.replace(parse(markup, chatRegistry));
+    if (channelNames.includes(template.channel)) {
+      setChannelName(template.channel);
+    }
+    setCopyStatus({ kind: "idle" });
+    // After the editor's change, which clears notices, so this one stays.
+    setNotice({
+      text: hadMessage
+        ? `Loaded "${template.name}". Ctrl+Z brings back your message.`
+        : `Loaded "${template.name}".`,
+      tone: "info",
+    });
+    pickedTemplate.current = true;
+    setTemplatesOpen(false);
+  };
+
   const clear = (): void => {
     editorRef.current?.clear();
     setMessage(emptyMessage);
@@ -216,19 +261,75 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
     setNotice(null);
   };
 
-  const copy = async (text: string, what: string): Promise<void> => {
+  const copy = async (text: string, target: CopyTarget): Promise<void> => {
+    const what = {
+      markup: "Markup",
+      written: "Markup as written",
+      link: "Link",
+    }[target];
     try {
       await navigator.clipboard.writeText(text);
-      setCopyStatus({ kind: "done", text: `${what} copied.` });
+      setCopyStatus({ kind: "done", target, text: `${what} copied.` });
     } catch {
       setCopyStatus({
         kind: "failed",
-        text: "Copying failed. Open the markup, select it and copy it yourself.",
+        target,
+        text:
+          target === "link"
+            ? `Copying failed. Select and copy this link yourself: ${text}`
+            : "Copying failed. Open the markup, select it and copy it yourself.",
       });
     }
   };
 
+  // Opens a shared message from the URL hash (ADR 0015): on load, and when a link is
+  // pasted into the address bar of an open builder.
+  useEffect(() => {
+    const open = (): void => {
+      const shared = readShareHash(window.location.hash, channelNames);
+      if (shared.kind === "none") {
+        return;
+      }
+      // The link has done its job: a reload must not bring the shared version back
+      // over later edits.
+      window.history.replaceState(
+        null,
+        "",
+        window.location.pathname + window.location.search,
+      );
+      setCopyStatus({ kind: "idle" });
+      if (shared.kind === "broken") {
+        setNotice({
+          text: "This share link is broken or incomplete, so it opened nothing.",
+          tone: "warning",
+        });
+        return;
+      }
+      const { markup, refused } = cleanMarkup(shared.markup, chatRegistry);
+      setMessage({ markup, pieces: parse(markup, chatRegistry) });
+      if (shared.channel !== null) {
+        setChannelName(shared.channel);
+      }
+      setNotice(
+        refused.length > 0
+          ? {
+              text: `Opened a shared message. ${refusedNotice(refused)}`,
+              tone: "warning",
+            }
+          : { text: "Opened a shared message.", tone: "info" },
+      );
+    };
+    open();
+    window.addEventListener("hashchange", open);
+    return () => {
+      window.removeEventListener("hashchange", open);
+    };
+  }, []);
+
   const over = counted.overflowAt !== null;
+  // Null when the message is empty or its code would be too long to open again.
+  const linkHash =
+    message.markup === "" ? null : shareHash(message.markup, channelName);
   // How full the message is, for the bar under the editor.
   const usage = Math.min(100, (counted.used / counted.limit) * 100);
   const saved = asWritten.used - counted.used;
@@ -255,11 +356,28 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
               />
               Message
             </h2>
-            <span className="flex gap-1.5" aria-hidden="true">
-              <span className="size-2 rounded-full bg-border" />
-              <span className="size-2 rounded-full bg-border" />
-              <span className="size-2 rounded-full bg-primary/70" />
-            </span>
+            <div className="flex items-center gap-3">
+              <TemplatesSheet
+                open={templatesOpen}
+                onOpenChange={setTemplatesOpen}
+                portraits={portraits}
+                markup={message.markup}
+                channel={channelName}
+                onPick={pickTemplate}
+                finalFocus={() => {
+                  if (!pickedTemplate.current) {
+                    return true;
+                  }
+                  pickedTemplate.current = false;
+                  return editorRef.current?.element() ?? true;
+                }}
+              />
+              <span className="flex gap-1.5" aria-hidden="true">
+                <span className="size-2 rounded-full bg-border" />
+                <span className="size-2 rounded-full bg-border" />
+                <span className="size-2 rounded-full bg-primary/70" />
+              </span>
+            </div>
           </div>
           {/* minmax(0, 1fr): a long unbroken message must wrap, not widen the window. */}
           <div className="grid grid-cols-1 gap-3 p-4">
@@ -354,7 +472,10 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
                     onChange={onEditorChange}
                     onRefused={(chars) => {
                       refusedThisChange.current = true;
-                      setNotice(refusedNotice(chars));
+                      setNotice({
+                        text: refusedNotice(chars),
+                        tone: "warning",
+                      });
                     }}
                     onActiveStyle={setActive}
                   />
@@ -362,9 +483,14 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
               </div>
               <p
                 aria-live="polite"
-                className="mt-2 text-sm text-warning empty:mt-0"
+                className={cn(
+                  "mt-2 text-sm empty:mt-0",
+                  notice?.tone === "info"
+                    ? "text-muted-foreground"
+                    : "text-warning",
+                )}
               >
-                {notice}
+                {notice?.text}
               </p>
               <p className="mt-2 text-xs text-muted-foreground">
                 Untagged text takes the channel&apos;s color. The font is
@@ -423,30 +549,55 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
             <StarBorder
               type="button"
               disabled={best === ""}
-              onClick={() => void copy(best, "Markup")}
+              onClick={() => void copy(best, "markup")}
               radius={10}
               thickness={1.5}
               glow={0.6}
               backgroundColor="color-mix(in srgb, var(--primary) 22%, var(--card))"
               className="px-4 py-2.5 text-sm font-semibold"
             >
-              {copyStatus.kind === "done" ? (
+              {copyStatus.kind === "done" && copyStatus.target === "markup" ? (
                 <Check aria-hidden="true" className="size-4" />
               ) : (
                 <Copy aria-hidden="true" className="size-4" />
               )}
-              {copyStatus.kind === "done" ? "Copied" : "Copy markup"}
+              {copyStatus.kind === "done" && copyStatus.target === "markup"
+                ? "Copied"
+                : "Copy markup"}
             </StarBorder>
             {saved > 0 ? (
               <Button
                 type="button"
                 variant="outline"
                 size="lg"
-                onClick={() => void copy(message.markup, "Markup as written")}
+                onClick={() => void copy(message.markup, "written")}
               >
                 Copy as written
               </Button>
             ) : null}
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              disabled={linkHash === null}
+              onClick={() => {
+                if (linkHash !== null) {
+                  void copy(
+                    `${window.location.origin}${window.location.pathname}${linkHash}`,
+                    "link",
+                  );
+                }
+              }}
+            >
+              {copyStatus.kind === "done" && copyStatus.target === "link" ? (
+                <Check aria-hidden="true" />
+              ) : (
+                <Link2 aria-hidden="true" />
+              )}
+              {copyStatus.kind === "done" && copyStatus.target === "link"
+                ? "Link copied"
+                : "Copy link"}
+            </Button>
             <Button
               type="button"
               variant="ghost"

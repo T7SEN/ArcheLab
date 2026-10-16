@@ -113,7 +113,7 @@ export function filterImages(query: string): ImageEntry[] {
 }
 
 /** "Bunny icon", but "Boss icon" rather than "Boss icon icon". */
-function iconName(label: string): string {
+export function iconName(label: string): string {
   return /\bicon$/i.test(label) ? label : `${label} icon`;
 }
 

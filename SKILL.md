@@ -54,7 +54,7 @@ Sources, Node 26 checks, GitHub Action commit pins, and the refresh policy (deli
 ├── .gitignore                must keep the docs/SPEC.md entry
 ├── .node-version             exact Node version for local and CI
 ├── .github/workflows/ci.yml  checks, then Vercel prebuilt deploys (ADR 0003)
-├── pnpm-workspace.yaml       pnpm settings: allowBuilds, peer rules, release-age exceptions
+├── pnpm-workspace.yaml       pnpm settings: allowBuilds, peer rules
 ├── vercel.json               turns off Vercel's own Git deploys
 ├── components.json           shadcn/ui CLI settings and registries (ADR 0009)
 ├── .mcp.json                 shadcn MCP server for Claude Code (project scope)
@@ -151,9 +151,8 @@ Route `/tools/chat`. Walkthrough: `docs/walkthroughs/chat-builder.md`.
 - **Layout:** a hero like the home page's (shared `HeroBackdrop`, ShinyText title, a badge with the in-game verified date) above two columns from the `lg` breakpoint: the message window stays in view on the left (sticky) while the Style panel scrolls on the right. On narrow screens the Style panel follows the message. The message is a floating glass chat window (a SpotlightCard with the home sample's violet edge, title bar and channel chips); the Style panel is a SpotlightCard too, and a glare sweeps a color swatch on hover (React Bits GlareHover, T7SEN, 2026-10-15).
 
 ### 5.4 Sharing and templates
-- Share links: `/tools/chat?m=<code>`, with codes from `encodeShare` (section 5.2). Decoded content is untrusted text.
-- Curated templates: `src/data/templates.json`, written or approved by T7SEN.
-- Personal templates: `localStorage`, every access wrapped in try/catch; the builder works when storage is unavailable.
+- Share links (ADR 0015): `/tools/chat#m=<code>&c=<channel>`, in the hash so the message never reaches the server; codes from `encodeShare` (section 5.2). `share-link.ts`: `shareHash(markup, channel)` (null when the code would pass `maxShareCodeLength`) and `readShareHash(hash, channelNames)` (`none`, `broken`, or a message with a known channel or null). `ChatBuilder` opens a link after hydration and on `hashchange`, runs it through `cleanMarkup`, then removes the hash with `history.replaceState`; a notice says it opened, or that the link is broken. "Copy link" shares the markup as written. Decoded content is untrusted text.
+- Personal templates (ADR 0017; curated templates dropped by T7SEN, 2026-10-16): `personal-templates.ts` keeps a JSON list of `{ id, name, markup, channel, savedAt }` under `localStorage` key `archelab.chat.templates.v1`, newest first, capped at 50 templates, 40-character names and 2,000-character messages. `loadTemplates` validates each entry with Zod and drops bad ones; `storeTemplates` returns false when the browser refuses; `saveTemplate` (a matching name, ignoring case, is replaced), `renameTemplate`, `deleteTemplate` and `restoreTemplate` are pure. `browserStorage` probes with a write and returns null when storage is blocked; every access is wrapped in try/catch, and the builder works without storage. The "Templates" button in the message window's title bar opens `TemplatesSheet` (shadcn Sheet): save the current message under a name, then load, rename or delete (with Undo). Loading runs the markup through `cleanMarkup`, replaces the message through `ChatEditorHandle.replace` as one undo step, switches to a known channel, and returns focus to the editor (`finalFocus`).
 
 ### 5.5 NEXON data layer — `src/lib/nexon`
 - Base: `https://open.api.nexon.com/static/tfd/meta/en/<set>.json`. Verified keyless for `descendant.json` on 2026-10-14 and again on 2026-10-15; the sets that responded on 2026-10-15 are listed in `docs/SPEC.md` section 6. Other sets are confirmed in Phase 4 before use.
@@ -213,7 +212,7 @@ None today. When player lookups ship, `NEXON_API_KEY` is server-only, set in Ver
 | `pnpm typecheck` | `next typegen` (writes `next-env.d.ts` and route types), then `tsc --noEmit` |
 | `pnpm lint` | ESLint with typed rules (typescript-eslint strict and stylistic), then `prettier --check` |
 | `pnpm test` | Vitest unit and property tests (`src/**/*.test.ts`) |
-| `pnpm test:e2e` | Playwright (Chromium) against `pnpm start`; run `pnpm build` first. On a new machine, run `pnpm exec playwright install chromium` once. |
+| `pnpm test:e2e` | Playwright against `pnpm start`; run `pnpm build` first. Chromium runs every spec; Firefox and WebKit run `share.spec.ts` only (ADR 0015). On a new machine, run `pnpm exec playwright install chromium firefox webkit` once. Wait for the editor to be visible before clicking anything: a click before hydration is lost. |
 | `pnpm format` | Prettier, with Tailwind class sorting. Markdown and pnpm's own files are skipped. |
 
 ## 10. Landmines
