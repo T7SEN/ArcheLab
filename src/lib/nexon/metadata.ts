@@ -1,0 +1,95 @@
+import "server-only";
+import { z } from "zod";
+
+/**
+ * NEXON's keyless static metadata (docs/SPEC.md section 6, ADR 0018): one loader for
+ * every set, so each tool brings only its own entry schema.
+ */
+
+/** The sets that answered keyless on 2026-10-15 (docs/SPEC.md section 6). */
+export const metadataSets = [
+  "descendant",
+  "descendant-group",
+  "weapon",
+  "module",
+  "reactor",
+  "external-component",
+  "reward",
+  "stat",
+  "void-battle",
+  "title",
+  "core-type",
+  "arche-tuning-node",
+  "amorphous-open-condition-description",
+  "research",
+  "fellow",
+] as const;
+
+export type MetadataSet = (typeof metadataSets)[number];
+
+export const metadataBaseUrl = "https://open.api.nexon.com/static/tfd/meta/en/";
+
+/** Images are only ever loaded from NEXON's static image host. */
+export const imageHost = "https://open.api.nexon.com/static/tfd/img/";
+
+/** An image URL on NEXON's image host; anything else fails validation. */
+export const nexonImageUrl = z.string().startsWith(imageHost);
+
+const fetchTimeoutMs = 15_000;
+
+/**
+ * The entries of a set that pass `schema`. Each entry is checked on its own, so one
+ * malformed entry never hides the others; data that is not a list has no entries.
+ */
+export function entriesFrom<T>(
+  data: unknown,
+  schema: z.ZodType<T>,
+): { entries: T[]; dropped: number } {
+  if (!Array.isArray(data)) {
+    return { entries: [], dropped: 0 };
+  }
+  const entries: T[] = [];
+  for (const entry of data) {
+    const result = schema.safeParse(entry);
+    if (result.success) {
+      entries.push(result.data);
+    }
+  }
+  return { entries, dropped: data.length - entries.length };
+}
+
+/**
+ * Fetches a set while a page is prerendered (ADR 0008). A failure never breaks the
+ * build: it logs a warning and returns no entries, and the page leaves that data out.
+ * The weekly scheduled deploy refetches, keeping the data far inside the 30-day limit
+ * (Nexon API Terms §8.7).
+ */
+export async function fetchMetadataSet<T>(
+  set: MetadataSet,
+  schema: z.ZodType<T>,
+): Promise<T[]> {
+  try {
+    const response = await fetch(`${metadataBaseUrl}${set}.json`, {
+      signal: AbortSignal.timeout(fetchTimeoutMs),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${String(response.status)}`);
+    }
+    const data: unknown = await response.json();
+    if (!Array.isArray(data)) {
+      throw new Error("the data is not a list");
+    }
+    const { entries, dropped } = entriesFrom(data, schema);
+    if (dropped > 0) {
+      console.warn(
+        `NEXON ${set}.json: ${String(dropped)} entries failed validation and were left out.`,
+      );
+    }
+    return entries;
+  } catch (error) {
+    console.warn(
+      `Could not load NEXON ${set}.json (${String(error)}). Pages leave this data out.`,
+    );
+    return [];
+  }
+}

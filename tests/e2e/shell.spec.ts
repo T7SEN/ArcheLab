@@ -39,10 +39,40 @@ for (const current of sitePages) {
   });
 }
 
+for (const reducedMotion of ["no-preference", "reduce"] as const) {
+  test(`the navbar's logo links home and ${reducedMotion === "reduce" ? "stays still" : "spins once"} on hover with ${reducedMotion} motion`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion });
+    await page.goto("/tools/chat");
+    // Hovering before hydration would start nothing.
+    await expect(page.getByRole("textbox", { name: "Message" })).toBeVisible();
+    const logo = page
+      .getByRole("navigation", { name: "Main" })
+      .getByRole("link", { name: "ArcheLab", exact: true });
+    await expect(logo).toHaveAttribute("href", "/");
+    const turning = () =>
+      logo.evaluate(
+        (link) => link.firstElementChild?.getAnimations().length ?? 0,
+      );
+
+    await logo.hover();
+    if (reducedMotion === "reduce") {
+      await page.waitForTimeout(300);
+      expect(await turning()).toBe(0);
+    } else {
+      await expect.poll(turning).toBe(1);
+      // One turn, then it stops.
+      await expect.poll(turning, { timeout: 3000 }).toBe(0);
+    }
+  });
+}
+
 test("on a narrow screen the navbar links fold into a menu", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 300, height: 700 });
+  // Today's two links fold at 278px and below (ADR 0010).
+  await page.setViewportSize({ width: 260, height: 700 });
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Main" });
   const toggle = nav.getByRole("button", { name: "Open menu" });
@@ -63,7 +93,8 @@ test("on a narrow screen the navbar links fold into a menu", async ({
 
 test("the navbar menu also closes with reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.setViewportSize({ width: 300, height: 700 });
+  // Today's two links fold at 278px and below (ADR 0010).
+  await page.setViewportSize({ width: 260, height: 700 });
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Main" });
 

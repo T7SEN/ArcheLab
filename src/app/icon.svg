@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <!-- The favicon: ArcheLab's mark (src/components/logo-mark.tsx) in the primary token
+       on a tile of the background token. logo-mark.test.ts keeps all four in step. -->
+  <rect width="128" height="128" rx="28" fill="#0a0812" />
+  <path
+    d="M64.35 27.5 22.2 100.5H49.2L77.5 51.5 105.8 100.5H77.5"
+    stroke="#a184ff"
+    stroke-width="12"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

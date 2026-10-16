@@ -1,7 +1,7 @@
 import { readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { sitePages } from "./site-pages";
+import { allPages, legalPages, sitePages } from "./site-pages";
 
 const appDir = fileURLToPath(new URL("../app/", import.meta.url));
 
@@ -27,13 +27,20 @@ function appRoutes(): string[] {
 }
 
 describe("site pages", () => {
-  it("lists every page under src/app, so each one gets a navbar link", () => {
-    const listed = sitePages.map((page) => page.href).sort();
+  it("lists every page under src/app, so each one gets a navbar or footer link", () => {
+    const listed = allPages.map((page) => page.href).sort();
     expect(listed).toEqual(appRoutes().sort());
   });
 
   it("lists each page once", () => {
-    const hrefs = sitePages.map((page) => page.href);
+    const hrefs = allPages.map((page) => page.href);
     expect(new Set(hrefs).size).toBe(hrefs.length);
+  });
+
+  it("keeps the legal pages out of the navbar", () => {
+    const navbar = sitePages.map((page) => page.href);
+    for (const page of legalPages) {
+      expect(navbar).not.toContain(page.href);
+    }
   });
 });

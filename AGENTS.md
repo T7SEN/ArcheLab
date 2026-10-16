@@ -20,7 +20,10 @@ ArcheLab is an unofficial tools hub for The First Descendant, a NEXON game. The 
 | `src/features/chat/engine` | Pure TypeScript: parse, serialize, count, optimize, share codec. No React, no DOM |
 | `src/features/chat/ui` | Builder interface: editor, markup panel, preview, counter, templates, sharing |
 | `src/lib/nexon` | Server-only NEXON data layer: fetch, validate, cache metadata |
-| `src/data` | Versioned data: chat tag registry, the site's page list |
+| `src/lib` | Also: page metadata and the public address (`site-metadata.ts`), link preview images (`og-image.tsx`) |
+| `src/assets` | Files read at build time: the Rajdhani font for link previews, with its license |
+| `scripts` | Maintenance scripts: `make-favicon.mjs` (`pnpm favicon`) |
+| `src/data` | Versioned data: chat tag registry, the site's page list, the tool registry |
 | `src/components` | Shared UI: hub shell, tool cards; `ui/` holds the shadcn/ui components, `react-bits/` the adapted React Bits effects |
 | `src/styles` | Tailwind v4 theme and design tokens |
 | `tests/e2e` | Playwright tests |
@@ -34,7 +37,8 @@ ArcheLab is an unofficial tools hub for The First Descendant, a NEXON game. The 
 - Every module that touches NEXON data imports `server-only`.
 - UI colors come only from design tokens: CSS variables in `globals.css`, or `palette` in `src/styles/tokens.ts` for canvas and WebGL. Chat tag colors come only from `src/data/chat-tags.json`.
 - User-supplied text is rendered as React text nodes only. Never `dangerouslySetInnerHTML`.
-- Every player-facing page is listed in `src/data/site-pages.ts`, which the navbar reads. A unit test fails while a page under `src/app` is missing from it.
+- Every player-facing page is listed in `src/data/site-pages.ts`: `sitePages` for the navbar, `legalPages` for the footer's Legal column. A unit test fails while a page under `src/app` is missing from both.
+- Every page exports `metadata` from `pageMetadata` in `src/lib/site-metadata.ts`, for its canonical address and link preview. An e2e test fails without it.
 - UI copy is sentence case, direct, and player-facing. Game terms (Descendant, Transcendent, Void Intercept) are spelled exactly as the game spells them.
 
 ## Critical rules

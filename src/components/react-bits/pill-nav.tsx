@@ -3,8 +3,8 @@
 /*
  * PillNav from React Bits (https://reactbits.dev/components/pill-nav), adapted for
  * ArcheLab: colors from the design tokens (the light theme and the color props are
- * gone), Next.js links, a text wordmark in place of the round logo mark, class merging
- * with cn, lint fixes and named export (ADR 0009).
+ * gone), Next.js links, a logo node instead of an image URL, class merging with cn,
+ * lint fixes and named export (ADR 0009).
  * Copyright (c) 2026 David Haz. MIT + Commons Clause License Condition v1.0, see
  * LICENSE.md in this folder.
  */
@@ -31,7 +31,7 @@ export interface PillNavItem {
 }
 
 export interface PillNavProps {
-  /** The wordmark, shown as a link to `logoHref`. */
+  /** The logo mark, in a round pill that links to `logoHref`; it spins once on hover. */
   logo?: ReactNode;
   logoAlt?: string;
   logoHref?: string;
@@ -145,9 +145,11 @@ const RIM =
 const ROOT_RIM =
   "pointer-events-none absolute inset-0 z-[4] rounded-[inherit] [box-shadow:inset_0_0_0_1px_var(--pn-edge),inset_0_1px_0_var(--pn-rim)] group-data-[panel]/nav:opacity-0";
 const LOGO =
-  "relative z-[2] inline-flex h-[var(--pn-h)] flex-none items-center rounded-full group-data-[layout=joined]/nav:h-[var(--pn-inner)]";
+  "relative z-[2] inline-grid h-[var(--pn-h)] w-[var(--pn-h)] flex-none place-items-center rounded-full group-data-[layout=joined]/nav:h-[var(--pn-inner)] group-data-[layout=joined]/nav:w-[var(--pn-inner)]";
 const LOGO_LINK =
-  "inline-flex h-full items-center rounded-[inherit] px-[var(--pn-x)] text-[var(--pn-strong)] no-underline outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--pn-ring)]";
+  "absolute inset-0 grid place-items-center rounded-[inherit] text-[var(--pn-strong)] no-underline outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--pn-ring)]";
+const MARK =
+  "grid h-[var(--pn-mark)] w-[var(--pn-mark)] place-items-center [&_svg]:block [&_svg]:h-full [&_svg]:w-full";
 const BAR =
   "relative z-[1] box-border flex h-[var(--pn-h)] min-w-0 items-center rounded-full p-[var(--pn-pad)] group-data-[layout=joined]/nav:h-[var(--pn-inner)] group-data-[layout=joined]/nav:p-0";
 const TRACK = "relative h-full";
@@ -228,6 +230,7 @@ const PillNav = ({
   const inkRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLSpanElement>(null);
   const logoRef = useRef<HTMLSpanElement>(null);
+  const markRef = useRef<HTMLSpanElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
@@ -785,6 +788,24 @@ const PillNav = ({
     };
   }, [open]);
 
+  // One turn of the mark per hover, as in React Bits: not for touch, not while a turn
+  // is still running, and never under reduced motion.
+  const spin = (event: ReactPointerEvent) => {
+    const mark = markRef.current;
+    if (
+      mark === null ||
+      event.pointerType === "touch" ||
+      mark.getAnimations().length > 0 ||
+      prefersReducedMotion()
+    ) {
+      return;
+    }
+    mark.animate(
+      [{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }],
+      { duration: 900, easing: "cubic-bezier(0.65, 0, 0.25, 1)" },
+    );
+  };
+
   const choose = (
     item: PillNavItem,
     index: number,
@@ -829,8 +850,15 @@ const PillNav = ({
     >
       {hasLogo && (
         <span ref={logoRef} className={cn(LOGO, !joined && SURFACE)}>
-          <Link href={logoHref} className={LOGO_LINK} aria-label={logoAlt}>
-            {logo}
+          <Link
+            href={logoHref}
+            className={LOGO_LINK}
+            aria-label={logoAlt}
+            onPointerEnter={spin}
+          >
+            <span ref={markRef} className={MARK}>
+              {logo}
+            </span>
           </Link>
           {!joined && <span className={RIM} />}
         </span>

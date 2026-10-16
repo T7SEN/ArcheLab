@@ -6,13 +6,16 @@ import { Badge } from "@/components/ui/badge";
 import { ChatBuilder } from "@/features/chat/ui/chat-builder";
 import { chatRegistry } from "@/features/chat/ui/chat-registry";
 import { fetchPortraitUrls } from "@/lib/nexon/descendants";
+import { pageMetadata } from "@/lib/site-metadata";
 import { palette } from "@/styles/tokens";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/tools/chat",
   title: "Chat message builder",
+  ownImage: true,
   description:
     "Build colored chat messages for The First Descendant, preview them in game colors, and copy markup that fits the chat limit.",
-};
+});
 
 /** The Descendants whose portraits chat icons and tickets show (SKILL.md section 5.1). */
 const portraitNames = [

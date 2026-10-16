@@ -133,13 +133,16 @@ function IconButton({ image, portraits, layout, onPick }: IconButtonProps) {
   const cost = tag.length;
   const untested = isUntested(image);
   const name = iconName(image.label);
+  // Named the way it looks, name then cost (WCAG 2.5.3): a tile shows both, and so does
+  // a chip whose icon is a labeled placeholder.
+  const label = `${image.label} +${String(cost)} characters`;
   return (
     <Tooltip>
       <TooltipTrigger
         render={
           <button
             type="button"
-            aria-label={`${name}, adds ${String(cost)} characters${untested ? ", not tested in game yet" : ""}`}
+            aria-label={`${label}${untested ? ", not tested in game yet" : ""}`}
             onMouseDown={keepEditorFocus}
             onClick={() => {
               onPick(image.id);

@@ -196,3 +196,39 @@
   font-weight: 400;
   white-space: nowrap;
 }
+
+/* The home page's card carousels (CardCarousel, ADR 0018): a row that scrolls a page at a
+   time and snaps to card edges: four cards on wide screens, two on tablets, one and a
+   peek on phones. The scrollbar is hidden; the buttons, swipes and the keyboard move
+   it. The block padding keeps the cards' focus rings inside the scroll box. */
+.card-carousel-track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 80%;
+  gap: 1rem;
+  padding-block: 0.25rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.card-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.card-carousel-track > li {
+  scroll-snap-align: start;
+}
+
+@media (min-width: 40rem) {
+  .card-carousel-track {
+    grid-auto-columns: calc((100% - 1rem) / 2);
+  }
+}
+
+@media (min-width: 64rem) {
+  .card-carousel-track {
+    grid-auto-columns: calc((100% - 3rem) / 4);
+  }
+}

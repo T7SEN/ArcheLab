@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { siteDescription, siteName, siteUrl } from "@/lib/site-metadata";
 import { shellBackground } from "@/styles/tokens";
 import "@/styles/globals.css";
 
@@ -15,9 +16,12 @@ const rajdhani = Rajdhani({
   variable: "--font-rajdhani",
 });
 
+// Each page adds its canonical address and link preview with `pageMetadata`.
 export const metadata: Metadata = {
-  title: { default: "ArcheLab", template: "%s | ArcheLab" },
-  description: "Unofficial tools for The First Descendant.",
+  metadataBase: new URL(siteUrl),
+  title: { default: siteName, template: `%s | ${siteName}` },
+  description: siteDescription,
+  applicationName: siteName,
 };
 
 export const viewport: Viewport = {

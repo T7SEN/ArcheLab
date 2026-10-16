@@ -87,7 +87,7 @@ test("icons insert outside any run", async ({ page }) => {
   const { editor, markup } = builder(page);
   await editor.click();
   await page.keyboard.type("go");
-  await page.getByRole("button", { name: /^Bunny icon/ }).click();
+  await page.getByRole("button", { name: /^Bunny \+\d+ characters$/ }).click();
   await page.keyboard.type("!");
   await openMarkup(page);
   await expect(markup).toHaveValue('go<img id="IconBunny1"/>!');
@@ -195,10 +195,10 @@ test("every Descendant portrait is offered and inserts its id", async ({
   const { editor, markup } = builder(page);
   // Tested in game (test sheet Part 8, 2026-10-15), so no portrait is marked.
   const ajax = page.getByRole("button", {
-    name: /^Ajax icon, adds 21 characters$/,
+    name: /^Ajax \+21 characters$/,
   });
   await expect(
-    page.getByRole("button", { name: /^Bunny icon, adds 22 characters$/ }),
+    page.getByRole("button", { name: /^Bunny \+22 characters$/ }),
   ).toBeVisible();
 
   await editor.click();
@@ -214,12 +214,12 @@ test("Caliber and Gold show art from NEXON's site", async ({ page }) => {
     page.getByRole("button", { name: /^Currency \(4\)$/ }),
   ).toHaveAttribute("aria-expanded", "true");
   const caliber = page.getByRole("button", {
-    name: /^Caliber icon, adds \d+ characters$/,
+    name: /^Caliber \+\d+ characters$/,
   });
   await expect(caliber.locator("img")).toHaveAttribute("src", nexonCdn);
 
   const gold = page.getByRole("button", {
-    name: /^Gold icon, adds \d+ characters$/,
+    name: /^Gold \+\d+ characters$/,
   });
   await expect(gold.locator("img")).toHaveAttribute("src", nexonCdn);
 });
@@ -228,27 +228,27 @@ test("icons sit in their groups", async ({ page }) => {
   // Bosses and missions starts open; Part 10 added the Wall Crasher boss id.
   await expect(
     page.getByRole("button", {
-      name: /^Wall Crasher boss icon, adds \d+ characters$/,
+      name: /^Wall Crasher boss \+\d+ characters$/,
     }),
   ).toBeVisible();
   await page.getByRole("button", { name: /^NPCs \(29\)$/ }).click();
   await expect(
-    page.getByRole("button", { name: /^NPC 1 icon, adds \d+ characters$/ }),
+    page.getByRole("button", { name: /^NPC 1 \+\d+ characters$/ }),
   ).toBeVisible();
 
   await page.getByRole("button", { name: /^Damage types \(8\)$/ }).click();
   await expect(
-    page.getByRole("button", { name: /^Burst icon, adds \d+ characters$/ }),
+    page.getByRole("button", { name: /^Burst \+\d+ characters$/ }),
   ).toBeVisible();
   // "Toxic" is the Demonic id; the Toxic id showed as text in game (P13).
   await expect(
-    page.getByRole("button", { name: /^Toxic icon, adds 19 characters$/ }),
+    page.getByRole("button", { name: /^Toxic \+19 characters$/ }),
   ).toBeVisible();
 
   // Added after Part 8 (2026-10-15).
   await page.getByRole("button", { name: /^Other portraits \(7\)$/ }).click();
   await expect(
-    page.getByRole("button", { name: /^Anais icon, adds \d+ characters$/ }),
+    page.getByRole("button", { name: /^Anais \+\d+ characters$/ }),
   ).toBeVisible();
   await page
     .getByRole("button", { name: /^Character tickets \(40\)$/ })
@@ -256,7 +256,7 @@ test("icons sit in their groups", async ({ page }) => {
   await expect(
     page.getByRole("button", {
       // Ticket 001 shows Lepic (test sheet Q8).
-      name: /^Lepic character ticket icon, adds 40 characters$/,
+      name: /^Lepic character ticket \+40 characters$/,
     }),
   ).toBeVisible();
 
@@ -265,9 +265,7 @@ test("icons sit in their groups", async ({ page }) => {
   await page
     .getByRole("button", { name: /^Mouse and gamepad buttons \(7\)$/ })
     .click();
-  await page
-    .getByRole("button", { name: /^Mouse 0 icon, adds 18 characters$/ })
-    .click();
+  await page.getByRole("button", { name: /^Mouse 0 \+18 characters$/ }).click();
   await openMarkup(page);
   await expect(markup).toHaveValue('<img id="Mouse0"/>');
 });
@@ -282,7 +280,7 @@ test("character tickets show their Descendant's portrait in a gold ring", async 
     .click();
   // Ticket 004 U01 shows Ultimate Bunny (test sheet Q11).
   const ticket = page.getByRole("button", {
-    name: /^Ultimate Bunny character ticket icon/,
+    name: /^Ultimate Bunny character ticket \+\d+ characters$/,
   });
   await expect(ticket.locator("img")).toHaveAttribute(
     "src",
@@ -301,7 +299,7 @@ test("element icons show NEXON's art under their element names", async ({
 }) => {
   await page.getByRole("button", { name: /^Damage types \(\d+\)$/ }).click();
   const fire = page.getByRole("button", {
-    name: /^Fire icon, adds \d+ characters$/,
+    name: /^Fire \+\d+ characters$/,
   });
   await expect(fire.locator("img")).toHaveAttribute(
     "src",
@@ -325,8 +323,10 @@ test("each channel colors untagged text, Whisper pink and Party blue", async ({
 test("icons in the message take their in-game sizes", async ({ page }) => {
   const { editor } = builder(page);
   await editor.click();
-  await page.getByRole("button", { name: /^Bunny icon/ }).click();
-  await page.getByRole("button", { name: /^Caliber icon/ }).click();
+  await page.getByRole("button", { name: /^Bunny \+\d+ characters$/ }).click();
+  await page
+    .getByRole("button", { name: /^Caliber \+\d+ characters$/ })
+    .click();
   // Heights in cap heights of the text: P15 and Q1 (2026-10-15) show 26px icons and
   // 46px portraits beside 12px capitals.
   const caps = await editor.locator(".chat-icon").evaluateAll((icons) =>
