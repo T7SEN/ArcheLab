@@ -2,10 +2,12 @@
 
 import { RotateCw, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useId, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { dataFileHook } from "@/features/game-data/data-file";
 import { filterChipClass } from "@/features/game-data/filter-row";
+import { useRevealDetails } from "@/features/game-data/reveal-details";
 import { CategoryIcon, SlotIcon, SocketIcon } from "./fact-icons";
 import { ModuleEffect } from "./module-effect";
 import {
@@ -17,66 +19,10 @@ import {
   moduleDataUrl,
   readLevelsFile,
   type ModuleLevel,
-  type ModuleLevelsFile,
 } from "./module-levels";
 
-/** Data files already asked for, by module address; a failed one is asked for again. */
-const loaded = new Map<string, Promise<ModuleLevelsFile | null>>();
-
-function loadLevels(slug: string): Promise<ModuleLevelsFile | null> {
-  const known = loaded.get(slug);
-  if (known !== undefined) {
-    return known;
-  }
-  const request = fetch(moduleDataUrl(slug))
-    .then((response) => (response.ok ? response.json() : null))
-    .then(readLevelsFile)
-    .catch(() => null);
-  loaded.set(slug, request);
-  void request.then((file) => {
-    if (file === null) {
-      loaded.delete(slug);
-    }
-  });
-  return request;
-}
-
-type Levels =
-  | { readonly status: "loading" }
-  | { readonly status: "failed"; readonly retry: () => void }
-  | { readonly status: "ready"; readonly file: ModuleLevelsFile };
-
 /** A module group's levels, loaded when its details open. */
-function useLevels(slug: string): Levels {
-  const [attempt, setAttempt] = useState(0);
-  const key = `${slug}#${String(attempt)}`;
-  const [result, setResult] = useState<{
-    readonly key: string;
-    readonly file: ModuleLevelsFile | null;
-  } | null>(null);
-  useEffect(() => {
-    let current = true;
-    void loadLevels(slug).then((file) => {
-      if (current) {
-        setResult({ key, file });
-      }
-    });
-    return () => {
-      current = false;
-    };
-  }, [slug, key]);
-  if (result?.key !== key) {
-    return { status: "loading" };
-  }
-  return result.file === null
-    ? {
-        status: "failed",
-        retry: () => {
-          setAttempt((value) => value + 1);
-        },
-      }
-    : { status: "ready", file: result.file };
-}
+const useLevelsFile = dataFileHook(readLevelsFile);
 
 /**
  * A module's details, opened in the index's grid as a row under its card's row (T7SEN,
@@ -107,36 +53,9 @@ export function ModuleDetails({
   const variant =
     card.variants.find((entry) => entry.id === variantId) ??
     card.variants.at(0);
-  const levels = useLevels(card.slug);
+  const levels = useLevelsFile(moduleDataUrl(card.slug));
 
-  // Opening moves focus to the module's name, so a screen reader announces it, and
-  // brings the details into view, below the navbar.
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (section === null) {
-      return;
-    }
-    titleRef.current?.focus({ preventScroll: true });
-    const { top, bottom } = section.getBoundingClientRect();
-    if (top < window.innerHeight * 1.5 && bottom > 0) {
-      // Opened from a card in view: a short scroll, smooth unless motion is reduced
-      // (the page's scroll-behavior).
-      section.scrollIntoView({ block: "nearest" });
-      return;
-    }
-    // Far off, as from a shared link: jump, since a smooth scroll over hundreds of
-    // cards overshoots. Off-screen cards are drawn at a guessed height
-    // (`content-visibility`), so jump again once the cards around it have their own.
-    section.scrollIntoView({ block: "center", behavior: "instant" });
-    let frame = requestAnimationFrame(() => {
-      frame = requestAnimationFrame(() => {
-        section.scrollIntoView({ block: "center", behavior: "instant" });
-      });
-    });
-    return () => {
-      cancelAnimationFrame(frame);
-    };
-  }, []);
+  useRevealDetails(sectionRef, titleRef);
 
   if (variant === undefined) {
     return null;

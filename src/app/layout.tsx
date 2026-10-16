@@ -6,8 +6,10 @@ import { SiteHeader } from "@/components/site-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PaletteProvider } from "@/features/command-palette/palette-provider";
 import { paletteDescendants } from "@/features/command-palette/palette-descendants";
+import { paletteReactors } from "@/features/command-palette/palette-reactors";
 import { paletteWeapons } from "@/features/command-palette/palette-weapons";
 import { fetchDescendantSummaries } from "@/lib/nexon/descendant-page";
+import { fetchReactorGroups } from "@/lib/nexon/reactor-index";
 import { fetchWeaponSummaries } from "@/lib/nexon/weapon-page";
 import { siteDescription, siteName, siteUrl } from "@/lib/site-metadata";
 import { shellBackground } from "@/styles/tokens";
@@ -37,14 +39,17 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
-  // NEXON's Descendants and weapons for the palette, fetched once while the pages are
-  // prerendered (ADR 0023, ADR 0024). Empty when NEXON can't be reached.
-  const [descendantList, weaponList] = await Promise.all([
+  // NEXON's Descendants, weapons and reactors for the palette, fetched once while the
+  // pages are prerendered (ADR 0023, ADR 0024, ADR 0026). Empty when NEXON can't be
+  // reached.
+  const [descendantList, weaponList, reactorList] = await Promise.all([
     fetchDescendantSummaries(),
     fetchWeaponSummaries(),
+    fetchReactorGroups(),
   ]);
   const descendants = paletteDescendants(descendantList);
   const weapons = paletteWeapons(weaponList);
+  const reactors = paletteReactors(reactorList);
   return (
     // The inline background paints before the stylesheet loads, so there is no white flash.
     // The site is dark only; `dark` turns on shadcn's dark variants (ADR 0009).
@@ -61,7 +66,11 @@ export default async function RootLayout({
             the next opens at once if it is within 400ms (Base UI's timeout). */}
         <TooltipProvider delay={700}>
           {/* The command palette (ADR 0022): Ctrl+K or the navbar's search button. */}
-          <PaletteProvider descendants={descendants} weapons={weapons}>
+          <PaletteProvider
+            descendants={descendants}
+            weapons={weapons}
+            reactors={reactors}
+          >
             <SiteHeader />
             <main className="flex-1">{children}</main>
             <SiteFooter />

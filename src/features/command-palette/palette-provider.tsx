@@ -18,9 +18,11 @@ import {
   descendantCommands,
   moduleCommands,
   pageCommands,
+  reactorCommands,
   toolCommands,
   weaponCommands,
   type PaletteDescendant,
+  type PaletteReactor,
   type PaletteWeapon,
 } from "./site-commands";
 
@@ -35,16 +37,18 @@ const PaletteContext = createContext<PaletteContextValue | null>(null);
 /**
  * The command palette for every page (ADR 0022): it holds the open state and the
  * command sources, and opens on Ctrl+K or ⌘K anywhere, the chat editor included.
- * `descendants` and `weapons` are plain data the server layout builds once per build;
+ * `descendants`, `weapons` and `reactors` are plain data the server layout builds once per build;
  * the modules load the first time the palette opens (`palette-modules.ts`).
  */
 export function PaletteProvider({
   descendants,
   weapons,
+  reactors,
   children,
 }: {
   descendants: readonly PaletteDescendant[];
   weapons: readonly PaletteWeapon[];
+  reactors: readonly PaletteReactor[];
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -100,9 +104,10 @@ export function PaletteProvider({
         order: 40,
         commands: () => (modules === null ? [] : moduleCommands(modules)),
       },
+      { id: "reactors", order: 45, commands: () => reactorCommands(reactors) },
     ];
     return [...builtIn, ...registered];
-  }, [descendants, weapons, modules, registered]);
+  }, [descendants, weapons, modules, reactors, registered]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {

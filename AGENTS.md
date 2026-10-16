@@ -23,7 +23,8 @@ ArcheLab is an unofficial tools hub for The First Descendant, a NEXON game. The 
 | `src/features/descendants` | Descendant pages: skills, exclusive modules; the index grid and its filters |
 | `src/features/weapons` | Weapon pages: the grouped base stats, rounds icons; the index grid and its filters |
 | `src/features/modules` | The modules index: the grid, its filters, a module's details in the grid and its levels |
-| `src/features/game-data` | Shared by Descendant and weapon pages: the level slider, research recipe, rarity, page sections, previous and next, index filters in the URL |
+| `src/features/reactors` | The reactors index: the grid, its filters, a reactor's details in the grid and its levels |
+| `src/features/game-data` | Shared by the Descendant, weapon, module and reactor pages: the level slider, research recipe, rarity, page sections, previous and next, index filters in the URL, details in an index's grid |
 | `src/lib/nexon` | Server-only NEXON data layer: fetch, validate, cache metadata |
 | `src/lib` | Also: page metadata and the public address (`site-metadata.ts`), link preview images (`og-image.tsx`) |
 | `src/assets` | Files read at build time: the Rajdhani font for link previews, with its license |

@@ -250,3 +250,15 @@ test("a module opens its details on the modules index", async ({ page }) => {
     page.getByRole("region", { name: "Multi-Trigger Rifling", exact: true }),
   ).toBeVisible();
 });
+
+test("a reactor opens its details on the reactors index", async ({ page }) => {
+  await page.goto("/");
+  const search = await openWithShortcut(page);
+  // Found by its attribute and Arche type too (ADR 0026).
+  await search.fill("fire dimension");
+  await page.getByRole("option", { name: /^Burning Phase Reactor/ }).click();
+  await expect(page).toHaveURL(/\/reactors\?reactor=burning-phase-reactor$/);
+  await expect(
+    page.getByRole("region", { name: "Burning Phase Reactor", exact: true }),
+  ).toBeVisible();
+});

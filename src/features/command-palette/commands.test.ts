@@ -12,6 +12,7 @@ import {
   descendantCommands,
   moduleCommands,
   pageCommands,
+  reactorCommands,
   toolCommands,
   weaponCommands,
 } from "./site-commands";
@@ -226,5 +227,25 @@ describe("the site's commands", () => {
     expect(readModuleList(null)).toBeNull();
     expect(readModuleList({ modules: [{ slug: "x" }] })).toBeNull();
     expect(readModuleList({ modules: [] })).toEqual([]);
+  });
+
+  it("offer each reactor with its attribute and Arche type, found by either", () => {
+    const commands = reactorCommands([
+      {
+        name: "Burning Phase Reactor",
+        href: "/reactors?reactor=burning-phase-reactor",
+        attribute: "Fire",
+        archeType: "Dimension",
+      },
+    ]);
+    expect(commands.at(0)).toMatchObject({
+      label: "Burning Phase Reactor",
+      group: "Reactors",
+      hint: "Fire · Dimension",
+      action: { kind: "go", href: "/reactors?reactor=burning-phase-reactor" },
+    });
+    expect(
+      commands.filter((entry) => matchesCommand(entry, "fire dimension")),
+    ).toHaveLength(1);
   });
 });

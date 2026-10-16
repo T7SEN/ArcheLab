@@ -1,6 +1,8 @@
+import { useSyncExternalStore } from "react";
+
 /**
- * Where an open module's details go in the index's grid (ADR 0025): a full-width row
- * right under the row of the card that opened them, so the cards keep their order.
+ * Where an open card's details go in an index's grid (ADR 0025, ADR 0026): a full-width
+ * row right under the row of the card that opened them, so the cards keep their order.
  */
 
 /**
@@ -30,4 +32,28 @@ export const gridClass =
 export function rowEnd(index: number, columns: number, count: number): number {
   const rowStart = Math.floor(index / columns) * columns;
   return Math.min(count - 1, rowStart + columns - 1);
+}
+
+function subscribeColumns(onChange: () => void): () => void {
+  const lists = gridColumns.map((entry) => window.matchMedia(entry.query));
+  for (const list of lists) {
+    list.addEventListener("change", onChange);
+  }
+  return () => {
+    for (const list of lists) {
+      list.removeEventListener("change", onChange);
+    }
+  };
+}
+
+function readColumns(): number {
+  return (
+    gridColumns.find((entry) => window.matchMedia(entry.query).matches)
+      ?.columns ?? baseColumns
+  );
+}
+
+/** The grid's column count at the current width; `baseColumns` on the server. */
+export function useGridColumns(): number {
+  return useSyncExternalStore(subscribeColumns, readColumns, () => baseColumns);
 }

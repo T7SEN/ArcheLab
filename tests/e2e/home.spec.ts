@@ -181,3 +181,21 @@ test("the Modules section lists the tiers and opens each one's modules", async (
   await expect(page).toHaveURL(/\/modules\?tier=Trigger$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Modules");
 });
+
+test("the Reactors carousel opens a reactor and links to the index", async ({
+  page,
+}) => {
+  // Reduced motion keeps the carousel from turning under the pointer.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const card = page
+    .getByRole("list", { name: "Reactors" })
+    .getByRole("link")
+    .first();
+  await card.click();
+  await expect(page).toHaveURL(/\/reactors\?reactor=[a-z-]+$/);
+  await page.goBack();
+  await page.getByRole("link", { name: "All reactors" }).click();
+  await expect(page).toHaveURL(/\/reactors$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Reactors");
+});

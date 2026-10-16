@@ -396,6 +396,42 @@ function fetchDescendantSets(): Promise<DescendantSets> {
   return setsPromise;
 }
 
+/** A Descendant as reactors need it: its link, portrait, and its skills' types. */
+export interface DescendantSkillTypes extends DescendantLink {
+  readonly imageUrl: string;
+  /** Each skill's attribute and Arche type, as NEXON lists them. */
+  readonly skills: readonly {
+    readonly element: string | null;
+    readonly archeType: string | null;
+  }[];
+  /** Arche types T7SEN found in game that NEXON's data leaves out (`arche-types.ts`). */
+  readonly extraArcheTypes: readonly string[];
+}
+
+/** Every Descendant, newest first, with its skills' attributes and Arche types (ADR 0026). */
+export function descendantSkillTypes(
+  descendants: readonly DescendantRecord[],
+): DescendantSkillTypes[] {
+  return [...descendants]
+    .sort((a, b) => Number(b.descendant_id) - Number(a.descendant_id))
+    .map((entry) => ({
+      ...linkTo(entry),
+      imageUrl: entry.descendant_image_url,
+      skills: entry.descendant_skill.map((skill) => ({
+        element: skill.element_type,
+        archeType: skill.arche_type,
+      })),
+      extraArcheTypes: extraArcheTypes.get(entry.descendant_name) ?? [],
+    }));
+}
+
+/** Every Descendant's skill types, fetched while pages are prerendered (ADR 0026). */
+export async function fetchDescendantSkillTypes(): Promise<
+  DescendantSkillTypes[]
+> {
+  return descendantSkillTypes(await fetchDescendants());
+}
+
 /** Each Descendant's link by NEXON id, for pages that name who can equip a module. */
 export function descendantLinksById(
   descendants: readonly DescendantRecord[],

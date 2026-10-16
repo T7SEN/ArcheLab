@@ -6,6 +6,10 @@ import {
   ModuleShowcase,
   type ModuleTierTile,
 } from "@/components/module-showcase";
+import {
+  ReactorShowcase,
+  type ReactorItem,
+} from "@/components/reactor-showcase";
 import { HeroBackdrop } from "@/components/hero-backdrop";
 import { ShinyText } from "@/components/react-bits/shiny-text";
 import { StarBorder } from "@/components/react-bits/star-border";
@@ -13,8 +17,11 @@ import { ComingSoonTools, FeaturedTool } from "@/components/tool-cards";
 import { Badge } from "@/components/ui/badge";
 import { tools } from "@/data/tools";
 import { ChatShowcase } from "@/features/chat/ui/chat-showcase";
+import { elementIconUrls } from "@/features/descendants/element-icons";
+import { rarityOf } from "@/features/game-data/rarity";
 import { tierOptions, versionTier } from "@/features/modules/module-tiers";
 import { fetchModuleGroups } from "@/lib/nexon/module-index";
+import { fetchReactorGroups } from "@/lib/nexon/reactor-index";
 import { fetchShowcase } from "@/lib/nexon/showcase";
 import { pageMetadata, siteDescription } from "@/lib/site-metadata";
 import { palette } from "@/styles/tokens";
@@ -35,9 +42,10 @@ const comingSoon = tools.flatMap((tool) =>
 export default async function HomePage() {
   // Fetched once while the page is prerendered (ADR 0008, ADR 0018). The Descendant
   // portraits also serve the chat builder's sample window.
-  const [showcase, moduleGroups] = await Promise.all([
+  const [showcase, moduleGroups, reactorGroups] = await Promise.all([
     fetchShowcase(),
     fetchModuleGroups(),
+    fetchReactorGroups(),
   ]);
   const portraits = Object.fromEntries(
     showcase.descendants.items.map((item) => [item.name, item.imageUrl]),
@@ -60,6 +68,25 @@ export default async function HomePage() {
       ? []
       : [{ ...tier, count, imageUrl: first.imageUrl }];
   });
+  // Each reactor in its highest tier's art and color (ADR 0026).
+  const reactors: ReactorItem[] = reactorGroups.flatMap((group) => {
+    const top = group.versions.at(0);
+    return top === undefined
+      ? []
+      : [
+          {
+            slug: group.slug,
+            name: group.name,
+            imageUrl: top.imageUrl,
+            hex: rarityOf(top.tier)?.hex ?? palette.primary,
+            attribute: group.attribute,
+            archeType: group.archeType,
+          },
+        ];
+  });
+  const reactorAttributes = reactors.flatMap((reactor) =>
+    reactor.attribute === null ? [] : [reactor.attribute],
+  );
   // A live sample for each tool that has one, by slug.
   const samples: Record<string, ReactNode> = {
     chat: <ChatShowcase portraits={portraits} />,
@@ -129,6 +156,11 @@ export default async function HomePage() {
           weapons={showcase.weapons}
         />
         <ModuleShowcase tiers={moduleTiers} total={moduleGroups.length} />
+        <ReactorShowcase
+          items={reactors}
+          tiers={reactorGroups.at(0)?.versions.length ?? 0}
+          attributeIcons={elementIconUrls(reactorAttributes)}
+        />
       </div>
     </>
   );

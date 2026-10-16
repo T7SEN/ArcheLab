@@ -1,7 +1,7 @@
 "use client";
 
 import { Search, X } from "lucide-react";
-import { useId, useSyncExternalStore, type MouseEvent } from "react";
+import { useId, type MouseEvent } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -28,7 +28,11 @@ import {
   type ModuleCard,
   type ModuleFilters,
 } from "./module-filters";
-import { baseColumns, gridClass, gridColumns, rowEnd } from "./details-row";
+import {
+  gridClass,
+  rowEnd,
+  useGridColumns,
+} from "@/features/game-data/details-row";
 import { ModuleDetails, ModuleTile } from "./module-details";
 
 /** A tier the filter offers, with its rarity color from the chat registry. */
@@ -65,25 +69,6 @@ function writeFilters(filters: ModuleFilters): void {
 
 /** A card's id, for focus to come back to it when its details close. */
 const cardId = (slug: string) => `module-card-${slug}`;
-
-function subscribeColumns(onChange: () => void): () => void {
-  const lists = gridColumns.map((entry) => window.matchMedia(entry.query));
-  for (const list of lists) {
-    list.addEventListener("change", onChange);
-  }
-  return () => {
-    for (const list of lists) {
-      list.removeEventListener("change", onChange);
-    }
-  };
-}
-
-function readColumns(): number {
-  return (
-    gridColumns.find((entry) => window.matchMedia(entry.query).matches)
-      ?.columns ?? baseColumns
-  );
-}
 
 interface ModuleIndexProps {
   entries: readonly ModuleCard[];
@@ -138,11 +123,7 @@ export function ModuleIndex({
 
   // The open module's details go in a row under its card's row, so the grid needs its
   // column count, which CSS sets by width (`details-row.ts`).
-  const columns = useSyncExternalStore(
-    subscribeColumns,
-    readColumns,
-    () => baseColumns,
-  );
+  const columns = useGridColumns();
   const openIndex = shown.findIndex((entry) => entry.slug === filters.open);
   // `at(-1)` would be the last card: nothing open finds no index.
   const openCard = openIndex === -1 ? null : (shown.at(openIndex) ?? null);

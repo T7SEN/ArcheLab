@@ -6,6 +6,7 @@
    - `descendant.json` on its own (`descendantsPromise`), for every list of Descendants: `fetchDescendantSummaries()` gives each one's slug, name, Ultimate flag, portrait, attributes and Arche types, newest first by id (`descendantSummaries`);
    - with `stat`, `module`, `research` and `consumable-material` (`setsPromise`), for the pages: `fetchDescendantPage(slug)` returns `descendantPageFrom(sets, slug)`. All four come through `shared-sets.ts`: `stat`, `research` and `consumable-material` shared with the weapon pages (ADR 0024), `module` with the modules index (ADR 0025). The recipe comes through `researchFor` and `recipeFor` in `recipe.ts`.
    - `fetchDescendantLinks()` gives each Descendant's link by NEXON id, for the modules index's "Equipped by".
+   - `fetchDescendantSkillTypes()` gives each Descendant's skills' attributes and Arche types, for the reactors index; the page's Reactors section lists the reactors matching one of its skills (`reactor-cards.tsx`, ADR 0026).
 2. `descendantPageFrom` builds plain data:
    - levels and stats in the Descendant's own order (`statsOf`); on an Ultimate's page each stat also carries its base's values at the same levels (`baseValues`);
    - the pair: the two Descendants sharing a `descendant_group_id`, base first (`pair`), and `baseName` on an Ultimate's page;

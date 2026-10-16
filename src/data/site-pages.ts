@@ -1,6 +1,7 @@
 import {
   Cpu,
   Crosshair,
+  Hexagon,
   House,
   MessageSquareText,
   Scale,
@@ -38,6 +39,8 @@ export const sitePages: readonly SitePage[] = [
   { href: "/weapons", label: "Weapons", icon: Crosshair },
   // Every module, with filters; each opens in a panel on the index (ADR 0025).
   { href: "/modules", label: "Modules", icon: Cpu, prefetch: false },
+  // Every reactor, with filters; each opens in the index's grid (ADR 0026).
+  { href: "/reactors", label: "Reactors", icon: Hexagon },
 ];
 
 /**
@@ -46,7 +49,7 @@ export const sitePages: readonly SitePage[] = [
  * runs; this width folds the first paint before that. A change to `sitePages` moves the
  * fold, and `shell.spec.ts` fails until this matches it again.
  */
-export const navbarFoldBelow = 642;
+export const navbarFoldBelow = 736;
 
 /** The legal pages, linked from every page's footer rather than the navbar (ADR 0021). */
 export const legalPages: readonly SitePage[] = [

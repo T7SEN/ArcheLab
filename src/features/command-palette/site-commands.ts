@@ -1,4 +1,4 @@
-import { Cpu, Crosshair, UserRound } from "lucide-react";
+import { Cpu, Crosshair, Hexagon, UserRound } from "lucide-react";
 import { allPages, legalPages } from "@/data/site-pages";
 import { tools } from "@/data/tools";
 import type { PaletteCommand } from "./commands";
@@ -21,6 +21,16 @@ export interface PaletteWeapon {
   readonly tier: string;
   /** Its type, which a search also matches: "hand cannon" finds every Hand Cannon. */
   readonly type: string;
+}
+
+/** A reactor the palette offers: picking it opens its details on the reactors index. */
+export interface PaletteReactor {
+  readonly name: string;
+  /** Its details: `/reactors?reactor=<slug>`. */
+  readonly href: string;
+  /** The attribute and Arche type it boosts, shown beside it and searchable. */
+  readonly attribute: string | null;
+  readonly archeType: string | null;
 }
 
 const legalHrefs = new Set(legalPages.map((page) => page.href));
@@ -94,4 +104,24 @@ export function moduleCommands(
     hint: module.tier,
     action: { kind: "go", href: `/modules?module=${module.slug}` },
   }));
+}
+
+/** Each reactor, opening its details on the reactors index (ADR 0026). */
+export function reactorCommands(
+  reactors: readonly PaletteReactor[],
+): PaletteCommand[] {
+  return reactors.map((reactor) => {
+    const types = [reactor.attribute, reactor.archeType].flatMap((type) =>
+      type === null ? [] : [type],
+    );
+    return {
+      id: `reactor:${reactor.href}`,
+      label: reactor.name,
+      group: "Reactors",
+      icon: Hexagon,
+      keywords: ["reactor", ...types],
+      ...(types.length === 0 ? {} : { hint: types.join(" · ") }),
+      action: { kind: "go", href: reactor.href },
+    };
+  });
 }

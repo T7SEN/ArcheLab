@@ -5,6 +5,7 @@ import {
   Cpu,
   FlaskConical,
   Hammer,
+  Hexagon,
   Sparkles,
   UserRound,
 } from "lucide-react";
@@ -20,6 +21,10 @@ import { descendantChatIds } from "@/features/chat/ui/descendant-icons";
 import { shareHash } from "@/features/chat/ui/share-link";
 import { elementIconUrls } from "@/features/descendants/element-icons";
 import { ModuleCards } from "@/features/descendants/module-cards";
+import {
+  ReactorCards,
+  type DescendantReactor,
+} from "@/features/descendants/reactor-cards";
 import { rarityOf } from "@/features/game-data/rarity";
 import { NeighborLinks } from "@/features/game-data/neighbor-links";
 import { PageSection, SectionLinks } from "@/features/game-data/page-section";
@@ -31,6 +36,7 @@ import {
   fetchDescendantPage,
   fetchDescendantSummaries,
 } from "@/lib/nexon/descendant-page";
+import { fetchReactorGroups } from "@/lib/nexon/reactor-index";
 import { pageMetadata } from "@/lib/site-metadata";
 import { palette } from "@/styles/tokens";
 
@@ -71,6 +77,7 @@ const sectionLinks = [
   { id: "stats", label: "Stats" },
   { id: "skills", label: "Skills" },
   { id: "modules", label: "Modules" },
+  { id: "reactors", label: "Reactors" },
   { id: "research", label: "Research" },
   { id: "builds", label: "Builds" },
 ] as const;
@@ -81,10 +88,41 @@ export default async function DescendantPage({
   const { slug } = await params;
   // Fetched once while the page is prerendered and refreshed by the weekly deploy
   // (ADR 0008). If NEXON has no such Descendant, or is down, the page is a 404.
-  const page = await fetchDescendantPage(slug);
+  const [page, reactorGroups] = await Promise.all([
+    fetchDescendantPage(slug),
+    fetchReactorGroups(),
+  ]);
   if (page === null) {
     notFound();
   }
+  // The reactors that suit it (`reactorMatch`, ADR 0026), with its skills of their
+  // attribute and Arche type, in their highest tier's art and color.
+  const reactors: DescendantReactor[] = reactorGroups.flatMap((group) => {
+    const skills = page.skills
+      .filter(
+        (skill) =>
+          skill.element === group.attribute &&
+          skill.archeType === group.archeType,
+      )
+      .map((skill) => skill.name);
+    const top = group.versions.at(0);
+    return group.attribute === null ||
+      group.archeType === null ||
+      top === undefined ||
+      !group.descendants.some((entry) => entry.slug === page.slug)
+      ? []
+      : [
+          {
+            slug: group.slug,
+            name: group.name,
+            imageUrl: top.imageUrl,
+            hex: rarityOf(top.tier)?.hex ?? palette.primary,
+            attribute: group.attribute,
+            archeType: group.archeType,
+            skills,
+          },
+        ];
+  });
   const chatId = descendantChatIds().get(page.name);
   const chatHash =
     chatId === undefined ? null : shareHash(`<img id="${chatId}"/>`, "normal");
@@ -119,7 +157,9 @@ export default async function DescendantPage({
     .join(", ")
     .replace(/, ([^,]*)$/, " and $1");
   const links = sectionLinks.filter(
-    (link) => link.id !== "research" || page.research !== null,
+    (link) =>
+      (link.id !== "research" || page.research !== null) &&
+      (link.id !== "reactors" || reactors.length > 0),
   );
 
   return (
@@ -327,6 +367,22 @@ export default async function DescendantPage({
           <ModuleCards modules={page.modules} ultimateColor={ultimateColor} />
         )}
       </PageSection>
+
+      {reactors.length === 0 ? null : (
+        <PageSection
+          id="reactors"
+          icon={<Hexagon />}
+          title="Reactors"
+          description={`The ${String(reactors.length)} reactors whose attribute and Arche type match ${page.name}'s.`}
+        >
+          <ReactorCards
+            reactors={reactors}
+            attributeIcons={elementIconUrls(
+              reactors.map((reactor) => reactor.attribute),
+            )}
+          />
+        </PageSection>
+      )}
 
       {page.research === null ? null : (
         <PageSection
