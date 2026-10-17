@@ -70,6 +70,7 @@ export const changelog: readonly ChangelogEntry[] = [
           "The Database menu opens when you hover over it, and Database opens the database page.",
           "A tidier footer.",
           "Hero text is easier to read over the dotted background on every page.",
+          "The navbar has no Home link: the ArcheLab logo takes you home.",
         ],
       },
     ],

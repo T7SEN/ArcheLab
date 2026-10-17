@@ -96,7 +96,7 @@ describe("navbarEntries", () => {
           : [entry.group, entry.pages.map((page) => page.label)],
       ),
     ).toEqual([
-      "Home",
+      // No Home: the logo links home (T7SEN, 2026-10-17).
       "Chat builder",
       [
         "Database",

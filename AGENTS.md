@@ -70,7 +70,7 @@ ArcheLab is an unofficial tools hub for The First Descendant, a NEXON game. The 
 
 - `pnpm typecheck && pnpm lint && pnpm test` after every change, so `main` is always ready for T7SEN to commit.
 - Engine changes need unit tests and property tests.
-- User flows: `pnpm test:e2e`.
+- User flows: locally, `pnpm build`, then only the e2e specs the change touches, in Chromium (`pnpm exec playwright test tests/e2e/<spec>.ts --project=chromium`). The full suite, in all three browsers, runs in GitHub Actions on every push to `main`, which deploys only if it passes (T7SEN, 2026-10-17, to save resources on their PC). Run the full suite locally only when T7SEN asks.
 
 ## Finish
 

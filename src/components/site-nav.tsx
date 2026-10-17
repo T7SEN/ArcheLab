@@ -37,10 +37,10 @@ const items: PillNavItem[] = navbarEntries().map((entry) =>
 );
 
 /**
- * The navbar: ArcheLab's mark, linking home and spinning once on hover, then every page
- * in `sitePages`, with a dot under the current one or under the section the page sits
- * in (Descendants on a Descendant's page, ADR 0023), then the search button that opens
- * the command palette (ADR 0022).
+ * The navbar: ArcheLab's mark, linking home and spinning once on hover (there is no Home
+ * link; T7SEN, 2026-10-17), then the pages `navbarEntries` keeps, with a dot under the
+ * current one or under the section the page sits in (Descendants on a Descendant's
+ * page, ADR 0023), then the search button that opens the command palette (ADR 0022).
  */
 export function SiteNav() {
   const pathname = usePathname();

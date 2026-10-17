@@ -1,8 +1,13 @@
 import { expect, test, type Locator } from "@playwright/test";
 import { navbarFoldBelow, sitePages } from "../../src/data/site-pages";
 
-/** The pages the navbar links: all but the footer-only ones (ADR 0028). */
-const navbarPages = sitePages.filter((page) => page.footerOnly !== true);
+/**
+ * The pages the navbar links: all but the footer-only ones (ADR 0028) and Home, which the
+ * logo links (`navbar: false`; T7SEN, 2026-10-17).
+ */
+const navbarPages = sitePages.filter(
+  (page) => page.footerOnly !== true && page.navbar !== false,
+);
 
 const disclaimer = "ArcheLab, a fan site not affiliated with Nexon.";
 const attribution = "Data based on NEXON Open API.";
@@ -111,10 +116,13 @@ for (const reducedMotion of ["no-preference", "reduce"] as const) {
     await page.goto("/tools/chat");
     // Hovering before hydration would start nothing.
     await expect(page.getByRole("textbox", { name: "Message" })).toBeVisible();
-    const logo = page
-      .getByRole("navigation", { name: "Main" })
-      .getByRole("link", { name: "ArcheLab", exact: true });
+    const nav = page.getByRole("navigation", { name: "Main" });
+    const logo = nav.getByRole("link", { name: "ArcheLab", exact: true });
     await expect(logo).toHaveAttribute("href", "/");
+    // The logo is the only way home: no Home link (T7SEN, 2026-10-17).
+    await expect(
+      nav.getByRole("link", { name: "Home", exact: true }),
+    ).toHaveCount(0);
     const turning = () =>
       logo.evaluate(
         (link) => link.firstElementChild?.getAnimations().length ?? 0,
@@ -141,8 +149,10 @@ for (const javaScriptEnabled of [true, false]) {
       test("no page scrolls sideways on a 390px phone", async ({ page }) => {
         // The navbar's hidden measuring copy once widened every page (ADR 0024), and its
         // links did until PillNav measured them, before CSS folded the first paint
-        // (ADR 0010).
-        await page.setViewportSize({ width: 390, height: 844 });
+        // (ADR 0010). Without Home the links fit at 390px; whether they fold is the
+        // first-paint test's job, this one checks nothing sticks out.
+        const width = 390;
+        await page.setViewportSize({ width, height: 844 });
         for (const path of [
           "/",
           "/tools/chat",
@@ -157,13 +167,10 @@ for (const javaScriptEnabled of [true, false]) {
           await page.goto(path);
           const nav = page.getByRole("navigation", { name: "Main" });
           if (javaScriptEnabled) await measured(nav);
-          await expect(
-            nav.getByRole("button", { name: "Open menu" }),
-          ).toBeVisible();
           expect(
             await page.evaluate(() => document.documentElement.scrollWidth),
             path,
-          ).toBeLessThanOrEqual(390);
+          ).toBeLessThanOrEqual(width);
         }
       });
     },
@@ -283,7 +290,7 @@ test("the Database item opens its page, and its menu on hover or keyboard focus"
 test("on a narrow screen the navbar links fold into a menu", async ({
   page,
 }) => {
-  // Home, Chat builder, Database and the search pill fold at 447px and below
+  // Chat builder, Database and the search pill fold at 373px and below
   // (ADR 0027).
   await page.setViewportSize({ width: 260, height: 700 });
   await page.goto("/");
@@ -322,7 +329,7 @@ test("on a narrow screen the navbar links fold into a menu", async ({
 
 test("the navbar menu also closes with reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  // Home, Chat builder, Database and the search pill fold at 447px and below
+  // Chat builder, Database and the search pill fold at 373px and below
   // (ADR 0027).
   await page.setViewportSize({ width: 260, height: 700 });
   await page.goto("/");

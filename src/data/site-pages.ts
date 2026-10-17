@@ -38,6 +38,11 @@ export interface SitePage {
   group?: "Database";
   /** Kept out of the navbar: the footer links it (ADR 0028). */
   footerOnly?: true;
+  /**
+   * False for a page the navbar leaves out with no footer link of its own: Home, which
+   * the navbar's logo links (T7SEN, 2026-10-17).
+   */
+  navbar?: false;
 }
 
 /**
@@ -46,7 +51,9 @@ export interface SitePage {
  * `legalPages`, so a new page cannot ship without its link.
  */
 export const sitePages: readonly SitePage[] = [
-  { href: "/", label: "Home", icon: House },
+  // Out of the navbar: its logo links home (T7SEN, 2026-10-17). The palette and the
+  // sitemap still list it.
+  { href: "/", label: "Home", icon: House, navbar: false },
   // The chat tool's own icon (`tools.ts`).
   { href: "/tools/chat", label: "Chat builder", icon: MessageSquareText },
   // The game's items, under the navbar's Database button (ADR 0027).
@@ -159,7 +166,7 @@ export function navbarEntries(
   const entries: NavbarEntry[] = [];
   const groups = new Map<string, SitePage[]>();
   for (const page of pages) {
-    if (page.footerOnly === true) {
+    if (page.footerOnly === true || page.navbar === false) {
       continue;
     }
     if (page.group === undefined) {
@@ -186,11 +193,11 @@ export function navbarEntries(
 
 /**
  * The screen width, in px, below which these links fold into the navbar's menu,
- * measured 2026-10-16 (ADR 0010). PillNav measures the fold itself once its script
+ * measured 2026-10-17 without Home (ADR 0010). PillNav measures the fold itself once its script
  * runs; this width folds the first paint before that. A change to `sitePages` moves the
  * fold, and `shell.spec.ts` fails until this matches it again.
  */
-export const navbarFoldBelow = 448;
+export const navbarFoldBelow = 374;
 
 /** The legal pages, linked from every page's footer rather than the navbar (ADR 0021). */
 export const legalPages: readonly SitePage[] = [
