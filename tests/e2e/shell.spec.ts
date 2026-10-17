@@ -183,8 +183,13 @@ test("the navbar's first paint folds and lays out as PillNav measures it", async
 }) => {
   // Before its script runs, CSS folds the navbar below navbarFoldBelow. A change to the
   // page list moves PillNav's measured fold, and this fails until the two agree, on
-  // either side of the fold.
-  const widths = [390, navbarFoldBelow - 1, navbarFoldBelow, 1280];
+  // either side of the fold. The fold depends on the system's fonts, and
+  // navbarFoldBelow is CI's (Linux), so the widths either side of it are checked there;
+  // elsewhere, widths clear of it.
+  const widths =
+    process.platform === "linux"
+      ? [390, navbarFoldBelow - 1, navbarFoldBelow, 1280]
+      : [320, 400, 1280];
   const layouts = async (javaScriptEnabled: boolean) => {
     const context = await browser.newContext({
       baseURL,
@@ -290,7 +295,7 @@ test("the Database item opens its page, and its menu on hover or keyboard focus"
 test("on a narrow screen the navbar links fold into a menu", async ({
   page,
 }) => {
-  // Chat builder, Database and the search pill fold at 373px and below
+  // Chat builder, Database and the search pill fold below navbarFoldBelow (383px in CI)
   // (ADR 0027).
   await page.setViewportSize({ width: 260, height: 700 });
   await page.goto("/");
@@ -329,7 +334,7 @@ test("on a narrow screen the navbar links fold into a menu", async ({
 
 test("the navbar menu also closes with reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  // Chat builder, Database and the search pill fold at 373px and below
+  // Chat builder, Database and the search pill fold below navbarFoldBelow (383px in CI)
   // (ADR 0027).
   await page.setViewportSize({ width: 260, height: 700 });
   await page.goto("/");

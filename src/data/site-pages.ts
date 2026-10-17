@@ -192,12 +192,16 @@ export function navbarEntries(
 }
 
 /**
- * The screen width, in px, below which these links fold into the navbar's menu,
- * measured 2026-10-17 without Home (ADR 0010). PillNav measures the fold itself once its script
- * runs; this width folds the first paint before that. A change to `sitePages` moves the
- * fold, and `shell.spec.ts` fails until this matches it again.
+ * The screen width, in px, below which these links fold into the navbar's menu (ADR
+ * 0010). PillNav measures the fold itself once its script runs; this width folds the
+ * first paint before that. Labels draw wider on Linux than on Windows, so the fold
+ * moves with the system's fonts: this is CI's (Linux), worked out on 2026-10-17 without
+ * Home from CI's label widths (the bar needs 351px there, 342px on Windows, where it
+ * fits from 374px). On Windows a screen 374 to 382px wide paints folded and unfolds once
+ * measured; folding early never overflows. A change to `sitePages` moves the fold, and
+ * `shell.spec.ts` fails in CI until this matches it again.
  */
-export const navbarFoldBelow = 374;
+export const navbarFoldBelow = 383;
 
 /** The legal pages, linked from every page's footer rather than the navbar (ADR 0021). */
 export const legalPages: readonly SitePage[] = [
