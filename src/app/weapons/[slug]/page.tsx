@@ -321,7 +321,7 @@ export default async function WeaponPageRoute({
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 href="/weapons"
-                className="text-scrim inline-flex items-center gap-1.5 rounded-sm text-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="inline-flex items-center gap-1.5 rounded-sm text-sm hero-text transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 <ArrowLeft aria-hidden="true" className="size-4" />
                 All weapons
@@ -367,9 +367,7 @@ export default async function WeaponPageRoute({
                 </div>
               )}
             </dl>
-            <p className="text-scrim max-w-xl text-muted-foreground">
-              {summaryOf(page)}.
-            </p>
+            <p className="max-w-xl hero-text">{summaryOf(page)}.</p>
             {/* A `<dl>` has no role that takes a name, so a group carries it. */}
             <div role="group" aria-label="Key stats">
               <dl className="grid max-w-xl grid-cols-3 gap-2">

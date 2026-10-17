@@ -108,6 +108,9 @@ describe("navbarEntries", () => {
           "Modules",
           "Reactors",
           "External Components",
+          "Fellows",
+          "Vehicles",
+          "Mutant Cells",
         ],
       ],
     ]);

@@ -75,7 +75,7 @@ describe("reading the items file", () => {
     expect(readDatabaseItems(null)).toBeNull();
     expect(readDatabaseItems({ items: [{ name: "x" }] })).toBeNull();
     expect(
-      readDatabaseItems({ items: [{ ...items[0], category: "Fellows" }] }),
+      readDatabaseItems({ items: [{ ...items[0], category: "Emotes" }] }),
     ).toBeNull();
   });
 });

@@ -272,7 +272,7 @@ export default async function DescendantPage({
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 href="/descendants"
-                className="text-scrim inline-flex items-center gap-1.5 rounded-sm text-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="inline-flex items-center gap-1.5 rounded-sm text-sm hero-text transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 <ArrowLeft aria-hidden="true" className="size-4" />
                 All Descendants
@@ -364,9 +364,7 @@ export default async function DescendantPage({
                 </div>
               )}
             </dl>
-            <p className="text-scrim max-w-xl text-muted-foreground">
-              {summary}.
-            </p>
+            <p className="max-w-xl hero-text">{summary}.</p>
             {keyStats.length === 0 || lastLevel === undefined ? null : (
               // A `<dl>` has no role that takes a name, so a group carries it.
               <div role="group" aria-label={`At level ${String(lastLevel)}`}>

@@ -4,8 +4,7 @@ import { navbarFoldBelow, sitePages } from "../../src/data/site-pages";
 /** The pages the navbar links: all but the footer-only ones (ADR 0028). */
 const navbarPages = sitePages.filter((page) => page.footerOnly !== true);
 
-const disclaimer =
-  "ArcheLab is a community fan site and is not affiliated with Nexon.";
+const disclaimer = "ArcheLab, a fan site not affiliated with Nexon.";
 const attribution = "Data based on NEXON Open API.";
 
 /**
@@ -23,10 +22,15 @@ for (const path of ["/", "/tools/chat", "/this-page-does-not-exist"]) {
     const footer = page.getByRole("contentinfo");
 
     await expect(footer).toContainText(
-      "Made with ❤️ by T7SEN. © 2026 ArcheLab",
+      // The heart is drawn, and read as "love" (T7SEN, 2026-10-17).
+      "Made with love by T7SEN. © 2026 ArcheLab",
     );
     await expect(footer).toContainText(disclaimer);
     await expect(footer).toContainText(attribution);
+    // "NEXON Open API" in the attribution opens NEXON's API site (T7SEN, 2026-10-17).
+    const api = footer.getByRole("link", { name: "NEXON Open API" });
+    await expect(api).toHaveAttribute("href", "https://openapi.nexon.com/");
+    await expect(api).toHaveAttribute("target", "_blank");
   });
 }
 
@@ -253,11 +257,11 @@ test("the Database item opens its page, and its menu on hover or keyboard focus"
   await page.keyboard.press("Tab");
   await expect(database).toBeFocused();
   await expect(database).toHaveAttribute("aria-expanded", "true");
-  for (let step = 0; step < 5; step++) {
+  for (let step = 0; step < 8; step++) {
     await page.keyboard.press("Tab");
   }
   await expect(
-    nav.getByRole("link", { name: "External Components", exact: true }),
+    nav.getByRole("link", { name: "Mutant Cells", exact: true }),
   ).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(reactors).toHaveCount(0);
@@ -310,6 +314,9 @@ test("on a narrow screen the navbar links fold into a menu", async ({
     "Modules",
     "Reactors",
     "External Components",
+    "Fellows",
+    "Vehicles",
+    "Mutant Cells",
   ]);
 });
 

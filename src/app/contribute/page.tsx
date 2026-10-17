@@ -79,7 +79,7 @@ export default async function ContributePage() {
               Help fill in data
             </ShinyText>
           </h1>
-          <p className="text-scrim mt-3 max-w-2xl text-muted-foreground">
+          <p className="mt-3 max-w-2xl hero-text">
             Some things only show in game, and nobody can unlock all of them
             alone. If you can check one below, send it in with a screenshot.
             Once its screenshot is checked, it goes on the site.

@@ -82,7 +82,7 @@ export default async function DescendantsPage() {
               Descendants
             </ShinyText>
           </h1>
-          <p className="text-scrim mt-3 max-w-2xl text-muted-foreground">
+          <p className="mt-3 max-w-2xl hero-text">
             {summaries.length === 0
               ? "The Descendants couldn't be loaded for this build. They come back with the next one."
               : `All ${String(summaries.length)} Descendants, ${String(ultimates)} of them Ultimates. Each page has stats at every level, skills, exclusive modules and the research recipe.`}

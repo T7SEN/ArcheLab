@@ -101,7 +101,7 @@ export default async function ExternalComponentsPage() {
               External Components
             </ShinyText>
           </h1>
-          <p className="text-scrim mt-3 max-w-2xl text-muted-foreground">
+          <p className="mt-3 max-w-2xl hero-text">
             {groups.length === 0
               ? "The external components couldn't be loaded for this build. They come back with the next one."
               : `All ${String(sets)} sets, and ${String(groups.length - sets)} components with no set. Open one for its set effect, and each piece's base stat at every level and possible sub-stats.`}

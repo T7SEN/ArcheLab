@@ -1,6 +1,6 @@
 /**
  * The database page's search (T7SEN, 2026-10-17; ADR 0034): every Descendant, weapon,
- * module, reactor and external component in one list, from a static file,
+ * module, reactor, external component, Fellow, vehicle and Mutant Cell in one list, from a static file,
  * `/database/items`, loaded once someone searches. Pure, for the browser and the tests.
  */
 
@@ -35,6 +35,23 @@ export const databaseCategories = [
     href: "/external-components",
     description: "Base stats by level, set effects, sub-stats and core slots.",
   },
+  {
+    name: "Fellows",
+    href: "/fellows",
+    description:
+      "Passives and stats at every level, Inversion Reinforcement effects and research.",
+  },
+  {
+    name: "Vehicles",
+    href: "/vehicles",
+    description: "Speed, turning and boost at every level, and research.",
+  },
+  {
+    name: "Mutant Cells",
+    href: "/mutant-cells",
+    description:
+      "Every Mutant Cell by socket, what sets it off and its effects.",
+  },
 ] as const;
 
 export type DatabaseCategory = (typeof databaseCategories)[number]["name"];
@@ -49,17 +66,20 @@ export interface DatabaseItem {
   readonly hint: string;
   /** More words that find it: types, tiers, pieces. */
   readonly keywords: readonly string[];
+  /** Empty for an item with no art, such as a Fellow without its file (ADR 0035). */
   readonly imageUrl: string;
   /** Its tier's color, for its tile. */
   readonly hex: string;
 }
 
 /**
- * How an item's art fills its square tile: module icons whole, the rest filling it,
- * since weapon art is wide and shrank to a sliver.
+ * How an item's art fills its square tile: module and Mutant Cell icons whole, the rest
+ * filling it, since weapon art is wide and shrank to a sliver.
  */
 export const artFit = (item: DatabaseItem): string =>
-  item.category === "Modules" ? "object-contain p-0.5" : "object-cover";
+  item.category === "Modules" || item.category === "Mutant Cells"
+    ? "object-contain p-0.5"
+    : "object-cover";
 
 /** The file's shape. */
 export interface DatabaseItemList {

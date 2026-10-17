@@ -1,19 +1,35 @@
-import { Database, type LucideIcon } from "lucide-react";
+import { Heart, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { LogoMark } from "@/components/logo-mark";
-import { legalPages, sitePages } from "@/data/site-pages";
+import {
+  footerCommunityHrefs,
+  footerDatabaseHrefs,
+  footerToolHrefs,
+  legalPages,
+  sitePages,
+  type SitePage,
+} from "@/data/site-pages";
 import { tools } from "@/data/tools";
 
-/** The footer line, in T7SEN's words (2026-10-15). It carries the fan-site disclaimer. */
+/**
+ * The footer line, T7SEN's words of 2026-10-15 shortened at T7SEN's request
+ * (2026-10-17). It carries the fan-site disclaimer. "love" shows as a drawn heart in
+ * the site's violet, and screen readers still read the word.
+ */
 export const footerText =
-  "Made with ❤️ by T7SEN. © 2026 ArcheLab - ArcheLab is a community fan site and is not affiliated with Nexon.";
+  "Made with love by T7SEN. © 2026 ArcheLab, a fan site not affiliated with Nexon.";
+const loveWord = "love";
 
 /**
  * Required on every page: NEXON's API terms ask sites to name Nexon as the data source
  * (§8.4), and the builder shows NEXON portraits (AGENTS.md critical rule 3).
  */
 export const attributionText = "Data based on NEXON Open API.";
+
+/** The attribution's link: "NEXON Open API" in it opens NEXON's API site (T7SEN, 2026-10-17). */
+const apiName = "NEXON Open API";
+const apiUrl = "https://openapi.nexon.com/";
 
 const linkClass =
   "inline-flex items-start gap-2 rounded-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -26,12 +42,40 @@ function LinkIcon({ icon: Icon }: { icon: LucideIcon }) {
   return <Icon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />;
 }
 
+/** The pages of `sitePages` at `hrefs`, in that order. */
+const pagesAt = (hrefs: readonly string[]): SitePage[] =>
+  hrefs.flatMap((href) => {
+    const page = sitePages.find((entry) => entry.href === href);
+    return page === undefined ? [] : [page];
+  });
+
+const toolPages = pagesAt(footerToolHrefs);
+const databasePages = pagesAt(footerDatabaseHrefs);
+const communityPages = pagesAt(footerCommunityHrefs);
+const liveTools = tools.filter((tool) => tool.status === "live");
+const comingTools = tools.filter((tool) => tool.status !== "live");
+
+/** A page's link in a footer column, with its icon. */
+function PageLink({ page }: { page: SitePage }) {
+  return (
+    <li>
+      <Link href={page.href} prefetch={page.prefetch} className={linkClass}>
+        <LinkIcon icon={page.icon} />
+        {page.label}
+      </Link>
+    </li>
+  );
+}
+
 /**
- * Every page's footer (ADR 0018): ArcheLab's mark and a line, a sitemap from the tool registry,
- * the navbar's page list and the legal pages (ADR 0021), then T7SEN's line and NEXON's
- * attribution.
+ * Every page's footer (ADR 0018): ArcheLab's mark and a line, then Tools (the live
+ * tools, the database, then the coming ones), the main database indexes, Community and
+ * the legal pages (ADR 0021), then T7SEN's line and NEXON's attribution, whose "NEXON
+ * Open API" links NEXON's API site (T7SEN, 2026-10-17).
  */
 export function SiteFooter() {
+  const [beforeApi, afterApi] = attributionText.split(apiName);
+  const [beforeLove, afterLove] = footerText.split(loveWord);
   return (
     <footer className="border-t bg-card/30">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.6fr)_repeat(4,minmax(0,1fr))]">
@@ -41,72 +85,73 @@ export function SiteFooter() {
             ArcheLab
           </p>
           <p className="max-w-xs text-sm text-muted-foreground">
-            Fan-made tools for The First Descendant, built on NEXON&apos;s game
-            data.
+            {/* No "built on NEXON's game data": only the attribution names NEXON
+                (AGENTS.md; T7SEN, 2026-10-17). */}
+            Player tools and game data for The First Descendant.
           </p>
         </div>
         <FooterColumn title="Tools">
-          {tools.map((tool) => (
+          {liveTools.map((tool) => (
             <li key={tool.slug}>
-              {tool.status === "live" ? (
-                <Link href={tool.href} className={linkClass}>
-                  <LinkIcon icon={tool.icon} />
-                  {tool.name}
-                </Link>
-              ) : (
-                <span className="inline-flex items-start gap-2 text-muted-foreground">
-                  <LinkIcon icon={tool.icon} />
-                  <span>
-                    {tool.name}{" "}
-                    <span className="text-xs text-primary">soon</span>
-                  </span>
+              <Link href={tool.href} className={linkClass}>
+                <LinkIcon icon={tool.icon} />
+                {tool.name}
+              </Link>
+            </li>
+          ))}
+          {toolPages.map((page) => (
+            <PageLink key={page.href} page={page} />
+          ))}
+          {comingTools.map((tool) => (
+            <li key={tool.slug}>
+              <span className="inline-flex items-start gap-2 text-muted-foreground">
+                <LinkIcon icon={tool.icon} />
+                <span>
+                  {tool.name} <span className="text-xs text-primary">soon</span>
                 </span>
-              )}
+              </span>
             </li>
           ))}
         </FooterColumn>
-        <FooterColumn title="Site">
-          {sitePages.map((page) => (
-            <li key={page.href}>
-              <Link
-                href={page.href}
-                prefetch={page.prefetch}
-                className={linkClass}
-              >
-                <LinkIcon icon={page.icon} />
-                {page.label}
-              </Link>
-            </li>
+        <FooterColumn title="Database">
+          {databasePages.map((page) => (
+            <PageLink key={page.href} page={page} />
+          ))}
+        </FooterColumn>
+        <FooterColumn title="Community">
+          {communityPages.map((page) => (
+            <PageLink key={page.href} page={page} />
           ))}
         </FooterColumn>
         <FooterColumn title="Legal">
           {legalPages.map((page) => (
-            <li key={page.href}>
-              <Link href={page.href} className={linkClass}>
-                <LinkIcon icon={page.icon} />
-                {page.label}
-              </Link>
-            </li>
+            <PageLink key={page.href} page={page} />
           ))}
-        </FooterColumn>
-        <FooterColumn title="Data">
-          <li>
-            <a
-              href="https://openapi.nexon.com/"
-              target="_blank"
-              rel="noreferrer"
-              className={linkClass}
-            >
-              <LinkIcon icon={Database} />
-              NEXON Open API
-            </a>
-          </li>
         </FooterColumn>
       </div>
       <div className="border-t">
         <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-          <p>{footerText}</p>
-          <p className="text-xs">{attributionText}</p>
+          <p>
+            {beforeLove}
+            <Heart
+              aria-hidden="true"
+              className="inline size-3.5 fill-primary align-[-0.125em] text-primary"
+            />
+            <span className="sr-only">{loveWord}</span>
+            {afterLove}
+          </p>
+          <p className="text-xs">
+            {beforeApi}
+            <a
+              href={apiUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-sm underline decoration-muted-foreground/50 underline-offset-2 transition-colors outline-none hover:text-foreground hover:decoration-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              {apiName}
+            </a>
+            {afterApi}
+          </p>
         </div>
       </div>
     </footer>

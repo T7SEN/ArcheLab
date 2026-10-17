@@ -1,8 +1,8 @@
 import { wideArt } from "./wide-art";
 
 /**
- * Reactor or external component art on a tile in its tier's color, as wide as the art's
- * own shape (ADR 0026, ADR 0027).
+ * Reactor, external component or Fellow art on a tile in its tier's color, as wide as
+ * the art's own shape (ADR 0026, ADR 0027, ADR 0035).
  */
 export function WideTile({
   imageUrl,
@@ -26,7 +26,7 @@ export function WideTile({
         backgroundImage: `radial-gradient(circle at 50% 40%, color-mix(in srgb, ${color} 35%, transparent), color-mix(in srgb, ${color} 8%, transparent) 75%)`,
       }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element -- NEXON images load directly from NEXON's host, never through Vercel Image Optimization (SKILL.md landmine 2). */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- NEXON images load directly from NEXON's host, and Fellow art from the site's own files, never through Vercel Image Optimization (SKILL.md landmine 2). */}
       <img
         src={imageUrl}
         alt=""

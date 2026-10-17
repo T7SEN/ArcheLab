@@ -62,6 +62,23 @@ export function findingEmailUrl(topic: string): string {
 }
 
 /**
+ * Feedback about the site itself (T7SEN, 2026-10-17; ADR 0036): a bug or an idea, on
+ * GitHub through its own issue form, or by email. Wrong game data goes through the
+ * in-game finding form instead, with a screenshot.
+ */
+export const bugReportUrl = issueFormUrl("bug-report.yml", "Bug: ", {});
+export const suggestionUrl = issueFormUrl("suggestion.yml", "Idea: ", {});
+
+export const bugEmailUrl = reportEmailUrl(
+  "Bug: ",
+  "Page: \nWhat happened: \nBrowser and device: \n",
+);
+export const suggestionEmailUrl = reportEmailUrl(
+  "Idea: ",
+  "Your idea: \nWhat it would help with: \n",
+);
+
+/**
  * What the site marks as not known yet, besides weapon core slots: each with the page
  * it's about. Remove a check once it's settled.
  */

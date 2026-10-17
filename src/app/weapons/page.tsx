@@ -96,7 +96,7 @@ export default async function WeaponsPage() {
               Weapons
             </ShinyText>
           </h1>
-          <p className="text-scrim mt-3 max-w-2xl text-muted-foreground">
+          <p className="mt-3 max-w-2xl hero-text">
             {summaries.length === 0
               ? "The weapons couldn't be loaded for this build. They come back with the next one."
               : `All ${String(summaries.length)} weapons in ${String(types.length)} types. Each page has ATK at every level and every base stat, plus the unique ability and research recipe where a weapon has them.`}

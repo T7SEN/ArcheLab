@@ -5,7 +5,7 @@ import { palette } from "@/styles/tokens";
  * The hero background the pages share: the DotGrid field and a violet glow. It fills
  * its section, which slides up under the navbar (`-mt-(--site-header-height)`), so the
  * background reaches the top of the page. The resting dots use `--dot-grid`, darker
- * than text, and hero text without a background of its own takes `text-scrim`
+ * than text, and hero text without a background of its own takes `hero-text`
  * (T7SEN, 2026-10-16: text over the dots was hard to read).
  */
 export function HeroBackdrop() {

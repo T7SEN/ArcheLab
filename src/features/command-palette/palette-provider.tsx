@@ -17,6 +17,9 @@ import { loadPaletteModules, type PaletteModule } from "./palette-modules";
 import {
   componentCommands,
   descendantCommands,
+  fellowCommands,
+  mutantCellCommands,
+  vehicleCommands,
   moduleCommands,
   pageCommands,
   reactorCommands,
@@ -24,6 +27,9 @@ import {
   weaponCommands,
   type PaletteComponent,
   type PaletteDescendant,
+  type PaletteFellow,
+  type PaletteMutantCell,
+  type PaletteVehicle,
   type PaletteReactor,
   type PaletteWeapon,
 } from "./site-commands";
@@ -39,8 +45,8 @@ const PaletteContext = createContext<PaletteContextValue | null>(null);
 /**
  * The command palette for every page (ADR 0022): it holds the open state and the
  * command sources, and opens on Ctrl+K or ⌘K anywhere, the chat editor included.
- * `descendants`, `weapons`, `reactors` and `components` are plain data the server layout
- * builds once per build; the modules load the first time the palette opens
+ * `descendants`, `weapons`, `reactors`, `components`, `fellows`, `vehicles` and
+ * `mutantCells` are plain data the server layout builds once per build; the modules load the first time the palette opens
  * (`palette-modules.ts`).
  */
 export function PaletteProvider({
@@ -48,12 +54,18 @@ export function PaletteProvider({
   weapons,
   reactors,
   components,
+  fellows,
+  vehicles,
+  mutantCells,
   children,
 }: {
   descendants: readonly PaletteDescendant[];
   weapons: readonly PaletteWeapon[];
   reactors: readonly PaletteReactor[];
   components: readonly PaletteComponent[];
+  fellows: readonly PaletteFellow[];
+  vehicles: readonly PaletteVehicle[];
+  mutantCells: readonly PaletteMutantCell[];
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -115,9 +127,26 @@ export function PaletteProvider({
         order: 50,
         commands: () => componentCommands(components),
       },
+      { id: "fellows", order: 55, commands: () => fellowCommands(fellows) },
+      { id: "vehicles", order: 60, commands: () => vehicleCommands(vehicles) },
+      {
+        id: "mutant-cells",
+        order: 65,
+        commands: () => mutantCellCommands(mutantCells),
+      },
     ];
     return [...builtIn, ...registered];
-  }, [descendants, weapons, modules, reactors, components, registered]);
+  }, [
+    descendants,
+    weapons,
+    modules,
+    reactors,
+    components,
+    fellows,
+    vehicles,
+    mutantCells,
+    registered,
+  ]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {

@@ -1,12 +1,18 @@
 import {
+  Motorbike,
   CircuitBoard,
   Database,
+  Dna,
   HandHelping,
+  History,
+  Info,
   Cpu,
   Crosshair,
   Hexagon,
   House,
+  MessageSquareHeart,
   MessageSquareText,
+  PawPrint,
   Scale,
   ScrollText,
   ShieldCheck,
@@ -30,7 +36,7 @@ export interface SitePage {
    * (ADR 0027). The footer lists every page either way.
    */
   group?: "Database";
-  /** Linked from the footer only, not the navbar (ADR 0028). */
+  /** Kept out of the navbar: the footer links it (ADR 0028). */
   footerOnly?: true;
 }
 
@@ -75,13 +81,61 @@ export const sitePages: readonly SitePage[] = [
     icon: CircuitBoard,
     group: "Database",
   },
-  // What players can check in game and send in (ADR 0028); in the footer only.
+  // Every Fellow; each opens in the index's grid (T7SEN, 2026-10-17; ADR 0035).
+  { href: "/fellows", label: "Fellows", icon: PawPrint, group: "Database" },
+  // Every vehicle; each opens in the index's grid (T7SEN, 2026-10-17; ADR 0037).
+  { href: "/vehicles", label: "Vehicles", icon: Motorbike, group: "Database" },
+  // Every Mutant Cell, from the update notes; each opens in the index's grid (T7SEN,
+  // 2026-10-17; ADR 0038).
+  {
+    href: "/mutant-cells",
+    label: "Mutant Cells",
+    icon: Dna,
+    group: "Database",
+  },
+  // What players can check in game and send in (ADR 0028), in the footer's Community
+  // column, not the navbar.
   {
     href: "/contribute",
     label: "Help fill in data",
     icon: HandHelping,
     footerOnly: true,
   },
+  // What ArcheLab is and how its facts are kept right; what changed on the site; where
+  // to send bugs and ideas. In the footer's Community column (T7SEN, 2026-10-17; ADR
+  // 0036).
+  { href: "/about", label: "About", icon: Info, footerOnly: true },
+  { href: "/changelog", label: "Changelog", icon: History, footerOnly: true },
+  {
+    href: "/feedback",
+    label: "Feedback",
+    icon: MessageSquareHeart,
+    footerOnly: true,
+  },
+];
+
+/**
+ * The footer's Database column, in order: the main indexes only (T7SEN, 2026-10-17).
+ * The other pages are in the navbar, the palette and the sitemap.
+ */
+export const footerDatabaseHrefs: readonly string[] = [
+  "/descendants",
+  "/weapons",
+  "/modules",
+];
+
+/** Pages the footer lists under Tools, after the live tools: the database (T7SEN). */
+export const footerToolHrefs: readonly string[] = ["/database"];
+
+/**
+ * The footer's Community column (T7SEN, 2026-10-17): About, Changelog, Feedback and
+ * Help fill in data (ADR 0028, ADR 0036).
+ */
+export const footerCommunityHrefs: readonly string[] = [
+  "/about",
+  "/changelog",
+  "/feedback",
+  "/contribute",
 ];
 
 /** A navbar entry: a page's link, or a group's button over its pages' links. */

@@ -45,11 +45,14 @@ test("lists the weapons still missing their core slots, each with report links",
   await expect(other).toContainText("Reactor upgrade name");
 });
 
-test("the footer links it, and the navbar doesn't", async ({ page }) => {
+test("the footer's Community column links it, and the navbar doesn't", async ({
+  page,
+}) => {
   await page.goto("/");
   await expect(
     page
       .getByRole("contentinfo")
+      .getByRole("navigation", { name: "Community" })
       .getByRole("link", { name: "Help fill in data" }),
   ).toHaveAttribute("href", "/contribute");
   await expect(

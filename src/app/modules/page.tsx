@@ -126,7 +126,7 @@ export default async function ModulesPage() {
               Modules
             </ShinyText>
           </h1>
-          <p className="text-scrim mt-3 max-w-2xl text-muted-foreground">
+          <p className="mt-3 max-w-2xl hero-text">
             {groups.length === 0
               ? "The modules couldn't be loaded for this build. They come back with the next one."
               : `All ${count(groups.length)} modules, ${count(variants.length)} counting each version for a rounds type, weapon or melee. Open one for its capacity and effect at every level.`}

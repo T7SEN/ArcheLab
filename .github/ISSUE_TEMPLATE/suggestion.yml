@@ -1,0 +1,27 @@
+name: Suggestion
+description: A tool, a page or a change you'd like on ArcheLab.
+title: "Idea: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. Say what you'd like and what it would help with.
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: The tool, page or change you'd like.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What it would help with
+      description: What you'd use it for in the game.
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: The ArcheLab page it's about, if any.
+      placeholder: https://arche-lab.tech/database

@@ -105,7 +105,7 @@ export default async function ReactorsPage() {
               Reactors
             </ShinyText>
           </h1>
-          <p className="text-scrim mt-3 max-w-2xl text-muted-foreground">
+          <p className="mt-3 max-w-2xl hero-text">
             {groups.length === 0
               ? "The reactors couldn't be loaded for this build. They come back with the next one."
               : `All ${String(groups.length)} reactors, each in ${String(groups.at(0)?.versions.length ?? 0)} tiers. Open one for its Skill Power at every level, and the Descendants whose skills it suits.`}

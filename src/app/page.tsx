@@ -151,7 +151,7 @@ export default async function HomePage() {
               Tools for The First Descendant
             </ShinyText>
           </h1>
-          <p className="text-scrim mt-5 max-w-xl text-lg text-muted-foreground">
+          <p className="mt-5 max-w-xl text-lg hero-text">
             Fan-made tools for Descendants. Start with the chat message builder;
             Descendant and weapon builds are next.
           </p>

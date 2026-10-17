@@ -1,4 +1,13 @@
-import { CircuitBoard, Cpu, Crosshair, Hexagon, UserRound } from "lucide-react";
+import {
+  Motorbike,
+  CircuitBoard,
+  Cpu,
+  Crosshair,
+  Dna,
+  Hexagon,
+  PawPrint,
+  UserRound,
+} from "lucide-react";
 import { allPages, legalPages } from "@/data/site-pages";
 import { tools } from "@/data/tools";
 import type { PaletteCommand } from "./commands";
@@ -45,6 +54,35 @@ export interface PaletteComponent {
   readonly hint: string;
   /** Its tiers and its pieces' names, which a search also matches. */
   readonly keywords: readonly string[];
+}
+
+/** A Fellow the palette offers: picking it opens its details on the Fellows page. */
+export interface PaletteFellow {
+  readonly name: string;
+  /** Its details: `/fellows?fellow=<slug>`. */
+  readonly href: string;
+  /** Its tier's rarity name, shown beside it and searchable. */
+  readonly tier: string;
+  /** Its passive's name, shown beside it and searchable (ADR 0035). */
+  readonly passive: string | null;
+}
+
+/** A vehicle the palette offers: picking it opens its details on the Vehicles page. */
+export interface PaletteVehicle {
+  readonly name: string;
+  /** Its details: `/vehicles?vehicle=<slug>`. */
+  readonly href: string;
+  /** Its tier and kind, shown beside it and searchable: "Rare · Speed Hover Bike". */
+  readonly hint: string;
+}
+
+/** A Mutant Cell the palette offers: picking it opens its details on the Mutant Cells page. */
+export interface PaletteMutantCell {
+  readonly name: string;
+  /** Its details: `/mutant-cells?cell=<slug>`. */
+  readonly href: string;
+  /** Its socket, shown beside it and searchable. */
+  readonly socket: string;
 }
 
 const legalHrefs = new Set(legalPages.map((page) => page.href));
@@ -152,5 +190,54 @@ export function componentCommands(
     keywords: ["external component", ...component.keywords],
     hint: component.hint,
     action: { kind: "go", href: component.href },
+  }));
+}
+
+/** Each Fellow, opening its details on the Fellows page (ADR 0035). */
+export function fellowCommands(
+  fellows: readonly PaletteFellow[],
+): PaletteCommand[] {
+  return fellows.map((fellow) => {
+    const facts =
+      fellow.passive === null ? [fellow.tier] : [fellow.tier, fellow.passive];
+    return {
+      id: `fellow:${fellow.href}`,
+      label: fellow.name,
+      group: "Fellows",
+      icon: PawPrint,
+      keywords: ["fellow", ...facts],
+      hint: facts.join(" · "),
+      action: { kind: "go", href: fellow.href },
+    };
+  });
+}
+
+/** Each vehicle, opening its details on the Vehicles page (ADR 0037). */
+export function vehicleCommands(
+  vehicles: readonly PaletteVehicle[],
+): PaletteCommand[] {
+  return vehicles.map((vehicle) => ({
+    id: `vehicle:${vehicle.href}`,
+    label: vehicle.name,
+    group: "Vehicles",
+    icon: Motorbike,
+    keywords: ["vehicle", vehicle.hint],
+    hint: vehicle.hint,
+    action: { kind: "go", href: vehicle.href },
+  }));
+}
+
+/** Each Mutant Cell, opening its details on the Mutant Cells page (ADR 0038). */
+export function mutantCellCommands(
+  cells: readonly PaletteMutantCell[],
+): PaletteCommand[] {
+  return cells.map((cell) => ({
+    id: `mutant-cell:${cell.href}`,
+    label: cell.name,
+    group: "Mutant Cells",
+    icon: Dna,
+    keywords: ["Mutant Cell", cell.socket],
+    hint: cell.socket,
+    action: { kind: "go", href: cell.href },
   }));
 }

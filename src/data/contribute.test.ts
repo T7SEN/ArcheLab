@@ -2,8 +2,12 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
+  bugEmailUrl,
+  bugReportUrl,
   findingEmailUrl,
   findingReportUrl,
+  suggestionEmailUrl,
+  suggestionUrl,
   weaponCoreEmailUrl,
   weaponCoreReportUrl,
 } from "./contribute";
@@ -51,6 +55,39 @@ describe("report links", () => {
     );
     expect(findingEmailUrl("Reactor upgrade name")).toContain(
       "subject=In-game%3A%20Reactor%20upgrade%20name",
+    );
+  });
+});
+
+describe("feedback links", () => {
+  it("open the bug and suggestion forms, which exist", () => {
+    for (const [link, template, title] of [
+      [bugReportUrl, "bug-report.yml", "Bug: "],
+      [suggestionUrl, "suggestion.yml", "Idea: "],
+    ] as const) {
+      const url = new URL(link);
+      expect(`${url.origin}${url.pathname}`).toBe(
+        "https://github.com/T7SEN/ArcheLab/issues/new",
+      );
+      expect(url.searchParams.get("template")).toBe(template);
+      expect(url.searchParams.get("title")).toBe(title);
+      expect(formIds(template).length).toBeGreaterThan(0);
+    }
+    expect(formIds("bug-report.yml")).toEqual([
+      "page",
+      "what",
+      "browser",
+      "screenshot",
+    ]);
+    expect(formIds("suggestion.yml")).toEqual(["idea", "why", "page"]);
+  });
+
+  it("start emails with lines to fill in", () => {
+    expect(bugEmailUrl).toBe(
+      "mailto:contact@t7sen.com?subject=Bug%3A%20&body=Page%3A%20%0AWhat%20happened%3A%20%0ABrowser%20and%20device%3A%20%0A",
+    );
+    expect(decodeURIComponent(suggestionEmailUrl)).toContain(
+      "subject=Idea: &body=Your idea: \nWhat it would help with: \n",
     );
   });
 });

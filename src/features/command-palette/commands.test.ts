@@ -7,15 +7,21 @@ import {
 } from "./commands";
 import { paletteComponents } from "./palette-components";
 import { paletteDescendants } from "./palette-descendants";
+import { paletteFellows } from "./palette-fellows";
+import { paletteMutantCells } from "./palette-mutant-cells";
+import { paletteVehicles } from "./palette-vehicles";
 import { readModuleList } from "./palette-modules";
 import { paletteWeapons } from "./palette-weapons";
 import {
   componentCommands,
   descendantCommands,
+  fellowCommands,
   moduleCommands,
+  mutantCellCommands,
   pageCommands,
   reactorCommands,
   toolCommands,
+  vehicleCommands,
   weaponCommands,
 } from "./site-commands";
 import { allPages } from "@/data/site-pages";
@@ -315,5 +321,135 @@ describe("the site's commands", () => {
     expect(
       commands.filter((entry) => matchesCommand(entry, "external component")),
     ).toHaveLength(2);
+  });
+});
+
+describe("Fellows in the palette", () => {
+  it("opens each Fellow's details, with its tier and passive beside it", () => {
+    const fellow = (id: string, name: string) => ({
+      id,
+      slug: name.toLowerCase().replaceAll(" ", "-"),
+      name,
+      tier: "Tier1",
+      levels: [],
+      research: null,
+    });
+    const fellows = paletteFellows([
+      fellow("107200003", "Snowy Sled Dog"),
+      fellow("107200001", "Hagios Sheepdog"),
+    ]);
+    expect(fellows).toEqual([
+      {
+        name: "Hagios Sheepdog",
+        href: "/fellows?fellow=hagios-sheepdog",
+        tier: "Normal",
+        passive: "Auto HP Recovery",
+      },
+      {
+        name: "Snowy Sled Dog",
+        href: "/fellows?fellow=snowy-sled-dog",
+        tier: "Normal",
+        passive: "Auto MP Recovery",
+      },
+    ]);
+    const commands = fellowCommands(fellows);
+    expect(commands.at(0)).toMatchObject({
+      label: "Hagios Sheepdog",
+      group: "Fellows",
+      hint: "Normal · Auto HP Recovery",
+      action: { kind: "go", href: "/fellows?fellow=hagios-sheepdog" },
+    });
+    expect(
+      commands
+        .filter((entry) => matchesCommand(entry, "mp recovery"))
+        .map((entry) => entry.label),
+    ).toEqual(["Snowy Sled Dog"]);
+    expect(
+      commands.filter((entry) => matchesCommand(entry, "fellow")),
+    ).toHaveLength(2);
+  });
+});
+
+describe("vehicles in the palette", () => {
+  it("opens each vehicle's details, with its tier and kind beside it", () => {
+    const vehicle = (id: string, name: string, kind: string) => ({
+      id,
+      slug: name.toLowerCase(),
+      name,
+      description: `${kind}, ${name}`,
+      tier: "Tier2",
+      imageUrl: "https://open.api.nexon.com/static/tfd/img/x",
+      stats: [],
+      levels: [],
+      research: null,
+    });
+    const vehicles = paletteVehicles([
+      vehicle("107300003", "Orca", "Balanced Hover Bike"),
+      vehicle("107300002", "Vortex", "Speed Hover Bike"),
+    ]);
+    expect(vehicles).toEqual([
+      {
+        name: "Orca",
+        href: "/vehicles?vehicle=orca",
+        hint: "Rare · Balanced Hover Bike",
+      },
+      {
+        name: "Vortex",
+        href: "/vehicles?vehicle=vortex",
+        hint: "Rare · Speed Hover Bike",
+      },
+    ]);
+    const commands = vehicleCommands(vehicles);
+    expect(commands.at(1)).toMatchObject({
+      label: "Vortex",
+      group: "Vehicles",
+      action: { kind: "go", href: "/vehicles?vehicle=vortex" },
+    });
+    expect(
+      commands
+        .filter((entry) => matchesCommand(entry, "speed hover"))
+        .map((entry) => entry.label),
+    ).toEqual(["Vortex"]);
+  });
+});
+
+describe("Mutant Cells in the palette", () => {
+  it("opens each cell's details, A–Z, with its socket beside it", () => {
+    const cell = (name: string, socket: "Almandine" | "Xantic") => ({
+      name,
+      socket,
+      description: "",
+      effects: [],
+      added: "1.3.9" as const,
+    });
+    const cells = paletteMutantCells([
+      cell("Venomous Spike", "Xantic"),
+      cell("Activate Thrust", "Almandine"),
+    ]);
+    expect(cells).toEqual([
+      {
+        name: "Activate Thrust",
+        href: "/mutant-cells?cell=activate-thrust",
+        socket: "Almandine",
+      },
+      {
+        name: "Venomous Spike",
+        href: "/mutant-cells?cell=venomous-spike",
+        socket: "Xantic",
+      },
+    ]);
+    const commands = mutantCellCommands(cells);
+    expect(commands.at(1)).toMatchObject({
+      label: "Venomous Spike",
+      group: "Mutant Cells",
+      hint: "Xantic",
+      action: { kind: "go", href: "/mutant-cells?cell=venomous-spike" },
+    });
+    // A socket finds its cells.
+    expect(
+      commands
+        .filter((entry) => matchesCommand(entry, "almandine"))
+        .map((entry) => entry.label),
+    ).toEqual(["Activate Thrust"]);
   });
 });

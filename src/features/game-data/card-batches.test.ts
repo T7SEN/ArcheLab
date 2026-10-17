@@ -18,6 +18,14 @@ describe("card batches", () => {
     expect(drawnCount(batchesThrough(300), 573)).toBeGreaterThan(300);
   });
 
+  it("takes a smaller batch for a shorter index", () => {
+    expect(batchesThrough(-1, 20)).toBe(1);
+    expect(batchesThrough(19, 20)).toBe(1);
+    expect(batchesThrough(63, 20)).toBe(4);
+    expect(drawnCount(1, 64, 20)).toBe(20);
+    expect(drawnCount(4, 64, 20)).toBe(64);
+  });
+
   it("never draws more cards than there are, nor fewer than one batch", () => {
     expect(drawnCount(1, 573)).toBe(cardBatch);
     expect(drawnCount(3, 573)).toBe(cardBatch * 3);

@@ -29,28 +29,39 @@ export const metadata: Metadata = pageMetadata({
 
 const numberFormat = new Intl.NumberFormat("en-US");
 
-/** "36 Descendants", "1 reactor": the category's name for counting. */
-const countOf = (count: number, category: string) => {
-  const noun =
-    category === "Descendants"
-      ? "Descendant"
-      : category.toLowerCase().replace(/s$/, "");
-  const plural = noun === "Descendant" ? "Descendants" : `${noun}s`;
-  return `${numberFormat.format(count)} ${count === 1 ? noun : plural}`;
+/** The wide-screen width of a first-row card, by how many share that row. */
+const firstRowSpan: Readonly<Partial<Record<number, string>>> = {
+  2: "lg:col-span-6",
+  3: "lg:col-span-4",
+  4: "lg:col-span-3",
 };
 
 /**
- * Where each card sits: the first two share the top row on wide screens and the other
- * three the next, so no space is left empty (T7SEN, 2026-10-17); on medium screens the
- * first spans the row and the rest go in pairs.
+ * Where a category card sits, so no space is left empty (T7SEN, 2026-10-17): on wide
+ * screens (12 columns) rows of three, with the first row taking the rest, two or four
+ * (eight categories: two, then three and three); on medium screens pairs, an odd last
+ * card across the row.
  */
-const cardPlacement = [
-  "md:col-span-2 lg:col-span-3",
-  "lg:col-span-3",
-  "lg:col-span-2",
-  "lg:col-span-2",
-  "lg:col-span-2",
-] as const;
+function cardSpan(index: number, total: number): string {
+  const extra = total % 3;
+  const firstRow = extra === 0 ? 3 : extra === 1 ? Math.min(4, total) : 2;
+  const wide =
+    index < firstRow
+      ? (firstRowSpan[firstRow] ?? "lg:col-span-4")
+      : "lg:col-span-4";
+  const lastAlone = total % 2 === 1 && index === total - 1;
+  return lastAlone ? `${wide} md:col-span-2` : wide;
+}
+
+/** Game terms keep their capital, as the game writes them. */
+const gameTerms = new Set(["Descendants", "Fellows", "Mutant Cells"]);
+
+/** "36 Descendants", "1 reactor": the category's name for counting. */
+const countOf = (count: number, category: string) => {
+  const plural = gameTerms.has(category) ? category : category.toLowerCase();
+  const noun = plural.replace(/s$/, "");
+  return `${numberFormat.format(count)} ${count === 1 ? noun : plural}`;
+};
 
 /** How many items of a category its card shows as art. */
 const artCount = 4;
@@ -86,10 +97,10 @@ export default async function DatabasePage() {
               Explore the database
             </ShinyText>
           </h1>
-          <p className="text-scrim max-w-xl text-muted-foreground">
+          <p className="max-w-xl hero-text">
             {items.length === 0
               ? "The database couldn't be loaded for this build. It comes back with the next one."
-              : `Search all ${numberFormat.format(items.length)} Descendants, weapons, modules, reactors and external components, or browse a category below.`}
+              : `Search all ${numberFormat.format(items.length)} Descendants, weapons, modules, reactors, external components, Fellows, vehicles and Mutant Cells, or browse a category below.`}
           </p>
           <div className="w-full text-left">
             {/* The URL's search is read in the browser; the static HTML holds the
@@ -111,14 +122,18 @@ export default async function DatabasePage() {
           title="Browse by category"
           description="Each category has its own page, with filters and every detail."
         />
-        <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+        {/* No space is left empty (T7SEN, 2026-10-17): see `cardSpan`. */}
+        <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-12">
           {databaseCategories.map((category, index) => {
             const list = byCategory.get(category.name) ?? [];
             const Icon =
               sitePages.find((page) => page.href === category.href)?.icon ??
               Database;
             return (
-              <li key={category.href} className={cardPlacement[index]}>
+              <li
+                key={category.href}
+                className={cardSpan(index, databaseCategories.length)}
+              >
                 <Link
                   href={category.href}
                   prefetch={category.href === "/modules" ? false : undefined}
@@ -149,27 +164,31 @@ export default async function DatabasePage() {
                       {countOf(list.length, category.name)}
                     </span>
                     <span aria-hidden="true" className="flex -space-x-2">
-                      {list.slice(0, artCount).map((item) => (
-                        <span
-                          key={item.href}
-                          className="grid size-10 place-items-center overflow-hidden rounded-lg border bg-card"
-                          style={{
-                            borderColor: `color-mix(in srgb, ${item.hex} 45%, var(--border))`,
-                            backgroundImage: `radial-gradient(circle at 50% 40%, color-mix(in srgb, ${item.hex} 35%, transparent), color-mix(in srgb, ${item.hex} 8%, transparent) 75%)`,
-                          }}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element -- NEXON images load directly from NEXON's host, never through Vercel Image Optimization (SKILL.md landmine 2). */}
-                          <img
-                            src={item.imageUrl}
-                            alt=""
-                            width={80}
-                            height={80}
-                            loading="lazy"
-                            decoding="async"
-                            className={`size-full ${artFit(item)}`}
-                          />
-                        </span>
-                      ))}
+                      {/* An item with no art isn't shown (ADR 0035). */}
+                      {list
+                        .filter((item) => item.imageUrl !== "")
+                        .slice(0, artCount)
+                        .map((item) => (
+                          <span
+                            key={item.href}
+                            className="grid size-10 place-items-center overflow-hidden rounded-lg border bg-card"
+                            style={{
+                              borderColor: `color-mix(in srgb, ${item.hex} 45%, var(--border))`,
+                              backgroundImage: `radial-gradient(circle at 50% 40%, color-mix(in srgb, ${item.hex} 35%, transparent), color-mix(in srgb, ${item.hex} 8%, transparent) 75%)`,
+                            }}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element -- NEXON images load directly from NEXON's host, never through Vercel Image Optimization (SKILL.md landmine 2). */}
+                            <img
+                              src={item.imageUrl}
+                              alt=""
+                              width={80}
+                              height={80}
+                              loading="lazy"
+                              decoding="async"
+                              className={`size-full ${artFit(item)}`}
+                            />
+                          </span>
+                        ))}
                     </span>
                   </div>
                 </Link>

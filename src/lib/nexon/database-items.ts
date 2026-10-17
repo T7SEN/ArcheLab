@@ -1,10 +1,20 @@
 import "server-only";
+import { fellowArt, fellowPassiveOf, fellowPassives } from "@/data/fellows";
+import { socketIconUrl } from "@/data/module-icons";
+import {
+  mutantCellImageUrl,
+  mutantCells,
+  mutantCellSlug,
+} from "@/data/mutant-cells";
 import { chatRegistry } from "@/features/chat/ui/chat-registry";
+import { vehicleKind } from "@/features/vehicles/vehicle-card";
 import type { DatabaseItem } from "@/features/database/database-items";
 import { rarityOf } from "@/features/game-data/rarity";
 import { versionTier } from "@/features/modules/module-tiers";
 import { fetchComponentGroups } from "@/lib/nexon/component-index";
 import { fetchDescendantSummaries } from "@/lib/nexon/descendant-page";
+import { fetchFellows } from "@/lib/nexon/fellow-index";
+import { fetchVehicles } from "@/lib/nexon/vehicle-index";
 import { fetchModuleGroups } from "@/lib/nexon/module-index";
 import { fetchReactorGroups } from "@/lib/nexon/reactor-index";
 import { fetchWeaponSummaries } from "@/lib/nexon/weapon-page";
@@ -23,14 +33,23 @@ const present = (values: readonly (string | null)[]): string[] =>
  * tier's color. Fetched once per build; each set comes empty when NEXON can't be reached.
  */
 export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
-  const [descendants, weapons, modules, reactors, components] =
-    await Promise.all([
-      fetchDescendantSummaries(),
-      fetchWeaponSummaries(),
-      fetchModuleGroups(),
-      fetchReactorGroups(),
-      fetchComponentGroups(),
-    ]);
+  const [
+    descendants,
+    weapons,
+    modules,
+    reactors,
+    components,
+    fellows,
+    vehicles,
+  ] = await Promise.all([
+    fetchDescendantSummaries(),
+    fetchWeaponSummaries(),
+    fetchModuleGroups(),
+    fetchReactorGroups(),
+    fetchComponentGroups(),
+    fetchFellows(),
+    fetchVehicles(),
+  ]);
 
   const descendantItems = descendants.map((descendant): DatabaseItem => ({
     name: descendant.name,
@@ -137,11 +156,57 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     ];
   });
 
+  // Their art is the site's own files: NEXON's data has none (ADR 0035).
+  const fellowItems = fellows.map((fellow): DatabaseItem => {
+    const rarity = rarityOf(fellow.tier);
+    const passive = fellowPassiveOf[fellow.name];
+    const passiveName =
+      passive === undefined ? null : fellowPassives[passive].name;
+    return {
+      name: fellow.name,
+      category: "Fellows",
+      href: `/fellows?fellow=${fellow.slug}`,
+      hint: present([rarity?.name ?? null, passiveName]).join(" · "),
+      keywords: present(["fellow", passiveName]),
+      imageUrl: fellowArt[fellow.name] ?? "",
+      hex: rarity?.hex ?? palette.primary,
+    };
+  });
+
+  const vehicleItems = vehicles.map((vehicle): DatabaseItem => {
+    const rarity = rarityOf(vehicle.tier);
+    const kind = vehicleKind(vehicle);
+    return {
+      name: vehicle.name,
+      category: "Vehicles",
+      href: `/vehicles?vehicle=${vehicle.slug}`,
+      hint: present([rarity?.name ?? null, kind]).join(" · "),
+      keywords: ["vehicle", kind],
+      imageUrl: vehicle.imageUrl,
+      hex: rarity?.hex ?? palette.primary,
+    };
+  });
+
+  // The site's own data, from the update notes (ADR 0038), each with its icon (its
+  // socket's when none is listed).
+  const mutantCellItems = mutantCells.map((cell): DatabaseItem => ({
+    name: cell.name,
+    category: "Mutant Cells",
+    href: `/mutant-cells?cell=${mutantCellSlug(cell.name)}`,
+    hint: cell.socket,
+    keywords: ["Mutant Cell", "Arche Tuning"],
+    imageUrl: mutantCellImageUrl(cell.name) ?? socketIconUrl(cell.socket) ?? "",
+    hex: palette.primary,
+  }));
+
   return [
     ...descendantItems,
     ...weaponItems,
     ...moduleItems,
     ...reactorItems,
     ...componentItems,
+    ...fellowItems,
+    ...vehicleItems,
+    ...mutantCellItems,
   ];
 }

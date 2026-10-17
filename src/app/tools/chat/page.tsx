@@ -70,7 +70,7 @@ export default async function ChatBuilderPage() {
               Chat message builder
             </ShinyText>
           </h1>
-          <p className="text-scrim mt-3 max-w-2xl text-muted-foreground">
+          <p className="mt-3 max-w-2xl hero-text">
             Build a colored chat message, see how it looks in game, and copy
             markup that fits the {chatRegistry.charLimit}-character chat limit.
           </p>

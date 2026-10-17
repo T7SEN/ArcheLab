@@ -1,13 +1,15 @@
 "use client";
 
-import { ArrowRight, RotateCw, Search } from "lucide-react";
+import { ArrowRight, Database, RotateCw, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { sitePages } from "@/data/site-pages";
 import { useSearch, writeSearch } from "@/features/game-data/url-query";
 import {
   artFit,
+  databaseCategories,
   loadDatabaseItems,
   minimumQuery,
   searchDatabase,
@@ -83,11 +85,11 @@ export function DatabaseSearch({ search }: { search: string }) {
       </label>
 
       {trimmed === "" ? (
-        <p className="text-scrim text-sm text-muted-foreground">
+        <p className="text-sm hero-text">
           Type at least {minimumQuery} characters: a name, a type or a tier.
         </p>
       ) : trimmed.length < minimumQuery ? (
-        <p className="text-scrim text-sm text-muted-foreground">
+        <p className="text-sm hero-text">
           Keep typing: a search needs {minimumQuery} characters.
         </p>
       ) : items === "failed" ? (
@@ -106,10 +108,7 @@ export function DatabaseSearch({ search }: { search: string }) {
           </Button>
         </div>
       ) : items === null ? (
-        <p
-          aria-busy="true"
-          className="text-scrim text-sm text-muted-foreground"
-        >
+        <p aria-busy="true" className="text-sm hero-text">
           Loading the database…
         </p>
       ) : (
@@ -146,7 +145,19 @@ export function DatabaseSearch({ search }: { search: string }) {
   );
 }
 
-/** A result: its art on a tile in its tier's color, its name, category and note. */
+/** A category's icon, as the navbar's Database menu shows it. */
+function CategoryIcon({ category }: { category: DatabaseItem["category"] }) {
+  const href = databaseCategories.find(
+    (entry) => entry.name === category,
+  )?.href;
+  const Icon = sitePages.find((page) => page.href === href)?.icon ?? Database;
+  return <Icon className="size-5 text-foreground/80" />;
+}
+
+/**
+ * A result: its art on a tile in its tier's color, or its category's icon when it has
+ * none (Fellows, ADR 0035), then its name, category and note.
+ */
 function ResultLink({ item }: { item: DatabaseItem }) {
   return (
     <Link
@@ -163,16 +174,20 @@ function ResultLink({ item }: { item: DatabaseItem }) {
           backgroundImage: `radial-gradient(circle at 50% 40%, color-mix(in srgb, ${item.hex} 35%, transparent), color-mix(in srgb, ${item.hex} 8%, transparent) 75%)`,
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element -- NEXON images load directly from NEXON's host, never through Vercel Image Optimization (SKILL.md landmine 2). */}
-        <img
-          src={item.imageUrl}
-          alt=""
-          width={88}
-          height={88}
-          loading="lazy"
-          decoding="async"
-          className={`size-full ${artFit(item)}`}
-        />
+        {item.imageUrl === "" ? (
+          <CategoryIcon category={item.category} />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element -- NEXON images load directly from NEXON's host, never through Vercel Image Optimization (SKILL.md landmine 2).
+          <img
+            src={item.imageUrl}
+            alt=""
+            width={88}
+            height={88}
+            loading="lazy"
+            decoding="async"
+            className={`size-full ${artFit(item)}`}
+          />
+        )}
       </span>
       <span className="grid min-w-0 flex-1 gap-0.5">
         <span className="truncate font-medium">{item.name}</span>

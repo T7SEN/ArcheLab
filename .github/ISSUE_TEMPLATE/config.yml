@@ -3,3 +3,6 @@ contact_links:
   - name: Report by email instead
     url: https://arche-lab.tech/contribute#email
     about: No GitHub account? The Help fill in data page has an email link for each open check.
+  - name: Send feedback by email instead
+    url: https://arche-lab.tech/feedback#email
+    about: No GitHub account? The Feedback page has email links for bugs and ideas.

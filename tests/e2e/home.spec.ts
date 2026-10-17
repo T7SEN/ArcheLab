@@ -158,9 +158,39 @@ test("the footer maps the site", async ({ page }) => {
       await expect(toolLinks.getByText(tool.name)).toBeVisible();
     }
   }
+  // The database sits with the tools (T7SEN, 2026-10-17).
   await expect(
-    footer.getByRole("navigation", { name: "Site" }).getByRole("link"),
-  ).not.toHaveCount(0);
+    toolLinks.getByRole("link", { name: "Database", exact: true }),
+  ).toHaveAttribute("href", "/database");
+  await expect(
+    footer.getByRole("navigation", { name: "Community" }).getByRole("link"),
+  ).toHaveText(["About", "Changelog", "Feedback", "Help fill in data"]);
+  // Only the attribution names NEXON: the line under ArcheLab doesn't.
+  await expect(
+    footer.getByText("Player tools and game data for The First Descendant.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  // The Database column holds the main indexes only (T7SEN, 2026-10-17).
+  await expect(
+    footer.getByRole("navigation", { name: "Database" }).getByRole("link"),
+  ).toHaveText(["Descendants", "Weapons", "Modules"]);
+  for (const [label, href] of [
+    ["Descendants", "/descendants"],
+    ["Weapons", "/weapons"],
+    ["Modules", "/modules"],
+  ] as const) {
+    await expect(
+      footer
+        .getByRole("navigation", { name: "Database" })
+        .getByRole("link", { name: label }),
+    ).toHaveAttribute("href", href);
+  }
+  // No Data column: the attribution's "NEXON Open API" is the link.
+  // Exact: "Data" alone would match the Database column.
+  await expect(
+    footer.getByRole("navigation", { name: "Data", exact: true }),
+  ).toHaveCount(0);
   const legal = footer.getByRole("navigation", { name: "Legal" });
   for (const page of legalPages) {
     await expect(legal.getByRole("link", { name: page.label })).toHaveAttribute(

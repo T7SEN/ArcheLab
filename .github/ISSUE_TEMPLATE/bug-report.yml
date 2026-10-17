@@ -1,0 +1,37 @@
+name: Bug report
+description: Something on ArcheLab doesn't work or looks wrong.
+title: "Bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for telling ArcheLab what went wrong.
+
+        Is it a game fact that differs from what the game shows? Use the **In-game finding** form instead, with a screenshot of the game.
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: The ArcheLab page where it happened.
+      placeholder: https://arche-lab.tech/tools/chat
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you saw instead.
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      placeholder: Chrome on Windows
+  - type: upload
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: Optional, if it helps show the problem.
+    validations:
+      required: false
+      accept: ".png,.jpg,.jpeg,.webp"

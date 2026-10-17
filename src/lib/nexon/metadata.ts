@@ -27,6 +27,8 @@ export const metadataSets = [
   "consumable-material",
   // Answered keyless on 2026-10-16: weapon type names by id, which modules use (ADR 0025).
   "weapon-type",
+  // Answered keyless on 2026-10-17: the three hover bikes, with art and stats (ADR 0037).
+  "vehicle",
 ] as const;
 
 export type MetadataSet = (typeof metadataSets)[number];
