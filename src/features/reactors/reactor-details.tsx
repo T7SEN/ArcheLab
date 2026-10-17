@@ -9,7 +9,7 @@ import { ArcheIcon, ElementIcon } from "@/features/descendants/type-icons";
 import { dataFileHook } from "@/features/game-data/data-file";
 import { filterChipClass } from "@/features/game-data/filter-row";
 import { useRevealDetails } from "@/features/game-data/reveal-details";
-import { reactorArt } from "./reactor-art";
+import { WideTile } from "@/features/game-data/wide-tile";
 import type { ReactorCard } from "./reactor-filters";
 import {
   reactorDataUrl,
@@ -84,7 +84,7 @@ export function ReactorDetails({
 
       <div className="grid content-start gap-5">
         <div className="flex items-center gap-4 pr-10">
-          <ReactorTile imageUrl={tier.imageUrl} color={tier.hex} size="lg" />
+          <WideTile imageUrl={tier.imageUrl} color={tier.hex} size="lg" />
           <div className="grid min-w-0 gap-1.5">
             <h2
               ref={titleRef}
@@ -253,38 +253,6 @@ export function ReactorTypes({
         </span>
       )}
     </>
-  );
-}
-
-/** The reactor art on a tile in its tier's color, as wide as the art's own shape. */
-export function ReactorTile({
-  imageUrl,
-  color,
-  size,
-}: {
-  imageUrl: string;
-  color: string;
-  size: "md" | "lg";
-}) {
-  return (
-    <span
-      className={`grid shrink-0 place-items-center rounded-xl border px-1.5 ${size === "lg" ? "h-20 w-28" : "h-16 w-24"}`}
-      style={{
-        borderColor: `color-mix(in srgb, ${color} 45%, var(--border))`,
-        backgroundImage: `radial-gradient(circle at 50% 40%, color-mix(in srgb, ${color} 35%, transparent), color-mix(in srgb, ${color} 8%, transparent) 75%)`,
-      }}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element -- NEXON images load directly from NEXON's host, never through Vercel Image Optimization (SKILL.md landmine 2). */}
-      <img
-        src={imageUrl}
-        alt=""
-        width={reactorArt.width}
-        height={reactorArt.height}
-        loading="lazy"
-        decoding="async"
-        className="h-auto max-h-full w-full object-contain"
-      />
-    </span>
   );
 }
 

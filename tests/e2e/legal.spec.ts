@@ -33,3 +33,19 @@ test("the privacy policy names where templates are stored", async ({
   await page.goto("/privacy");
   await expect(page.getByText(templatesStorageKey)).toBeVisible();
 });
+
+test("the privacy policy says how emailed in-game findings are used", async ({
+  page,
+}) => {
+  // T7SEN, 2026-10-17 (ADR 0028).
+  await page.goto("/privacy");
+  await expect(
+    page.getByRole("heading", { name: "In-game findings" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      "ArcheLab uses your email and screenshot only to check it, and doesn't publish your address.",
+      { exact: false },
+    ),
+  ).toBeVisible();
+});

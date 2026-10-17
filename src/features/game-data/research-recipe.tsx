@@ -1,14 +1,26 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Clock } from "lucide-react";
 import type { Recipe, RecipeItem } from "@/lib/nexon/recipe";
+import { formatDuration } from "./duration";
 
 const numberFormat = new Intl.NumberFormat("en-US");
 
+/** A research's time, then its currency costs. */
 function Costs({ recipe }: { recipe: Recipe }) {
-  return recipe.costs.length === 0 ? null : (
-    <span className="font-mono text-sm text-muted-foreground">
-      {recipe.costs
-        .map((cost) => `${numberFormat.format(cost.value)} ${cost.currency}`)
-        .join(" + ")}
+  return (
+    <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+      <span className="inline-flex items-center gap-1.5">
+        <Clock aria-hidden="true" className="size-3.5" />
+        {formatDuration(recipe.time)}
+      </span>
+      {recipe.costs.length === 0 ? null : (
+        <span className="font-mono">
+          {recipe.costs
+            .map(
+              (cost) => `${numberFormat.format(cost.value)} ${cost.currency}`,
+            )
+            .join(" + ")}
+        </span>
+      )}
     </span>
   );
 }
@@ -49,7 +61,7 @@ function Ingredient({ item }: { item: RecipeItem }) {
 
 /**
  * How the Descendant is researched, from NEXON's research data (ADR 0023): the
- * research's cost, then each item it needs. A part that is itself researched opens to
+ * research's time and cost, then each item it needs. A part that is itself researched opens to
  * show its own recipe; an item that comes from an Amorphous Material names it.
  */
 export function ResearchRecipe({

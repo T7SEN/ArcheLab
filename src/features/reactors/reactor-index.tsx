@@ -16,7 +16,8 @@ import {
   useSearch,
   writeSearch,
 } from "@/features/game-data/url-query";
-import { ReactorDetails, ReactorTile, ReactorTypes } from "./reactor-details";
+import { WideTile } from "@/features/game-data/wide-tile";
+import { ReactorDetails, ReactorTypes } from "./reactor-details";
 import {
   defaultReactorFilters,
   filterReactors,
@@ -292,7 +293,7 @@ function ReactorCardLink({
         {entry.name}
       </span>{" "}
       <span className="order-first flex flex-wrap items-start justify-between gap-2">
-        <ReactorTile imageUrl={top.imageUrl} color={top.hex} size="md" />
+        <WideTile imageUrl={top.imageUrl} color={top.hex} size="md" />
         <span className="flex items-center gap-1">
           {entry.tiers.map((tier) => (
             <span

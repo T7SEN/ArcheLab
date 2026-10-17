@@ -1,8 +1,15 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 // The indexes keep their filters in the URL (ADR 0023, ADR 0024). Safari throws after 100
 // history updates in 10 seconds and Firefox ignores them past its limit, which once froze
 // the search box, so this spec runs in Chromium, Firefox and WebKit.
+
+/** Opens the navbar's Database menu (ADR 0027) and clicks one of its links. */
+async function clickDatabaseLink(page: Page, name: string): Promise<void> {
+  const nav = page.getByRole("navigation", { name: "Main" });
+  await nav.getByRole("button", { name: "Database" }).click();
+  await nav.getByRole("link", { name, exact: true }).click();
+}
 
 for (const [path, name, label, match] of [
   ["/weapons", "Weapons", "Search weapons by name", /^Thunder Cage\b/],
@@ -64,10 +71,7 @@ test("a link to the same index clears its filters", async ({ page }) => {
     .getByRole("button", { name: "Fire" })
     .click();
   await expect(page).toHaveURL(/\?attribute=Fire$/);
-  await page
-    .getByRole("navigation", { name: "Main" })
-    .getByRole("link", { name: "Descendants", exact: true })
-    .click();
+  await clickDatabaseLink(page, "Descendants");
   await expect(page).toHaveURL(/\/descendants$/);
   await expect(page.getByText(/^\d+ Descendants$/)).toBeVisible();
   await expect(
@@ -95,10 +99,7 @@ test("leaving an index right after a filter works on a slow connection", async (
     .getByRole("group", { name: "Tier" })
     .getByRole("button", { name: "Ultimate" })
     .click();
-  await page
-    .getByRole("navigation", { name: "Main" })
-    .getByRole("link", { name: "Descendants", exact: true })
-    .click();
+  await clickDatabaseLink(page, "Descendants");
   await expect(page).toHaveURL(/\/descendants$/, { timeout: 10_000 });
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     "Descendants",
@@ -117,9 +118,10 @@ test("a filter the URL hasn't caught up with stays on its page", async ({
     .getByRole("group", { name: "Tier" })
     .getByRole("button", { name: "Ultimate" })
     .click();
-  // Leave at once, before the URL follows, through the navbar.
+  // Leave at once, before the URL follows, through the footer: the navbar's link
+  // waits behind its Database menu (ADR 0027).
   await page
-    .getByRole("navigation", { name: "Main" })
+    .getByRole("contentinfo")
     .getByRole("link", { name: "Descendants", exact: true })
     .click();
   await expect(page).toHaveURL(/\/descendants$/);

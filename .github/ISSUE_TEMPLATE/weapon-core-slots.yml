@@ -1,0 +1,67 @@
+name: Weapon core slots
+description: Report an Ultimate weapon's five core slots, from the game.
+title: "Core slots: "
+labels: ["in-game report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping fill in ArcheLab. Every Ultimate weapon has its own five core slots, and they can only be checked in game.
+
+        Open the weapon's **Select Core Slot** screen (or a built weapon's tooltip) and copy its slots in order, top to bottom. Empty slots still show their type. Attach a screenshot: a report goes on the site once its screenshot is checked. Crop out your name if you like.
+  - type: input
+    id: weapon
+    attributes:
+      label: Weapon
+      description: Its name as the game writes it.
+      placeholder: Thunder Cage
+    validations:
+      required: true
+  - type: dropdown
+    id: slot1
+    attributes:
+      label: Slot 1
+      options: [Free, Firepower, Attribute, Hit, Tactical, Precision, Special]
+    validations:
+      required: true
+  - type: dropdown
+    id: slot2
+    attributes:
+      label: Slot 2
+      options: [Free, Firepower, Attribute, Hit, Tactical, Precision, Special]
+    validations:
+      required: true
+  - type: dropdown
+    id: slot3
+    attributes:
+      label: Slot 3
+      options: [Free, Firepower, Attribute, Hit, Tactical, Precision, Special]
+    validations:
+      required: true
+  - type: dropdown
+    id: slot4
+    attributes:
+      label: Slot 4
+      options: [Free, Firepower, Attribute, Hit, Tactical, Precision, Special]
+    validations:
+      required: true
+  - type: dropdown
+    id: slot5
+    attributes:
+      label: Slot 5
+      options: [Free, Firepower, Attribute, Hit, Tactical, Precision, Special]
+    validations:
+      required: true
+  - type: upload
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: The Select Core Slot screen or a built weapon's tooltip, showing all five slots.
+    validations:
+      required: true
+      accept: ".png,.jpg,.jpeg,.webp"
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Optional. For a Launcher or Beam Rifle, say if a slot's options read differently (Explosive ATK, Beam Rifle Charge Gain Speed).

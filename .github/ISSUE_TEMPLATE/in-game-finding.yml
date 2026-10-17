@@ -1,0 +1,40 @@
+name: In-game finding
+description: Report what the game shows for something ArcheLab marks as not known yet.
+title: "In-game: "
+labels: ["in-game report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping fill in ArcheLab. Some things can only be checked in game; the site's Help fill in data page lists them.
+
+        Attach a screenshot of what you saw: a report goes on the site once its screenshot is checked. Crop out your name if you like.
+  - type: input
+    id: topic
+    attributes:
+      label: What you checked
+      description: From the Help fill in data page, or anything else the site marks as not known yet.
+      placeholder: Reactor upgrade name
+    validations:
+      required: true
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: The ArcheLab page it's about, if any.
+      placeholder: https://arche-lab.tech/reactors
+  - type: textarea
+    id: finding
+    attributes:
+      label: What the game shows
+      description: Its exact words and numbers, as the game writes them.
+    validations:
+      required: true
+  - type: upload
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: Where the game shows it.
+    validations:
+      required: true
+      accept: ".png,.jpg,.jpeg,.webp"

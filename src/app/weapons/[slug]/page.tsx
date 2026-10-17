@@ -15,13 +15,22 @@ import { notFound } from "next/navigation";
 import { HeroBackdrop } from "@/components/hero-backdrop";
 import { ShinyText } from "@/components/react-bits/shiny-text";
 import { Badge } from "@/components/ui/badge";
+import { weaponCoreEmailUrl, weaponCoreReportUrl } from "@/data/contribute";
+import {
+  isMeleeWeaponType,
+  weaponCoreSlots,
+  weaponCoreTypeChoices,
+} from "@/data/weapon-core-slots";
+import { CoreTypeGrid } from "@/features/game-data/core-type-grid";
 import { NeighborLinks } from "@/features/game-data/neighbor-links";
 import { PageSection, SectionLinks } from "@/features/game-data/page-section";
 import { rarityOf } from "@/features/game-data/rarity";
+import { ReportLinks } from "@/features/game-data/report-links";
 import { ResearchRecipe } from "@/features/game-data/research-recipe";
 import { StatLevels } from "@/features/game-data/stat-levels";
 import { RoundsIcon } from "@/features/weapons/rounds-icon";
 import { WeaponStats } from "@/features/weapons/weapon-stats";
+import { fetchCoreTypes } from "@/lib/nexon/core-types";
 import {
   fetchWeaponPage,
   fetchWeaponSummaries,
@@ -54,7 +63,7 @@ function summaryOf(page: WeaponPage): string {
       ? null
       : `ATK for levels ${String(first)}–${String(last)}`,
     `${String(page.stats.length)} base stats`,
-    page.coreSlots === 0 ? null : "the core slot",
+    page.coreSlots === 0 ? null : "the core slots",
     page.research === null ? null : "the research recipe",
   ]
     .filter((part) => part !== null)
@@ -100,6 +109,14 @@ export default async function WeaponPageRoute({
   }
   const rarity = rarityOf(page.tier);
   const accent = rarity?.hex ?? palette.primary;
+  // The weapon's own core slots, once T7SEN has checked them in game (2026-10-17): they
+  // differ by weapon, and NEXON's keyless data doesn't say which.
+  const coreSlotNames =
+    page.coreSlots > 0 ? weaponCoreSlots.get(page.name) : undefined;
+  const coreTypes =
+    coreSlotNames === undefined
+      ? []
+      : await fetchCoreTypes(weaponCoreTypeChoices(coreSlotNames));
   const lastLevel = page.levels.at(-1);
   const attack = page.attack.at(0);
   const keyStats = keyStatNames
@@ -111,7 +128,7 @@ export default async function WeaponPageRoute({
       : [{ id: "ability", label: "Unique ability" }]),
     { id: "atk", label: "ATK" },
     { id: "stats", label: "Stats" },
-    ...(page.coreSlots === 0 ? [] : [{ id: "core", label: "Core slot" }]),
+    ...(page.coreSlots === 0 ? [] : [{ id: "core", label: "Core slots" }]),
     ...(page.research === null ? [] : [{ id: "research", label: "Research" }]),
     { id: "builds", label: "Builds" },
   ];
@@ -307,13 +324,61 @@ export default async function WeaponPageRoute({
         <PageSection
           id="core"
           icon={<Hexagon />}
-          title="Core slot"
+          title="Core slots"
           description={`${page.name} has ${page.coreSlots === 1 ? "one core slot" : `${String(page.coreSlots)} core slots`}.`}
         >
-          <p className="max-w-2xl rounded-2xl border border-dashed bg-card/40 p-5 text-sm text-muted-foreground">
-            Which core types fit {page.name}&apos;s slot isn&apos;t known yet,
-            so they aren&apos;t listed.
-          </p>
+          {coreTypes.length === 0 ? (
+            <div className="grid max-w-2xl gap-3 rounded-2xl border border-dashed bg-card/40 p-5 text-sm text-muted-foreground">
+              <p>
+                Which core types fit {page.name}&apos;s slots isn&apos;t known
+                yet: every weapon has its own, and they only show in game.
+              </p>
+              {/* Melee weapons' cores aren't covered yet (ADR 0028). */}
+              {isMeleeWeaponType(page.type) ? null : (
+                <>
+                  <p>
+                    Seen them? Send them in with a screenshot, or see{" "}
+                    <Link
+                      href="/contribute"
+                      className="text-primary underline-offset-4 hover:underline"
+                    >
+                      what else needs checking
+                    </Link>
+                    .
+                  </p>
+                  <ReportLinks
+                    github={weaponCoreReportUrl(page.name)}
+                    email={weaponCoreEmailUrl(page.name)}
+                    label={`${page.name}'s core slots`}
+                  />
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="grid gap-5 rounded-2xl border bg-card/60 p-5">
+              {/* The Free slot takes any core below; the others only their own type. */}
+              <ul
+                aria-label="Slots"
+                className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5"
+              >
+                {(coreSlotNames ?? []).map((slot, index) => (
+                  <li
+                    // A weapon can have two slots of a type (Hammer and Anvil).
+                    key={`${String(index)}-${slot}`}
+                    className="grid gap-0.5 rounded-xl border bg-background/40 px-3 py-2"
+                  >
+                    <span className="text-sm font-medium">{slot}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {slot === "Free"
+                        ? "Takes any core below"
+                        : `${slot} cores only`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <CoreTypeGrid types={coreTypes} headingLevel={3} />
+            </div>
+          )}
         </PageSection>
       )}
 

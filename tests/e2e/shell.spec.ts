@@ -1,6 +1,9 @@
 import { expect, test, type Locator } from "@playwright/test";
 import { navbarFoldBelow, sitePages } from "../../src/data/site-pages";
 
+/** The pages the navbar links: all but the footer-only ones (ADR 0028). */
+const navbarPages = sitePages.filter((page) => page.footerOnly !== true);
+
 const disclaimer =
   "ArcheLab is a community fan site and is not affiliated with Nexon.";
 const attribution = "Data based on NEXON Open API.";
@@ -27,14 +30,25 @@ for (const path of ["/", "/tools/chat", "/this-page-does-not-exist"]) {
   });
 }
 
-for (const current of sitePages) {
+for (const current of navbarPages) {
   test(`navbar links every page and marks ${current.href} as current`, async ({
     page,
   }) => {
     await page.goto(current.href);
     const nav = page.getByRole("navigation", { name: "Main" });
+    const database = nav.getByRole("button", { name: "Database" });
 
-    for (const { href, label } of sitePages) {
+    // The game's items are in the Database menu (ADR 0027), marked while one is the
+    // page shown.
+    await measured(nav);
+    if (current.group === undefined) {
+      await expect(database).not.toHaveAttribute("aria-current");
+    } else {
+      await expect(database).toHaveAttribute("aria-current", "true");
+    }
+    await database.click();
+    await expect(database).toHaveAttribute("aria-expanded", "true");
+    for (const { href, label } of navbarPages) {
       const link = nav.getByRole("link", { name: label, exact: true });
       await expect(link).toHaveAttribute("href", href);
       if (href === current.href) {
@@ -55,9 +69,13 @@ for (const [path, section] of [
   }) => {
     await page.goto(path);
     const nav = page.getByRole("navigation", { name: "Main" });
+    const database = nav.getByRole("button", { name: "Database" });
+    await measured(nav);
+    await expect(database).toHaveAttribute("aria-current", "true");
+    await database.click();
     const current = nav.getByRole("link", { name: section, exact: true });
     await expect(current).toHaveAttribute("aria-current", "true");
-    for (const { label } of sitePages) {
+    for (const { label } of navbarPages) {
       if (label !== section) {
         await expect(
           nav.getByRole("link", { name: label, exact: true }),
@@ -122,6 +140,7 @@ for (const javaScriptEnabled of [true, false]) {
           "/weapons/monster-hunter",
           "/modules",
           "/reactors",
+          "/external-components",
         ]) {
           await page.goto(path);
           const nav = page.getByRole("navigation", { name: "Main" });
@@ -181,10 +200,56 @@ test("the navbar's first paint folds and lays out as PillNav measures it", async
   expect(await layouts(false)).toEqual(await layouts(true));
 });
 
+test("the Database menu links the game's items and closes as a menu should", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const nav = page.getByRole("navigation", { name: "Main" });
+  const database = nav.getByRole("button", { name: "Database" });
+  const reactors = nav.getByRole("link", { name: "Reactors", exact: true });
+  await measured(nav);
+  await expect(reactors).toHaveCount(0);
+
+  // Escape closes it and gives focus back to its button.
+  await database.click();
+  await expect(reactors).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(reactors).toHaveCount(0);
+  await expect(database).toBeFocused();
+  await expect(database).toHaveAttribute("aria-expanded", "false");
+
+  // A press outside closes it: the page's left edge, clear of the menu, which covers
+  // the middle of the hero.
+  await database.click();
+  await expect(reactors).toBeVisible();
+  await page.mouse.click(8, 600);
+  await expect(reactors).toHaveCount(0);
+
+  // Tab runs from its button through its links; leaving them closes it.
+  await database.click();
+  await database.focus();
+  for (let step = 0; step < 5; step++) {
+    await page.keyboard.press("Tab");
+  }
+  await expect(
+    nav.getByRole("link", { name: "External Components", exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(reactors).toHaveCount(0);
+
+  // A link opens its page and closes the menu.
+  await database.click();
+  await reactors.click();
+  await expect(page).toHaveURL("/reactors");
+  await expect(reactors).toHaveCount(0);
+  await expect(database).toHaveAttribute("aria-current", "true");
+});
+
 test("on a narrow screen the navbar links fold into a menu", async ({
   page,
 }) => {
-  // Today's six links and the search pill fold at 735px and below (ADR 0026).
+  // Home, Chat builder, Database and the search pill fold at 447px and below
+  // (ADR 0027).
   await page.setViewportSize({ width: 260, height: 700 });
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Main" });
@@ -203,11 +268,23 @@ test("on a narrow screen the navbar links fold into a menu", async ({
   await builder.click();
   await expect(page).toHaveURL("/tools/chat");
   await expect(builder).toHaveCount(0);
+
+  // Folded, the Database group is its label over its links.
+  await nav.getByRole("button", { name: "Open menu" }).click();
+  const database = nav.getByRole("list", { name: "Database" });
+  await expect(database.getByRole("link")).toHaveText([
+    "Descendants",
+    "Weapons",
+    "Modules",
+    "Reactors",
+    "External Components",
+  ]);
 });
 
 test("the navbar menu also closes with reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  // Today's six links and the search pill fold at 735px and below (ADR 0026).
+  // Home, Chat builder, Database and the search pill fold at 447px and below
+  // (ADR 0027).
   await page.setViewportSize({ width: 260, height: 700 });
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Main" });

@@ -5,10 +5,12 @@ import {
   type PaletteCommand,
   type PaletteSource,
 } from "./commands";
+import { paletteComponents } from "./palette-components";
 import { paletteDescendants } from "./palette-descendants";
 import { readModuleList } from "./palette-modules";
 import { paletteWeapons } from "./palette-weapons";
 import {
+  componentCommands,
   descendantCommands,
   moduleCommands,
   pageCommands,
@@ -247,5 +249,71 @@ describe("the site's commands", () => {
     expect(
       commands.filter((entry) => matchesCommand(entry, "fire dimension")),
     ).toHaveLength(1);
+  });
+
+  it("offer each external component card with its tier, found by its pieces' names", () => {
+    const piece = (name: string, slot: string, tier: string) => ({
+      id: name,
+      name,
+      slot,
+      tier,
+      imageUrl: "https://open.api.nexon.com/static/tfd/img/x",
+      stat: "Max HP",
+      coreSlots: 0,
+      levels: [],
+    });
+    const components = paletteComponents([
+      {
+        slug: "hp-support",
+        name: "HP Support",
+        kind: "standalone",
+        bonuses: [],
+        pieces: [
+          piece("HP Support Sensor", "Sensor", "Tier3"),
+          piece("HP Support Sensor", "Sensor", "Tier2"),
+        ],
+      },
+      {
+        slug: "active-volcano",
+        name: "Active Volcano",
+        kind: "set",
+        bonuses: [{ count: 2, effect: "Two." }],
+        pieces: [
+          piece("Volcanic Sensor", "Sensor", "Tier3"),
+          piece("Volcanic Memory", "Memory", "Tier3"),
+        ],
+      },
+    ]);
+    expect(components).toEqual([
+      {
+        name: "Active Volcano",
+        href: "/external-components?component=active-volcano",
+        hint: "Ultimate",
+        keywords: ["Ultimate", "Volcanic"],
+      },
+      {
+        name: "HP Support",
+        href: "/external-components?component=hp-support",
+        hint: "2 tiers",
+        keywords: ["Ultimate", "Rare"],
+      },
+    ]);
+    const commands = componentCommands(components);
+    expect(commands.at(0)).toMatchObject({
+      label: "Active Volcano",
+      group: "External Components",
+      action: {
+        kind: "go",
+        href: "/external-components?component=active-volcano",
+      },
+    });
+    expect(
+      commands
+        .filter((entry) => matchesCommand(entry, "volcanic"))
+        .map((entry) => entry.label),
+    ).toEqual(["Active Volcano"]);
+    expect(
+      commands.filter((entry) => matchesCommand(entry, "external component")),
+    ).toHaveLength(2);
   });
 });

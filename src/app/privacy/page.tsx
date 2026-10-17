@@ -82,6 +82,15 @@ export default function PrivacyPage() {
         </ul>
       </LegalSection>
 
+      {/* T7SEN, 2026-10-17: players can send in-game findings (ADR 0028). */}
+      <LegalSection title="In-game findings">
+        <p>
+          If you send an in-game finding by email, ArcheLab uses your email and
+          screenshot only to check it, and doesn&apos;t publish your address.
+          Reports on GitHub are public, under GitHub&apos;s own terms.
+        </p>
+      </LegalSection>
+
       <LegalSection title="NEXON game data">
         <p>
           ArcheLab uses NEXON&apos;s public game data, such as Descendants,

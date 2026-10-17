@@ -1,6 +1,10 @@
 import { ArrowDown, ArrowRight, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import {
+  ComponentShowcase,
+  type ComponentItem,
+} from "@/components/component-showcase";
 import { GameShowcase } from "@/components/game-showcase";
 import {
   ModuleShowcase,
@@ -20,6 +24,7 @@ import { ChatShowcase } from "@/features/chat/ui/chat-showcase";
 import { elementIconUrls } from "@/features/descendants/element-icons";
 import { rarityOf } from "@/features/game-data/rarity";
 import { tierOptions, versionTier } from "@/features/modules/module-tiers";
+import { fetchComponentGroups } from "@/lib/nexon/component-index";
 import { fetchModuleGroups } from "@/lib/nexon/module-index";
 import { fetchReactorGroups } from "@/lib/nexon/reactor-index";
 import { fetchShowcase } from "@/lib/nexon/showcase";
@@ -42,11 +47,13 @@ const comingSoon = tools.flatMap((tool) =>
 export default async function HomePage() {
   // Fetched once while the page is prerendered (ADR 0008, ADR 0018). The Descendant
   // portraits also serve the chat builder's sample window.
-  const [showcase, moduleGroups, reactorGroups] = await Promise.all([
-    fetchShowcase(),
-    fetchModuleGroups(),
-    fetchReactorGroups(),
-  ]);
+  const [showcase, moduleGroups, reactorGroups, componentGroups] =
+    await Promise.all([
+      fetchShowcase(),
+      fetchModuleGroups(),
+      fetchReactorGroups(),
+      fetchComponentGroups(),
+    ]);
   const portraits = Object.fromEntries(
     showcase.descendants.items.map((item) => [item.name, item.imageUrl]),
   );
@@ -87,6 +94,36 @@ export default async function HomePage() {
   const reactorAttributes = reactors.flatMap((reactor) =>
     reactor.attribute === null ? [] : [reactor.attribute],
   );
+  // Each external component card in its highest tier's art and color (ADR 0027), by
+  // highest tier and then A–Z, as the index sorts them. Pieces run highest tier first.
+  const tierNumber = (tier: string) => Number(tier.replace(/\D/g, "")) || 0;
+  const components: ComponentItem[] = componentGroups
+    .flatMap((group) => {
+      const top = group.pieces.at(0);
+      if (top === undefined) {
+        return [];
+      }
+      const rarity = rarityOf(top.tier);
+      const tiers = new Set(group.pieces.map((piece) => piece.tier)).size;
+      const slots = new Set(group.pieces.map((piece) => piece.slot)).size;
+      return [
+        {
+          rank: tierNumber(top.tier),
+          item: {
+            slug: group.slug,
+            name: group.name,
+            imageUrl: top.imageUrl,
+            hex: rarity?.hex ?? palette.primary,
+            summary:
+              group.kind === "set"
+                ? `Set of ${String(group.pieces.length)}, ${rarity?.name ?? top.tier}`
+                : `${String(slots)} slots, ${String(tiers)} tiers`,
+          },
+        },
+      ];
+    })
+    .sort((a, b) => b.rank - a.rank || a.item.name.localeCompare(b.item.name))
+    .map((entry) => entry.item);
   // A live sample for each tool that has one, by slug.
   const samples: Record<string, ReactNode> = {
     chat: <ChatShowcase portraits={portraits} />,
@@ -160,6 +197,10 @@ export default async function HomePage() {
           items={reactors}
           tiers={reactorGroups.at(0)?.versions.length ?? 0}
           attributeIcons={elementIconUrls(reactorAttributes)}
+        />
+        <ComponentShowcase
+          items={components}
+          sets={componentGroups.filter((group) => group.kind === "set").length}
         />
       </div>
     </>

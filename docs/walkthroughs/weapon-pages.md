@@ -8,7 +8,7 @@
      - the levels, lowest first, and each ATK type's value at every level (`attackOf`), types in NEXON's order;
      - the base stats in NEXON's order, named from `stat.json`;
      - the unique ability, or null;
-     - the number of core slots;
+     - the number of core slots: five for each one NEXON lists (`src/data/weapon-core-slots.ts`, T7SEN, 2026-10-17);
      - the `Equipment` research's recipe (`researchFor` and `recipeFor` in `recipe.ts`);
      - `previous` and `next` in the index's order.
 2. `src/app/weapons/[slug]/page.tsx`:
@@ -19,7 +19,7 @@
    - **Unique ability** first, when the weapon has one (T7SEN, 2026-10-16);
    - **ATK:** `StatLevels` from `src/features/game-data/` with `what="ATK"`;
    - **Stats:** `WeaponStats` (`src/features/weapons/weapon-stats.tsx`), cards from `groupStats` in `stat-groups.ts`;
-   - **Core slot** and **Research** (`ResearchRecipe`) when the weapon has them;
+   - **Core slots** and **Research** (`ResearchRecipe`) when the weapon has them;
    - **Builds:** a placeholder;
    - "More weapons": `NeighborLinks`.
 
@@ -45,7 +45,7 @@
 - **Highest tier first, not newest first.** Weapon ids encode type, tier and a count, not release order, so sorting by id groups by type. The index's order is tier, then that id order; claiming "newest" would state a fact the data doesn't hold.
 - **The stat groups are ArcheLab's, in data.** NEXON lists base stats flat. `stat-groups.ts` places all 46 names known on 2026-10-16 by what they do. A name NEXON adds later shows under "Other" rather than vanishing, and the unit test covers that.
 - **No units.** NEXON's numbers come without units (Reload Time 1.48, Firearm Critical Hit Damage 1.8). Adding seconds or percent signs would state facts the data doesn't.
-- **The core slot says only what is known.** Ultimate weapons have one slot id each, but no keyless set says which core types a slot takes (`core-slot` is 403). The section says so instead of listing every core type.
+- **Core types come from T7SEN and NEXON together.** Ultimate weapons list one slot id each, which is five core slots in game, and no keyless set says which core types they take (`core-slot` is 403). Every weapon's five slots are its own, even within a weapon type (T7SEN, 2026-10-17), so `weaponCoreSlots` in `src/data/weapon-core-slots.ts` lists each weapon T7SEN has checked, and `weaponCoreTypeChoices` fits the six core types to its slots (a typed slot takes its own type, the Free slot any). `core-type.json` gives each type's cores and ranges (`fetchCoreTypes`), and `src/data/core-option-display.ts` how the game writes them. A checked weapon's page shows its five slots, then a `CoreTypeGrid` of the six types; an unchecked one, melee ones included, keeps a note instead.
 - **Rounds icons are NEXON's, matched on NEXON's own page.** The Library's weapons page shows each weapon with its rounds icon, which settled that Enhanced Ammo is `EnhancedRounds`. The icons are linked from NEXON's CDN, like the attribute icons.
 - **Tier colors resolve on the server.** The index and palette need rarity names and colors from the chat registry; the server passes them as plain props, so no client component loads the registry.
 - **Long names wrap.** A weapon card's name may take two lines ("Emperor's Guard Lance") rather than being cut off; `min-w-0` on the caption lets the tier badge keep its place.
@@ -57,7 +57,7 @@
 - Fetching `stat`, `research` or `consumable-material` with `fetchMetadataSet` directly instead of through `shared-sets.ts`: each kind of page fetches them again.
 - Sorting the index or neighbors by weapon id alone and calling it "newest": ids group by type.
 - Moving a stat into a group by a guess at what it does: groups are presentation, but a wrong one misleads. Unknown names belong in "Other" until placed.
-- Listing core types on the Core slot section without a source that says which fit.
+- Listing core types for melee weapons, or for a weapon type whose cores differ in game, without a check: NEXON's data has Explosive ATK, Beam Rifle and no-Fire-Rate variants (ADR 0024) that the page doesn't use.
 - Copy that names NEXON or its data as the source ("as NEXON lists it", "straight from NEXON's data"): only the footer and the legal pages do (AGENTS.md conventions).
 - A rounds type NEXON adds later: it shows without an icon until `rounds-icons.ts` maps it from the Library's own page.
 - Importing `rarity.ts` or the chat registry into `weapon-index.tsx` or another client component: the registry ships with the page.

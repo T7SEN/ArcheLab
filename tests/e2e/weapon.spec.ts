@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { siteUrl } from "../../src/lib/site-metadata";
 
 // The weapon pages and their index (ADR 0024), from NEXON's metadata at build time.
-// Monster Hunter (Transcendent) and Thunder Cage (Ultimate, with a core slot and a
+// Monster Hunter (Transcendent) and Thunder Cage (Ultimate, with core slots and a
 // recipe) were the approved examples.
 
 /** The page's sections, top level only, in order. */
@@ -61,7 +61,7 @@ test("Monster Hunter's page shows the hero, ATK, stats and unique ability", asyn
   ]);
 
   // A Transcendent weapon has no core slot or research in NEXON's data.
-  await expect(page.getByRole("region", { name: "Core slot" })).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Core slots" })).toHaveCount(0);
   await expect(page.getByRole("region", { name: "Research" })).toHaveCount(0);
 });
 
@@ -86,7 +86,7 @@ test("the level slider changes the ATK", async ({ page }) => {
   await expect(firearm).not.toHaveText(atHundred);
 });
 
-test("an Ultimate weapon's page shows its core slot and research recipe", async ({
+test("an Ultimate weapon's page shows its core slots and research recipe", async ({
   page,
 }) => {
   await page.goto("/weapons/thunder-cage");
@@ -94,9 +94,34 @@ test("an Ultimate weapon's page shows its core slot and research recipe", async 
     "Thunder Cage",
   );
   await expect(page.getByText("Ultimate", { exact: true })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Core slot" })).toContainText(
-    "Thunder Cage has one core slot.",
+  // Five in game for the one NEXON lists (T7SEN, 2026-10-17).
+  const cores = page.getByRole("region", { name: "Core slots" });
+  await expect(cores).toContainText("Thunder Cage has 5 core slots.");
+  // Its own slots, read from T7SEN's tooltip (2026-10-17): they differ by weapon.
+  await expect(
+    cores.getByRole("list", { name: "Slots" }).getByRole("listitem"),
+  ).toHaveText([/^Free/, /^Firepower/, /^Hit/, /^Tactical/, /^Precision/]);
+  await expect(cores.getByRole("heading", { level: 3 })).toHaveText([
+    "Firepower Augmentation",
+    "Attribute Augmentation",
+    "Hit Augmentation",
+    "Tactical Augmentation",
+    "Precision Augmentation",
+    "Special Augmentation",
+  ]);
+  // At grade X, in the game's words: both Hit cores, and Fire Rate shown positive.
+  await expect(cores.getByRole("button", { name: "Grade 10" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
   );
+  await expect(cores).toContainText("Hit Augmentation Core (Variant AB) X");
+  await expect(cores).toContainText("Hit Augmentation Core X");
+  await expect(cores).toContainText("Multi-Hit Chance(+)");
+  await expect(cores).toContainText("Fits the Free and Firepower slots");
+  // Special isn't one of Thunder Cage's slots, so only its Free slot takes those cores.
+  await expect(
+    cores.getByText("Special Augmentation", { exact: true }).locator(".."),
+  ).toContainText("Fits the Free slot");
 
   expect(await sectionOrder(page)).toEqual([
     "ability",
@@ -113,6 +138,17 @@ test("an Ultimate weapon's page shows its core slot and research recipe", async 
   ).toBeVisible();
   await research.getByText("How it's researched").first().click();
   await expect(research.getByText(/Gold/).first()).toBeVisible();
+});
+
+test("an Ultimate weapon not checked in game lists no core types", async ({
+  page,
+}) => {
+  // Its slots differ by weapon and aren't in NEXON's data (T7SEN, 2026-10-17).
+  await page.goto("/weapons/python");
+  const cores = page.getByRole("region", { name: "Core slots" });
+  await expect(cores).toContainText("Python has 5 core slots.");
+  await expect(cores).toContainText("isn't known yet");
+  await expect(cores.getByRole("list", { name: "Slots" })).toHaveCount(0);
 });
 
 test("its links lead back to the index and on to the next weapon", async ({

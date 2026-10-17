@@ -24,12 +24,13 @@ ArcheLab is an unofficial tools hub for The First Descendant, a NEXON game. The 
 | `src/features/weapons` | Weapon pages: the grouped base stats, rounds icons; the index grid and its filters |
 | `src/features/modules` | The modules index: the grid, its filters, a module's details in the grid and its levels |
 | `src/features/reactors` | The reactors index: the grid, its filters, a reactor's details in the grid and its levels |
-| `src/features/game-data` | Shared by the Descendant, weapon, module and reactor pages: the level slider, research recipe, rarity, page sections, previous and next, index filters in the URL, details in an index's grid |
+| `src/features/external-components` | The external components index: the grid, its filters, a card's details in the grid (set bonuses, each piece's base stat by level) |
+| `src/features/game-data` | Shared by the Descendant, weapon, module, reactor and external component pages: the level slider, research recipe, rarity, page sections, previous and next, index filters in the URL, details in an index's grid, the wide art tile, core types and their grade switch |
 | `src/lib/nexon` | Server-only NEXON data layer: fetch, validate, cache metadata |
 | `src/lib` | Also: page metadata and the public address (`site-metadata.ts`), link preview images (`og-image.tsx`) |
 | `src/assets` | Files read at build time: the Rajdhani font for link previews, with its license |
 | `scripts` | Maintenance scripts: `make-favicon.mjs` (`pnpm favicon`) |
-| `src/data` | Versioned data: chat tag registry, the site's page list, the tool registry, Arche types NEXON's data leaves out, rounds and module icons, melee modules, module tiers |
+| `src/data` | Versioned data: community report links and open checks, chat tag registry, the site's page list, the tool registry, Arche types NEXON's data leaves out, rounds and module icons, melee modules, module tiers, external component sub-stats and core slots, weapon core slots and types, how the game writes core options |
 | `src/components` | Shared UI: hub shell, tool cards; `ui/` holds the shadcn/ui components, `react-bits/` the adapted React Bits effects |
 | `src/styles` | Tailwind v4 theme and design tokens |
 | `tests/e2e` | Playwright tests |
@@ -53,7 +54,7 @@ ArcheLab is an unofficial tools hub for The First Descendant, a NEXON game. The 
 1. Zero cost. No paid service, plan, or add-on. Anything that could bill, or approach a Vercel Hobby cap, stops for T7SEN's decision.
 2. Static by default. Server code exists only where the spec requires it.
 3. Every page shows the unofficial-site disclaimer and the NEXON Open API attribution.
-4. Never invent game facts: tags, colors, limits, stats. Facts come from `src/data`, NEXON's metadata, or T7SEN's in-game tests. Unknowns are marked provisional.
+4. Never invent game facts: tags, colors, limits, stats. Facts come from `src/data`, NEXON's metadata, or in-game checks: T7SEN's own tests, or a player's report whose screenshot T7SEN has checked (ADR 0028). Unknowns are marked provisional.
 5. No scope additions, refactors, or improvements beyond the task. Flag them; T7SEN decides when they happen.
 6. Before using any API not documented in `SKILL.md`, verify it against the official docs for the pinned version.
 7. `docs/SPEC.md` is local only. Read it by path. Never commit, move, or delete it, and never remove its `.gitignore` entry. If it is missing, stop and ask; never recreate it.

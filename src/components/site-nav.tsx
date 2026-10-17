@@ -2,9 +2,36 @@
 
 import { usePathname } from "next/navigation";
 import { LogoMark } from "@/components/logo-mark";
-import { PillNav } from "@/components/react-bits/pill-nav";
+import { PillNav, type PillNavItem } from "@/components/react-bits/pill-nav";
 import { PaletteButton } from "@/features/command-palette/palette-button";
-import { navbarCurrent, navbarFoldBelow, sitePages } from "@/data/site-pages";
+import {
+  navbarCurrent,
+  navbarEntries,
+  navbarFoldBelow,
+} from "@/data/site-pages";
+
+/**
+ * The navbar's items: a link per page, and the Database button over the game's items
+ * (ADR 0027). Bar links show labels only, as the footer shows the pages' icons; the
+ * Database menu shows them.
+ */
+const items: PillNavItem[] = navbarEntries().map((entry) =>
+  "page" in entry
+    ? {
+        href: entry.page.href,
+        label: entry.page.label,
+        prefetch: entry.page.prefetch,
+      }
+    : {
+        label: entry.group,
+        links: entry.pages.map(({ href, label, icon: Icon, prefetch }) => ({
+          href,
+          label,
+          prefetch,
+          icon: <Icon aria-hidden="true" />,
+        })),
+      },
+);
 
 /**
  * The navbar: ArcheLab's mark, linking home and spinning once on hover, then every page
@@ -21,12 +48,7 @@ export function SiteNav() {
       logo={<LogoMark className="text-primary" />}
       logoAlt="ArcheLab"
       trailing={<PaletteButton />}
-      // Labels only: the footer shows the pages' icons.
-      items={sitePages.map(({ href, label, prefetch }) => ({
-        href,
-        label,
-        prefetch,
-      }))}
+      items={items}
       // A path outside the navbar matches no link, so nothing is marked.
       activeHref={current?.href ?? pathname}
       activeKind={current?.page === false ? "section" : "page"}

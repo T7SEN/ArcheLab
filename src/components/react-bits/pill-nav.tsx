@@ -5,12 +5,13 @@
  * ArcheLab: colors from the design tokens (the light theme and the color props are
  * gone), Next.js links, a logo node instead of an image URL, a trailing pill (the
  * search button, ADR 0022), a section mark for pages under a link (ADR 0023), a fold
- * by CSS until the links are measured (`foldBelow`, ADR 0010), class merging with cn,
- * lint fixes and named export (ADR 0009).
+ * by CSS until the links are measured (`foldBelow`, ADR 0010), groups of links under
+ * one button (ADR 0027), class merging with cn, lint fixes and named export (ADR 0009).
  * Copyright (c) 2026 David Haz. MIT + Commons Clause License Condition v1.0, see
  * LICENSE.md in this folder.
  */
 import { cn } from "cn";
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import {
   useEffect,
@@ -25,7 +26,7 @@ import {
   type ReactNode,
 } from "react";
 
-export interface PillNavItem {
+export interface PillNavLink {
   label: string;
   href: string;
   icon?: ReactNode;
@@ -33,6 +34,24 @@ export interface PillNavItem {
   /** False keeps Next.js from prefetching the page (a large one). */
   prefetch?: false;
 }
+
+/**
+ * A button in the bar that opens a short menu of links under it, such as Database
+ * (ADR 0027). It is marked while one of its links is the current page or section.
+ * Folded, its links follow its label in the menu.
+ */
+export interface PillNavGroup {
+  label: string;
+  icon?: ReactNode;
+  links: readonly PillNavLink[];
+}
+
+export type PillNavItem = PillNavLink | PillNavGroup;
+
+const isGroup = (item: PillNavItem): item is PillNavGroup => "links" in item;
+
+const keyOf = (item: PillNavItem) =>
+  isGroup(item) ? `group:${item.label}` : item.href;
 
 export interface PillNavProps {
   /** The logo mark, in a round pill that links to `logoHref`; it spins once on hover. */
@@ -53,7 +72,7 @@ export interface PillNavProps {
   activeKind?: "page" | "section";
   defaultActiveIndex?: number;
   onItemClick?: (
-    item: PillNavItem,
+    item: PillNavLink,
     index: number,
     event: ReactMouseEvent<HTMLElement>,
   ) => void;
@@ -177,7 +196,7 @@ const LIST =
   "m-0 flex h-full list-none items-stretch gap-[var(--pn-item-gap,2px)] p-0";
 const SLOT = "group/slot flex";
 const ITEM =
-  "relative isolate inline-flex h-full cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap rounded-full border-0 px-[var(--pn-x)] [background:none] [font-family:inherit] [font-size:inherit] [line-height:inherit] font-medium tracking-[-0.005em] text-[var(--pn-text)] no-underline outline-none transition-[color] duration-[250ms] ease-[ease] group-data-[lit]/slot:text-[var(--pn-strong)] aria-[current=page]:text-[var(--pn-strong)] aria-[current=true]:text-[var(--pn-strong)] group-data-[items=pill]/nav:[background:var(--pn-tile)] group-data-[items=pill]/nav:[box-shadow:var(--pn-tile-rim)] group-data-[items=pill]/nav:text-[var(--pn-strong)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--pn-ring)] motion-reduce:transition-none";
+  "relative isolate inline-flex h-full cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap rounded-full border-0 px-[var(--pn-x)] [background:none] [font-family:inherit] [font-size:inherit] [line-height:inherit] font-medium tracking-[-0.005em] text-[var(--pn-text)] no-underline outline-none transition-[color] duration-[250ms] ease-[ease] group-data-[lit]/slot:text-[var(--pn-strong)] aria-expanded:text-[var(--pn-strong)] aria-[current=page]:text-[var(--pn-strong)] aria-[current=true]:text-[var(--pn-strong)] group-data-[items=pill]/nav:[background:var(--pn-tile)] group-data-[items=pill]/nav:[box-shadow:var(--pn-tile-rim)] group-data-[items=pill]/nav:text-[var(--pn-strong)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--pn-ring)] motion-reduce:transition-none";
 const FACE =
   "inline-flex items-center gap-[0.45em] transition-transform duration-[360ms] ease-[cubic-bezier(0.22,1,0.36,1)] [&_svg]:h-[1.15em] [&_svg]:w-[1.15em] [&_svg]:flex-none group-data-[on]/slot:-translate-y-[var(--pn-roll)] group-data-[on]/slot:duration-500 group-data-[hover]/slot:-translate-y-[var(--pn-roll)] group-data-[hover]/slot:duration-500 motion-reduce:transition-none";
 const FACE_ALT =
@@ -205,6 +224,15 @@ const PANEL =
 const MENU = "m-0 flex list-none flex-col gap-[2px] p-0";
 const ROW =
   "box-border flex h-[calc(var(--pn-h)_+_2px)] w-full cursor-pointer items-center gap-[10px] rounded-[18px] border-0 px-[16px] text-left [background:none] [font-family:inherit] text-[length:calc(var(--pn-font)_+_1px)] leading-none font-medium text-[var(--pn-strong)] no-underline outline-none transition-[background-color] duration-200 ease-[ease] [&_svg]:h-[1.15em] [&_svg]:w-[1.15em] [&_svg]:flex-none hover:[background:var(--pn-row-hover)] aria-[current=page]:[background:var(--pn-pill)] aria-[current=page]:[box-shadow:var(--pn-pill-shadow)] aria-[current=page]:text-[var(--pn-pill-ink)] aria-[current=true]:[background:var(--pn-pill)] aria-[current=true]:[box-shadow:var(--pn-pill-shadow)] aria-[current=true]:text-[var(--pn-pill-ink)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--pn-ring)] motion-reduce:transition-none";
+// A group's menu, under its button. It is the nav's child, not the bar's: glass inside
+// the bar's glass would blur only the bar.
+const DROPDOWN =
+  "absolute top-[calc(var(--pn-h)_+_8px)] z-[6] box-border w-60 rounded-[22px] p-[6px] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-1 motion-safe:duration-200";
+const CHEVRON =
+  "-mr-[0.2em] transition-transform duration-300 ease-[ease] group-aria-expanded/menu:rotate-180 motion-reduce:transition-none";
+// A group's label in the folded menu, above its links.
+const HEADING =
+  "block px-[16px] pt-[10px] pb-[4px] text-[length:calc(var(--pn-font)_-_2px)] font-medium tracking-[0.08em] text-[var(--pn-text)] uppercase";
 // The measuring copy sits in a zero-width clipped box, so it never widens the page: a
 // fourth link put it past a 390px phone's edge (ADR 0024). The copy keeps its natural
 // width (w-max), which is what the fold check reads.
@@ -281,7 +309,9 @@ const PillNav = ({
   const toggleRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const measureListRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const slotRefs = useRef<(HTMLLIElement | null)[]>([]);
+  const groupRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const engineRef = useRef<Engine | null>(null);
   const introRef = useRef(intro);
   const slideRef = useRef(false);
@@ -296,11 +326,30 @@ const PillNav = ({
   );
   const [open, setOpen] = useState(false);
   const [panelShown, setPanelShown] = useState(false);
+  // The group whose menu is open, where it sits, and the page it opened on: moving to
+  // another page closes it.
+  const [menu, setMenu] = useState<{
+    index: number;
+    left: number;
+    at: string | undefined;
+  } | null>(null);
 
   const controlled = activeHref !== undefined;
   const activeIndex = controlled
-    ? items.findIndex((item) => item.href === activeHref)
+    ? items.findIndex((item) =>
+        isGroup(item)
+          ? item.links.some((link) => link.href === activeHref)
+          : item.href === activeHref,
+      )
     : selected;
+  const shownMenu =
+    menu !== null && menu.at === activeHref && collapsed === false
+      ? menu
+      : null;
+  const menuItem = shownMenu === null ? undefined : items.at(shownMenu.index);
+  const menuGroup =
+    menuItem !== undefined && isGroup(menuItem) ? menuItem : undefined;
+  const menuId = `${panelId}-menu`;
   const activeCurrent = activeKind === "section" ? "true" : "page";
   const joined = layout === "joined";
   const hasLogo = Boolean(logo);
@@ -692,6 +741,9 @@ const PillNav = ({
       if (!next) {
         setOpen(false);
         setPanelShown(false);
+      } else {
+        // A group's menu belongs to the bar, which folding takes away.
+        setMenu(null);
       }
     };
     evaluate();
@@ -851,6 +903,31 @@ const PillNav = ({
     };
   }, [open]);
 
+  // A group's menu closes on a press outside its button and itself, and on Escape,
+  // which gives focus back to its button.
+  const menuIndex = shownMenu?.index ?? null;
+  useEffect(() => {
+    if (menuIndex === null) return undefined;
+    const inside = (target: EventTarget | null) =>
+      target instanceof Node &&
+      ((slotRefs.current[menuIndex]?.contains(target) ?? false) ||
+        (dropdownRef.current?.contains(target) ?? false));
+    const onPointerDown = (event: PointerEvent) => {
+      if (!inside(event.target)) setMenu(null);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setMenu(null);
+      groupRefs.current[menuIndex]?.focus();
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [menuIndex]);
+
   // One turn of the mark per hover, as in React Bits: not for touch, not while a turn
   // is still running, and never under reduced motion.
   const spin = (event: ReactPointerEvent) => {
@@ -870,12 +947,48 @@ const PillNav = ({
   };
 
   const choose = (
-    item: PillNavItem,
+    item: PillNavLink,
     index: number,
     event: ReactMouseEvent<HTMLElement>,
   ) => {
     onItemClick?.(item, index, event);
     if (!controlled) setSelected(index);
+  };
+
+  // The menu is as wide as DROPDOWN's w-60, centered under its button and kept 16px
+  // inside the screen.
+  const menuWidth = 240;
+  const toggleMenu = (index: number) => {
+    if (menuIndex === index) {
+      setMenu(null);
+      return;
+    }
+    const slot = slotRefs.current[index];
+    const root = rootRef.current;
+    if (!slot || !root) return;
+    const box = slot.getBoundingClientRect();
+    const origin = root.getBoundingClientRect().left;
+    const left = clamp(
+      box.left + box.width / 2 - menuWidth / 2,
+      16,
+      window.innerWidth - 16 - menuWidth,
+    );
+    setMenu({ index, left: left - origin, at: activeHref });
+  };
+
+  // Focus moving out of a group's button and menu closes the menu. A press elsewhere
+  // moves focus to nothing, and the pointerdown listener handles it.
+  const leaveMenu = (index: number, event: ReactFocusEvent) => {
+    const next = event.relatedTarget;
+    if (
+      menuIndex !== index ||
+      next === null ||
+      slotRefs.current[index]?.contains(next) ||
+      dropdownRef.current?.contains(next)
+    ) {
+      return;
+    }
+    setMenu(null);
   };
 
   const toggle = () => {
@@ -886,7 +999,7 @@ const PillNav = ({
     onMenuToggle?.(next);
   };
 
-  const link = (item: PillNavItem, props: LinkProps, children: ReactNode) => (
+  const link = (item: PillNavLink, props: LinkProps, children: ReactNode) => (
     <Link href={item.href} prefetch={item.prefetch} {...props}>
       {children}
     </Link>
@@ -896,8 +1009,27 @@ const PillNav = ({
     <>
       {item.icon}
       {item.label}
+      {isGroup(item) && <ChevronDown aria-hidden="true" className={CHEVRON} />}
     </>
   );
+
+  /** A link's row in the folded menu, which closes the menu. */
+  const row = (item: PillNavLink, index: number, current: boolean) =>
+    link(
+      item,
+      {
+        className: ROW,
+        "aria-current": current ? activeCurrent : undefined,
+        tabIndex: open ? undefined : -1,
+        onClick: (event) => {
+          choose(item, index, event);
+          setOpen(false);
+          if (prefersReducedMotion()) setPanelShown(false);
+          onMenuToggle?.(false);
+        },
+      },
+      face(item),
+    );
 
   return (
     <nav
@@ -942,54 +1074,83 @@ const PillNav = ({
             }}
           >
             <ul className={LIST}>
-              {items.map((item, index) => (
-                <li
-                  key={item.href}
-                  ref={(element) => {
-                    slotRefs.current[index] = element;
-                  }}
-                  className={SLOT}
-                  data-on={
-                    fill && indicator === "pill" && index === activeIndex
-                      ? ""
-                      : undefined
-                  }
-                  onPointerEnter={(event) => {
-                    engineRef.current?.enter(index, event);
-                  }}
-                  onPointerDown={(event) => {
-                    engineRef.current?.press(event);
-                  }}
-                  onFocus={(event) => {
-                    engineRef.current?.focus(index, event);
-                  }}
-                  onBlur={() => {
-                    engineRef.current?.blur();
-                  }}
-                >
-                  {link(
-                    item,
-                    {
-                      className: ITEM,
-                      "aria-current":
-                        index === activeIndex ? activeCurrent : undefined,
-                      "aria-label": item.ariaLabel,
-                      onClick: (event) => {
-                        choose(item, index, event);
-                      },
-                    },
-                    <>
-                      {fill && <span className={FILL} aria-hidden="true" />}
-                      <span className={FACE}>{face(item)}</span>
-                      {fill && (
-                        <span className={FACE_ALT} aria-hidden="true">
-                          {face(item)}
-                        </span>
-                      )}
-                    </>,
-                  )}
-                </li>
-              ))}
+              {items.map((item, index) => {
+                const faces = (
+                  <>
+                    {fill && <span className={FILL} aria-hidden="true" />}
+                    <span className={FACE}>{face(item)}</span>
+                    {fill && (
+                      <span className={FACE_ALT} aria-hidden="true">
+                        {face(item)}
+                      </span>
+                    )}
+                  </>
+                );
+                return (
+                  <li
+                    key={keyOf(item)}
+                    ref={(element) => {
+                      slotRefs.current[index] = element;
+                    }}
+                    className={SLOT}
+                    data-on={
+                      fill && indicator === "pill" && index === activeIndex
+                        ? ""
+                        : undefined
+                    }
+                    onPointerEnter={(event) => {
+                      engineRef.current?.enter(index, event);
+                    }}
+                    onPointerDown={(event) => {
+                      engineRef.current?.press(event);
+                    }}
+                    onFocus={(event) => {
+                      engineRef.current?.focus(index, event);
+                    }}
+                    onBlur={(event) => {
+                      engineRef.current?.blur();
+                      leaveMenu(index, event);
+                    }}
+                  >
+                    {isGroup(item) ? (
+                      // A disclosure button: its menu is a list of links, not a
+                      // menu widget (ADR 0027). Marked as a section while one of
+                      // its links is current.
+                      <button
+                        ref={(element) => {
+                          groupRefs.current[index] = element;
+                        }}
+                        type="button"
+                        className={cn(ITEM, "group/menu")}
+                        aria-expanded={menuIndex === index}
+                        aria-controls={menuIndex === index ? menuId : undefined}
+                        aria-current={
+                          index === activeIndex ? "true" : undefined
+                        }
+                        onClick={() => {
+                          toggleMenu(index);
+                        }}
+                      >
+                        {faces}
+                      </button>
+                    ) : (
+                      link(
+                        item,
+                        {
+                          className: ITEM,
+                          "aria-current":
+                            index === activeIndex ? activeCurrent : undefined,
+                          "aria-label": item.ariaLabel,
+                          onClick: (event) => {
+                            choose(item, index, event);
+                          },
+                        },
+                        faces,
+                      )
+                    )}
+                  </li>
+                );
+              })}
             </ul>
             {glide && (
               <span ref={glideRef} className={GLIDE} aria-hidden="true" />
@@ -997,7 +1158,7 @@ const PillNav = ({
             {glide && (
               <div ref={inkRef} className={INK} aria-hidden="true">
                 {items.map((item) => (
-                  <span key={item.href} className={INK_ITEM}>
+                  <span key={keyOf(item)} className={INK_ITEM}>
                     {face(item)}
                   </span>
                 ))}
@@ -1008,6 +1169,41 @@ const PillNav = ({
             )}
           </div>
           {!joined && <span className={RIM} />}
+        </div>
+      )}
+
+      {shownMenu !== null && menuGroup !== undefined && (
+        // Right after the bar, so Tab goes from the group's button into its links:
+        // the group is the bar's last item today (ADR 0027).
+        <div
+          ref={dropdownRef}
+          id={menuId}
+          className={cn(DROPDOWN, SURFACE)}
+          style={{ left: `${String(shownMenu.left)}px` }}
+          onBlur={(event) => {
+            leaveMenu(shownMenu.index, event);
+          }}
+        >
+          <ul className={MENU}>
+            {menuGroup.links.map((item) => (
+              <li key={item.href}>
+                {link(
+                  item,
+                  {
+                    className: ROW,
+                    "aria-current":
+                      item.href === activeHref ? activeCurrent : undefined,
+                    onClick: (event) => {
+                      choose(item, shownMenu.index, event);
+                      setMenu(null);
+                    },
+                  },
+                  face(item),
+                )}
+              </li>
+            ))}
+          </ul>
+          <span className={RIM} />
         </div>
       )}
 
@@ -1049,26 +1245,30 @@ const PillNav = ({
       {collapsed && panelShown && (
         <div ref={panelRef} id={panelId} className={cn(PANEL, SURFACE)}>
           <ul className={MENU}>
-            {items.map((item, index) => (
-              <li key={item.href}>
-                {link(
-                  item,
-                  {
-                    className: ROW,
-                    "aria-current":
-                      index === activeIndex ? activeCurrent : undefined,
-                    tabIndex: open ? undefined : -1,
-                    onClick: (event) => {
-                      choose(item, index, event);
-                      setOpen(false);
-                      if (prefersReducedMotion()) setPanelShown(false);
-                      onMenuToggle?.(false);
-                    },
-                  },
-                  face(item),
-                )}
-              </li>
-            ))}
+            {items.map((item, index) =>
+              isGroup(item) ? (
+                // Folded, a group is its label over its links.
+                <li key={keyOf(item)}>
+                  <span id={`${panelId}-${String(index)}`} className={HEADING}>
+                    {item.label}
+                  </span>
+                  <ul
+                    aria-labelledby={`${panelId}-${String(index)}`}
+                    className={MENU}
+                  >
+                    {item.links.map((child) => (
+                      <li key={child.href}>
+                        {row(child, index, child.href === activeHref)}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ) : (
+                <li key={keyOf(item)}>
+                  {row(item, index, index === activeIndex)}
+                </li>
+              ),
+            )}
           </ul>
           <span className={RIM} />
         </div>
@@ -1077,7 +1277,7 @@ const PillNav = ({
       <div className={MEASURE} aria-hidden="true">
         <div ref={measureListRef} className={`${LIST} w-max`}>
           {items.map((item) => (
-            <span key={item.href} className={INK_ITEM}>
+            <span key={keyOf(item)} className={INK_ITEM}>
               {face(item)}
             </span>
           ))}

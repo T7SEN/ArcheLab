@@ -1,6 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { reactorArt } from "@/features/reactors/reactor-art";
+import { wideArt } from "@/features/game-data/wide-art";
 import { ArcheIcon, ElementIcon } from "./type-icons";
 
 /** A reactor as a Descendant's page shows it. */
@@ -47,8 +47,8 @@ export function ReactorCards({
             <img
               src={reactor.imageUrl}
               alt=""
-              width={reactorArt.width}
-              height={reactorArt.height}
+              width={wideArt.width}
+              height={wideArt.height}
               loading="lazy"
               decoding="async"
               className="h-12 w-auto shrink-0 object-contain"

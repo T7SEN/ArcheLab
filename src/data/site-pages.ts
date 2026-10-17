@@ -1,4 +1,6 @@
 import {
+  CircuitBoard,
+  HandHelping,
   Cpu,
   Crosshair,
   Hexagon,
@@ -15,13 +17,20 @@ import {
 export interface SitePage {
   href: string;
   label: string;
-  /** Shown beside the label in the footer; the navbar shows labels only. */
+  /** Shown beside the label in the footer and in a navbar group's menu. */
   icon: LucideIcon;
   /**
    * False for a page too heavy to prefetch from every page's navbar and footer: the
    * modules index's data is about 35 KB compressed, 368 KB to parse (ADR 0025).
    */
   prefetch?: false;
+  /**
+   * The navbar button the page sits under, in its menu, instead of a link of its own
+   * (ADR 0027). The footer lists every page either way.
+   */
+  group?: "Database";
+  /** Linked from the footer only, not the navbar (ADR 0028). */
+  footerOnly?: true;
 }
 
 /**
@@ -33,15 +42,76 @@ export const sitePages: readonly SitePage[] = [
   { href: "/", label: "Home", icon: House },
   // The chat tool's own icon (`tools.ts`).
   { href: "/tools/chat", label: "Chat builder", icon: MessageSquareText },
+  // The game's items, under the navbar's Database button (ADR 0027).
   // Every Descendant, with filters (ADR 0023); each one's page is under it.
-  { href: "/descendants", label: "Descendants", icon: UsersRound },
+  {
+    href: "/descendants",
+    label: "Descendants",
+    icon: UsersRound,
+    group: "Database",
+  },
   // Every weapon, with filters (ADR 0024); each one's page is under it.
-  { href: "/weapons", label: "Weapons", icon: Crosshair },
-  // Every module, with filters; each opens in a panel on the index (ADR 0025).
-  { href: "/modules", label: "Modules", icon: Cpu, prefetch: false },
+  { href: "/weapons", label: "Weapons", icon: Crosshair, group: "Database" },
+  // Every module, with filters; each opens in the index's grid (ADR 0025).
+  {
+    href: "/modules",
+    label: "Modules",
+    icon: Cpu,
+    prefetch: false,
+    group: "Database",
+  },
   // Every reactor, with filters; each opens in the index's grid (ADR 0026).
-  { href: "/reactors", label: "Reactors", icon: Hexagon },
+  { href: "/reactors", label: "Reactors", icon: Hexagon, group: "Database" },
+  // Every external component set, with filters; each opens in the index's grid
+  // (ADR 0027).
+  {
+    href: "/external-components",
+    label: "External Components",
+    icon: CircuitBoard,
+    group: "Database",
+  },
+  // What players can check in game and send in (ADR 0028); in the footer only.
+  {
+    href: "/contribute",
+    label: "Help fill in data",
+    icon: HandHelping,
+    footerOnly: true,
+  },
 ];
+
+/** A navbar entry: a page's link, or a group's button over its pages' links. */
+export type NavbarEntry =
+  | { readonly page: SitePage }
+  | { readonly group: string; readonly pages: readonly SitePage[] };
+
+/**
+ * The navbar's entries in `sitePages` order: a page with a group joins its group's
+ * button, which takes the place of the group's first page (ADR 0027).
+ */
+export function navbarEntries(
+  pages: readonly SitePage[] = sitePages,
+): NavbarEntry[] {
+  const entries: NavbarEntry[] = [];
+  const groups = new Map<string, SitePage[]>();
+  for (const page of pages) {
+    if (page.footerOnly === true) {
+      continue;
+    }
+    if (page.group === undefined) {
+      entries.push({ page });
+      continue;
+    }
+    const members = groups.get(page.group);
+    if (members === undefined) {
+      const first = [page];
+      groups.set(page.group, first);
+      entries.push({ group: page.group, pages: first });
+    } else {
+      members.push(page);
+    }
+  }
+  return entries;
+}
 
 /**
  * The screen width, in px, below which these links fold into the navbar's menu,
@@ -49,7 +119,7 @@ export const sitePages: readonly SitePage[] = [
  * runs; this width folds the first paint before that. A change to `sitePages` moves the
  * fold, and `shell.spec.ts` fails until this matches it again.
  */
-export const navbarFoldBelow = 736;
+export const navbarFoldBelow = 448;
 
 /** The legal pages, linked from every page's footer rather than the navbar (ADR 0021). */
 export const legalPages: readonly SitePage[] = [

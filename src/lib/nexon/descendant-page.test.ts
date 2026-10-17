@@ -188,6 +188,7 @@ const sets: DescendantSets = {
     {
       research_name: "Raven",
       research_type: "Character",
+      research_time: 57600,
       research_cost: [{ currency_type: "Gold", currency_value: 400000 }],
       research_result: [{ meta_type: "descendant_id", meta_id: "101000035" }],
       research_material: [
@@ -206,6 +207,7 @@ const sets: DescendantSets = {
     {
       research_name: "Raven Enhanced Cells",
       research_type: "CharacterMaterial",
+      research_time: 28800,
       research_cost: [{ currency_type: "Gold", currency_value: 200000 }],
       research_result: [
         { meta_type: "consumable_material_id", meta_id: "261021315" },
@@ -327,6 +329,7 @@ describe("descendantPageFrom", () => {
   });
 
   it("follows the research recipe one level down and names Amorphous sources", () => {
+    expect(page?.research?.time).toBe(57600);
     expect(page?.research?.costs).toEqual([
       { currency: "Gold", value: 400000 },
     ]);

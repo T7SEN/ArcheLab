@@ -2388,10 +2388,10 @@
     "notes": "Cap height of untagged chat text in T7SEN's text-size screenshots (X8, X9). Each size's capHeightPx was measured against it."
   },
   "characters": {
-    "verifiedSymbols": "★☆♥♡✓→←↑↓█▓▒░■□●○♪※∞",
-    "refused": ["✦", "➤", "⚡"],
+    "verifiedSymbols": "★☆♥♡✓→←↑↓█▓▒░■□●○♪※∞♦♠♣♫◆◇▲△▼▽◀▶¿¡«»°•…©®™×÷±€£¥éèêëàâçñüöäßøåあア漢字中文ЖяΩπ",
+    "refused": ["✦", "➤", "⚡", "☺", "☼", "✔", "✗"],
     "refuseOutsideBmp": true,
     "source": "in-game-test",
-    "notes": "T22, T23, T43. Characters outside the Basic Multilingual Plane (emoji) count as 2 and are refused. Hangul syllable 가 counts as 1 and displays."
+    "notes": "T22, T23, T43, U1 to U4. Characters outside the Basic Multilingual Plane (emoji) count as 2 and are refused. Hangul syllable 가 counts as 1 and displays. verifiedSymbols holds every character verified beyond printable ASCII and Hangul, letters included. U1 to U3 (T7SEN, 2026-10-17): the accented letters éèêëàâçñüöäßøå, the signs ¿¡«»°•…©®™×÷±€£¥, and あ ア 漢 字 中 文 Ж я Ω π show. U4 (T7SEN, 2026-10-17): ♦♠♣♫◆◇▲△▼▽◀▶ show; ☺ ☼ ✔ ✗ are not allowed."
   }
 }

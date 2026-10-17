@@ -1,4 +1,4 @@
-import { Cpu, Crosshair, Hexagon, UserRound } from "lucide-react";
+import { CircuitBoard, Cpu, Crosshair, Hexagon, UserRound } from "lucide-react";
 import { allPages, legalPages } from "@/data/site-pages";
 import { tools } from "@/data/tools";
 import type { PaletteCommand } from "./commands";
@@ -31,6 +31,20 @@ export interface PaletteReactor {
   /** The attribute and Arche type it boosts, shown beside it and searchable. */
   readonly attribute: string | null;
   readonly archeType: string | null;
+}
+
+/**
+ * An external component card the palette offers: picking it opens its details on the
+ * external components index.
+ */
+export interface PaletteComponent {
+  readonly name: string;
+  /** Its details: `/external-components?component=<slug>`. */
+  readonly href: string;
+  /** Shown beside it: a set's tier, or how many tiers a component with no set has. */
+  readonly hint: string;
+  /** Its tiers and its pieces' names, which a search also matches. */
+  readonly keywords: readonly string[];
 }
 
 const legalHrefs = new Set(legalPages.map((page) => page.href));
@@ -124,4 +138,19 @@ export function reactorCommands(
       action: { kind: "go", href: reactor.href },
     };
   });
+}
+
+/** Each external component card, opening its details on the index (ADR 0027). */
+export function componentCommands(
+  components: readonly PaletteComponent[],
+): PaletteCommand[] {
+  return components.map((component) => ({
+    id: `component:${component.href}`,
+    label: component.name,
+    group: "External Components",
+    icon: CircuitBoard,
+    keywords: ["external component", ...component.keywords],
+    hint: component.hint,
+    action: { kind: "go", href: component.href },
+  }));
 }

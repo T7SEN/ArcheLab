@@ -39,11 +39,22 @@ describe("count", () => {
   });
 
   it("reports refused and untested characters with their positions", () => {
-    expect(count("A😀✦★가é", registry).issues).toEqual([
+    expect(count("A😀✦★가ú", registry).issues).toEqual([
       { index: 1, char: "😀", status: "refused" },
       { index: 3, char: "✦", status: "refused" },
-      { index: 6, char: "é", status: "unverified" },
+      { index: 6, char: "ú", status: "unverified" },
     ]);
+  });
+
+  it("classifies the characters T7SEN tested on 2026-10-17 (U1 to U4)", () => {
+    for (const ok of "éèêëàâçñüöäßøå¿¡«»°•…©®™×÷±€£¥あア漢字中文ЖяΩπ♦♠♣♫◆◇▲△▼▽◀▶") {
+      expect(classifyCharacter(ok, registry)).toBe("ok");
+    }
+    for (const refused of ["☺", "☼", "✔", "✗"]) {
+      expect(classifyCharacter(refused, registry)).toBe("refused");
+    }
+    // Only the characters tested: support is per character, not per script.
+    expect(classifyCharacter("ú", registry)).toBe("unverified");
   });
 
   it("classifies characters from the symbols test (T43)", () => {

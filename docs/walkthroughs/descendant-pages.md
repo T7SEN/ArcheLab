@@ -63,7 +63,7 @@
 - Changing a Descendant's name in NEXON's data: its slug changes, and the old address becomes a 404.
 - Two Descendants whose names give the same slug: one page would hide the other.
 - Removing `consumable-material` from `metadataSets`. The research section loses its names and disappears.
-- Showing `research_time` or decoding `acquisition_detail` codes before they are confirmed. Both would state game facts the data does not.
+- Decoding `acquisition_detail` codes before they are confirmed: it would state game facts the data does not. `research_time` is confirmed as seconds (T7SEN, 2026-10-17) and shows with each recipe through `formatDuration`.
 - Importing `element-icons.ts`, `rarity.ts` or the chat registry into a client component: the registry ships with the page.
 - Matching module effects to skills loosely (by word): an effect mentioning a common word would mark unrelated skills.
 - Fetching a set per page instead of once per build: builds slow down and fetch megabytes again for every Descendant.

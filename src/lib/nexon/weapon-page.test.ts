@@ -93,6 +93,7 @@ const sets: WeaponSets = {
     {
       research_name: "Thunder Cage",
       research_type: "Equipment",
+      research_time: 28800,
       research_cost: [{ currency_type: "Gold", currency_value: 100000 }],
       research_result: [{ meta_type: "weapon_id", meta_id: "211043001" }],
       research_material: [
@@ -161,7 +162,8 @@ describe("weaponPageFrom", () => {
     expect(page?.coreSlots).toBe(0);
     expect(page?.research).toBeNull();
     const ultimate = weaponPageFrom(sets, "thunder-cage");
-    expect(ultimate?.coreSlots).toBe(1);
+    // One listed, five in game (T7SEN, 2026-10-17).
+    expect(ultimate?.coreSlots).toBe(5);
     expect(ultimate?.research?.costs).toEqual([
       { currency: "Gold", value: 100000 },
     ]);

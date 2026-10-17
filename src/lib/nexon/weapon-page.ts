@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { weaponCoreSlotsPerListed } from "@/data/weapon-core-slots";
 import { slugOf } from "@/lib/slug";
 import { fetchMetadataSet, nexonImageUrl } from "./metadata";
 import {
@@ -236,7 +237,8 @@ export function weaponPageFrom(
             description,
             imageUrl: entry.weapon_perk_ability_image_url,
           },
-    coreSlots: entry.available_core_slot.length,
+    // Each core slot NEXON lists is five in game (`weapon-core-slots.ts`).
+    coreSlots: entry.available_core_slot.length * weaponCoreSlotsPerListed,
     research: recipeFor(
       researchFor(sets.research, "Equipment", "weapon_id", entry.weapon_id),
       sets,

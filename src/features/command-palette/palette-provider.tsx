@@ -15,12 +15,14 @@ import type { PaletteCommand, PaletteSource } from "./commands";
 import { isPaletteShortcut } from "./shortcut";
 import { loadPaletteModules, type PaletteModule } from "./palette-modules";
 import {
+  componentCommands,
   descendantCommands,
   moduleCommands,
   pageCommands,
   reactorCommands,
   toolCommands,
   weaponCommands,
+  type PaletteComponent,
   type PaletteDescendant,
   type PaletteReactor,
   type PaletteWeapon,
@@ -37,18 +39,21 @@ const PaletteContext = createContext<PaletteContextValue | null>(null);
 /**
  * The command palette for every page (ADR 0022): it holds the open state and the
  * command sources, and opens on Ctrl+K or ⌘K anywhere, the chat editor included.
- * `descendants`, `weapons` and `reactors` are plain data the server layout builds once per build;
- * the modules load the first time the palette opens (`palette-modules.ts`).
+ * `descendants`, `weapons`, `reactors` and `components` are plain data the server layout
+ * builds once per build; the modules load the first time the palette opens
+ * (`palette-modules.ts`).
  */
 export function PaletteProvider({
   descendants,
   weapons,
   reactors,
+  components,
   children,
 }: {
   descendants: readonly PaletteDescendant[];
   weapons: readonly PaletteWeapon[];
   reactors: readonly PaletteReactor[];
+  components: readonly PaletteComponent[];
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -105,9 +110,14 @@ export function PaletteProvider({
         commands: () => (modules === null ? [] : moduleCommands(modules)),
       },
       { id: "reactors", order: 45, commands: () => reactorCommands(reactors) },
+      {
+        id: "components",
+        order: 50,
+        commands: () => componentCommands(components),
+      },
     ];
     return [...builtIn, ...registered];
-  }, [descendants, weapons, modules, reactors, registered]);
+  }, [descendants, weapons, modules, reactors, components, registered]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {

@@ -57,6 +57,10 @@ test("Raven's page shows the hero, stats, skills, modules and research", async (
   await expect(
     research.getByRole("heading", { name: "Research Raven" }),
   ).toBeVisible();
+  // Research times, in seconds in NEXON's data: 16 hours for Raven, 8 for each part,
+  // as T7SEN saw in game (2026-10-17).
+  await expect(research.getByText("16 hours", { exact: true })).toBeVisible();
+  await expect(research.getByText("8 hours", { exact: true })).toHaveCount(3);
   await research.getByText("How it's researched").first().click();
   await expect(research.getByText("Carbon Crystal")).toBeVisible();
 });

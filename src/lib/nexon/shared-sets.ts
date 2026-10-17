@@ -26,6 +26,8 @@ const amount = z.object({
 export const researchSchema = z.object({
   research_name: z.string().min(1),
   research_type: z.string().min(1),
+  /** In seconds (T7SEN checked Raven's in game, 2026-10-17). */
+  research_time: z.number().nonnegative(),
   research_cost: z.array(amount),
   research_result: z.array(
     z.object({ meta_type: z.string(), meta_id: numericId }),

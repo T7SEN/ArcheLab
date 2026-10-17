@@ -1,7 +1,9 @@
 /**
  * Character escapes. The game decodes `&lt;` and `&gt;` in chat (T28). Unreal's
  * standard parser, which every other verified behavior matches, also decodes
- * `&quot;` and `&amp;`, so all four are treated as escapes (inferred).
+ * `&quot;` and `&amp;`, and both are verified too (2026-10-17): `&quot;` shows as `"`
+ * (T48) and `&amp;` as `&` (T46), though messages holding `&amp;` are usually refused by
+ * the banned-word filter (T45, T46), while a plain `&` is not (T47).
  */
 const escapeValues: ReadonlyMap<string, string> = new Map([
   ["quot", '"'],

@@ -9,4 +9,4 @@ export const siteOperator = "T7SEN";
 export const contactEmail = "contact@t7sen.com";
 
 /** Shown at the top of each legal page; change it whenever their wording changes. */
-export const legalUpdated = "16 October 2026";
+export const legalUpdated = "17 October 2026";

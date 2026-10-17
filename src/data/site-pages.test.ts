@@ -6,7 +6,9 @@ import {
   dynamicRoutes,
   legalPages,
   navbarCurrent,
+  navbarEntries,
   sitePages,
+  type SitePage,
 } from "./site-pages";
 
 const appDir = fileURLToPath(new URL("../app/", import.meta.url));
@@ -82,5 +84,52 @@ describe("navbarCurrent", () => {
     expect(navbarCurrent("/privacy")).toBeNull();
     expect(navbarCurrent("/descendantsx")).toBeNull();
     expect(navbarCurrent("/this-page-does-not-exist")).toBeNull();
+  });
+});
+
+describe("navbarEntries", () => {
+  it("puts the game's items under one Database button, after Home and the chat builder", () => {
+    expect(
+      navbarEntries().map((entry) =>
+        "page" in entry
+          ? entry.page.label
+          : [entry.group, entry.pages.map((page) => page.label)],
+      ),
+    ).toEqual([
+      "Home",
+      "Chat builder",
+      [
+        "Database",
+        [
+          "Descendants",
+          "Weapons",
+          "Modules",
+          "Reactors",
+          "External Components",
+        ],
+      ],
+    ]);
+  });
+
+  it("gives a group the place of its first page, and keeps every page once", () => {
+    const page = (label: string, group?: "Database"): SitePage => ({
+      href: `/${label}`,
+      label,
+      icon: sitePages[0].icon,
+      group,
+    });
+    const entries = navbarEntries([
+      page("a"),
+      page("b", "Database"),
+      page("c"),
+      page("d", "Database"),
+    ]);
+    expect(
+      entries.map((entry) =>
+        "page" in entry
+          ? entry.page.label
+          : entry.pages.map((member) => member.label).join("+"),
+      ),
+    ).toEqual(["a", "b+d", "c"]);
   });
 });

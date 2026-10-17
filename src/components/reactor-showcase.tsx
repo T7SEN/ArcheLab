@@ -2,7 +2,7 @@ import { ArrowRight, Hexagon } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { ArcheIcon, ElementIcon } from "@/features/descendants/type-icons";
-import { reactorArt } from "@/features/reactors/reactor-art";
+import { wideArt } from "@/features/game-data/wide-art";
 import { CardCarousel } from "./card-carousel";
 
 /** A reactor on the home page, in its highest tier's art and color. */
@@ -67,8 +67,8 @@ export function ReactorShowcase({
               <img
                 src={item.imageUrl}
                 alt=""
-                width={reactorArt.width}
-                height={reactorArt.height}
+                width={wideArt.width}
+                height={wideArt.height}
                 loading="lazy"
                 decoding="async"
                 className="max-h-full w-auto max-w-full object-contain transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none"

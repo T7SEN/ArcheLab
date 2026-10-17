@@ -20,6 +20,8 @@ export interface RecipeItem {
 }
 
 export interface Recipe {
+  /** How long the research takes, in seconds. */
+  readonly time: number;
   /** The research's currency costs, such as Gold. */
   readonly costs: readonly {
     readonly currency: string;
@@ -111,6 +113,7 @@ export function recipeFor(
     ];
   });
   return {
+    time: research.research_time,
     costs: research.research_cost.map((cost) => ({
       currency: cost.currency_type,
       value: cost.currency_value,
