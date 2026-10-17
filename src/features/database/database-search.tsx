@@ -19,6 +19,17 @@ import {
 /** How many results show at once; a longer list asks for another word instead. */
 const shownResults = 50;
 
+/** Categories whose index is too heavy to prefetch (`prefetch: false` in sitePages). */
+const heavyCategories: ReadonlySet<string> = new Set(
+  databaseCategories
+    .filter(
+      (category) =>
+        sitePages.find((page) => page.href === category.href)?.prefetch ===
+        false,
+    )
+    .map((category) => category.name),
+);
+
 /** The search, reading its query from the URL (`?q=`); it needs a `<Suspense>`. */
 export function DatabaseSearchFromUrl() {
   return <DatabaseSearch search={useSearch()} />;
@@ -162,13 +173,9 @@ function ResultLink({ item }: { item: DatabaseItem }) {
   return (
     <Link
       href={item.href}
-      // The modules and Cosmetics indexes are too heavy to prefetch (sitePages), here as
+      // The heavy indexes aren't prefetched (`prefetch: false` in sitePages), here as
       // in the navbar.
-      prefetch={
-        item.category === "Modules" || item.category === "Cosmetics"
-          ? false
-          : undefined
-      }
+      prefetch={heavyCategories.has(item.category) ? false : undefined}
       className="group flex items-center gap-3 rounded-xl px-2 py-1.5 transition-colors outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       <span

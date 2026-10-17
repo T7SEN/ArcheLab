@@ -1,45 +1,55 @@
 import { describe, expect, it } from "vitest";
-import { weaponCoreSlots, weaponCoreTypeChoices } from "./weapon-core-slots";
+import { weaponCoreSlots } from "./weapon-core-slots";
+
+const meleeWeapons = [
+  "Crime and Punishment",
+  "Deus Ex Manus",
+  "Hypernova",
+  "Shadow",
+];
 
 describe("weaponCoreSlots", () => {
-  it("lists five slots for each checked weapon, Free first", () => {
+  it("lists five slots for each weapon, Free first on firearms", () => {
     for (const [name, slots] of weaponCoreSlots) {
       expect(slots, name).toHaveLength(5);
-      expect(slots.at(0), name).toBe("Free");
+      if (meleeWeapons.includes(name)) {
+        expect(slots, name).not.toContain("Free");
+      } else {
+        expect(slots.at(0), name).toBe("Free");
+      }
     }
   });
-});
 
-describe("weaponCoreTypeChoices", () => {
-  it("fits each type to the Free slot and the weapon's slots of its own type", () => {
-    // Nazeistra's Devotion, from T7SEN's slot screen (2026-10-17).
-    const choices = weaponCoreTypeChoices([
+  it("has all 43 Ultimate weapons, agreeing with T7SEN's in-game checks", () => {
+    expect(weaponCoreSlots.size).toBe(43);
+    // From T7SEN's slot screens and tooltips (2026-10-17).
+    expect(weaponCoreSlots.get("Nazeistra's Devotion")).toEqual([
       "Free",
       "Tactical",
       "Precision",
       "Firepower",
       "Hit",
     ]);
-    expect(choices.map((choice) => choice.slots)).toEqual([
-      ["Free", "Firepower"],
-      ["Free"],
-      ["Free", "Hit"],
-      ["Free", "Tactical"],
-      ["Free", "Precision"],
-      ["Free"],
+    expect(weaponCoreSlots.get("Wave of Light")).toEqual([
+      "Free",
+      "Firepower",
+      "Tactical",
+      "Precision",
+      "Special",
     ]);
-    expect(choices.at(2)?.alsoTakes).toBe("Hit Augmentation Core");
-  });
-
-  it("names a slot type once, however many slots of it a weapon has", () => {
-    // Hammer and Anvil has two Precision slots.
-    const precision = weaponCoreTypeChoices([
+    expect(weaponCoreSlots.get("Thunder Cage")).toEqual([
+      "Free",
+      "Firepower",
+      "Hit",
+      "Tactical",
+      "Precision",
+    ]);
+    expect(weaponCoreSlots.get("Hammer and Anvil")).toEqual([
       "Free",
       "Attribute",
       "Precision",
       "Precision",
       "Special",
-    ]).at(4);
-    expect(precision?.slots).toEqual(["Free", "Precision"]);
+    ]);
   });
 });

@@ -109,7 +109,7 @@ export interface WeaponPage {
   readonly stats: readonly WeaponStat[];
   /** The unique ability, which Ultimate and Transcendent weapons have. */
   readonly ability: WeaponAbility | null;
-  /** How many core slots it has. NEXON's open data doesn't say which cores fit. */
+  /** How many core slots it has; `weapon-cores.ts` gives which cores fit. */
   readonly coreSlots: number;
   readonly research: Recipe | null;
   /** The weapons before and after it in the index's order (`weaponSummaries`). */
@@ -237,7 +237,7 @@ export function weaponPageFrom(
             description,
             imageUrl: entry.weapon_perk_ability_image_url,
           },
-    // Each core slot NEXON lists is five in game (`weapon-core-slots.ts`).
+    // Each core slot NEXON lists is five in game: five types in `core-slot.json`.
     coreSlots: entry.available_core_slot.length * weaponCoreSlotsPerListed,
     research: recipeFor(
       researchFor(sets.research, "Equipment", "weapon_id", entry.weapon_id),
@@ -254,6 +254,27 @@ let weaponsPromise: Promise<WeaponRecord[]> | null = null;
 function fetchWeapons(): Promise<WeaponRecord[]> {
   weaponsPromise ??= fetchMetadataSet("weapon", weaponSchema);
   return weaponsPromise;
+}
+
+/** Each weapon's link by NEXON id, for pages that name what an item builds (ADR 0041). */
+export async function fetchWeaponLinks(): Promise<Map<string, WeaponLink>> {
+  return new Map(
+    (await fetchWeapons()).map((entry) => [
+      entry.weapon_id,
+      { slug: weaponSlug(entry.weapon_name), name: entry.weapon_name },
+    ]),
+  );
+}
+
+/** Each weapon's core slot ids as NEXON lists them, by name, for `weapon-cores.ts`. */
+export async function fetchWeaponCoreSlotIds(): Promise<
+  Map<string, readonly string[]>
+> {
+  return new Map(
+    (await fetchWeapons())
+      .filter((entry) => entry.available_core_slot.length > 0)
+      .map((entry) => [entry.weapon_name, entry.available_core_slot]),
+  );
 }
 
 /** Every weapon in the index's order, fetched while pages are prerendered (ADR 0024). */

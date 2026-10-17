@@ -112,6 +112,7 @@ describe("navbarEntries", () => {
           "Vehicles",
           "Mutant Cells",
           "Cosmetics",
+          "Amorphous Materials",
         ],
       ],
     ]);

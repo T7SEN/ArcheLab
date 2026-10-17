@@ -33,18 +33,19 @@ export const changelog: readonly ChangelogEntry[] = [
     version: "1.0.0",
     title: "The whole database, one search away",
     summary:
-      "Version 1: search everything at once, browse Fellows, vehicles, Mutant Cells and cosmetics, and read Descendant and weapon pages in tabs.",
+      "Version 1: search everything at once, browse Fellows, vehicles, Mutant Cells, cosmetics and Amorphous Materials, and read Descendant and weapon pages in tabs.",
     groups: [
       {
         title: "Database",
         items: [
-          "A Database page: search every Descendant, weapon, module, reactor, external component, Fellow, vehicle, Mutant Cell and cosmetic at once, or browse by category.",
+          "A Database page: search every Descendant, weapon, module, reactor, external component, Fellow, vehicle, Mutant Cell, cosmetic and Amorphous Material Pattern at once, or browse by category.",
           "Fellows: each one's passive and stats at every level, the Inversion Reinforcement effects it unlocks, and its research.",
           "Vehicles: each hover bike's speed, turning and boost at every level, and its research.",
           "Mutant Cells: all 64 by socket, each with its icon, what sets it off and its effects, worded as the game words them.",
           "Cosmetics: every skin, makeup, attachment, paint and spawn, with each Descendant's version and who can use it. Pick a Descendant to see everything they can use.",
+          "Amorphous Materials: every pattern still in the game, its tier, what it opens into and at what chance, with a filter for Descendants, weapons, Fellows and vehicles.",
           "How to obtain on Transcendent weapons: the missions and their chances, first clears, Trials and more, up to Update 1.4.5.",
-          "Core slots on Ultimate external components and on the Ultimate weapons checked so far, with what each core can roll at grades I to X.",
+          "Core slots on Ultimate external components and on every Ultimate weapon, with what each core can roll at grades I to X. Launchers, Beam Rifles and melee weapons show their own cores.",
           "Each external component slot lists its possible sub-stats.",
           "The modules index loads as you scroll instead of all at once.",
         ],
@@ -72,6 +73,7 @@ export const changelog: readonly ChangelogEntry[] = [
           "A tidier footer.",
           "Hero text is easier to read over the dotted background on every page.",
           "The navbar has no Home link: the ArcheLab logo takes you home.",
+          "Dropdown menus open under their button and stay with it, instead of covering it.",
         ],
       },
     ],

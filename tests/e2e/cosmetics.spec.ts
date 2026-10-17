@@ -33,7 +33,9 @@ test("cosmetics are listed highest tier first, more drawn as the page scrolls", 
 });
 
 test("a card opens its versions and who can use each", async ({ page }) => {
-  await open(page, "/cosmetics?cosmetic=dinosaur-pajamas-body-skin");
+  // Searched first: unfiltered, a Normal cosmetic sits about 900 cards down, and
+  // drawing them all made this test outlast its waits when specs ran side by side.
+  await open(page, "/cosmetics?q=pajamas&cosmetic=dinosaur-pajamas-body-skin");
   const shown = details(page, "Dinosaur Pajamas");
   await expect(shown).toBeInViewport();
   await expect(
@@ -60,8 +62,14 @@ test("a card opens its versions and who can use each", async ({ page }) => {
   ).toBeVisible();
 
   // Escape closes it and gives focus back to the card.
+  await expect(
+    versions.getByRole("button", {
+      name: "Bunny, Ultimate Bunny",
+      exact: true,
+    }),
+  ).toBeFocused();
   await page.keyboard.press("Escape");
-  await expect(page).toHaveURL(/\/cosmetics$/);
+  await expect(page).toHaveURL(/\/cosmetics\?q=pajamas$/);
   await expect(details(page, "Dinosaur Pajamas")).toHaveCount(0);
   await expect(
     page.locator("#cosmetic-card-dinosaur-pajamas-body-skin"),
@@ -134,15 +142,12 @@ test("the Database menu and search lead to the cosmetics", async ({ page }) => {
   await nav.getByRole("link", { name: "Cosmetics", exact: true }).click();
   await expect(page).toHaveURL("/cosmetics");
 
-  await open(page, "/database?q=dinosaur%20pajamas");
-  const results = page.getByRole("region", { name: "Search results" });
-  const body = results.getByRole("link", {
-    name: /^Dinosaur Pajamas.*Body Skin/,
-  });
-  await expect(body).toHaveAttribute(
-    "href",
-    "/cosmetics?cosmetic=dinosaur-pajamas-body-skin",
-  );
+  // An Ultimate cosmetic, first in the index's order, so its card draws at once.
+  await open(page, "/database?q=absolute-zero");
+  const body = page
+    .getByRole("region", { name: "Search results" })
+    .locator('a[href="/cosmetics?cosmetic=absolute-zero-body-skin"]');
+  await expect(body).toContainText("Body Skin");
   await body.click();
-  await expect(details(page, "Dinosaur Pajamas")).toBeVisible();
+  await expect(details(page, "Absolute-Zero")).toBeVisible();
 });

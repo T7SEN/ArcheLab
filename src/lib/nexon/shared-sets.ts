@@ -46,6 +46,10 @@ export const materialSchema = z.object({
   consumable_material_name: z.string().min(1),
   image_url: nexonImageUrl,
   acquisition_detail: z.array(z.string()),
+  // Only the Amorphous Materials index reads these two (ADR 0041).
+  material_type: z.string().optional(),
+  /** What an Amorphous Material Pattern opens into: `amorphous-reward.json` ids. */
+  amorphous_reward: z.array(numericId).optional(),
 });
 
 export const moduleSchema = z.object({

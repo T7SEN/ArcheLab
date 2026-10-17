@@ -20,9 +20,9 @@ import {
   weaponCoreReportUrl,
 } from "@/data/contribute";
 import { contactEmail } from "@/data/legal";
-import { isMeleeWeaponType, weaponCoreSlots } from "@/data/weapon-core-slots";
 import { PageSection } from "@/features/game-data/page-section";
 import { ReportLinks } from "@/features/game-data/report-links";
+import { fetchWeaponsWithCoreSlots } from "@/lib/nexon/weapon-cores";
 import { fetchWeaponSummaries } from "@/lib/nexon/weapon-page";
 import { pageMetadata, siteUrl } from "@/lib/site-metadata";
 import { palette } from "@/styles/tokens";
@@ -37,13 +37,11 @@ export const metadata: Metadata = pageMetadata({
 const cardClass = "grid content-start gap-2 rounded-2xl border bg-card/60 p-5";
 
 export default async function ContributePage() {
-  // The Ultimate weapons not yet checked, by weapon type, A–Z (ADR 0028). Melee
-  // weapons' cores aren't covered yet.
+  // The Ultimate weapons whose core slots aren't known, by weapon type, A–Z (ADR 0028):
+  // none on 2026-10-17, since NEXON's `core-slot.json` lists all 43 (ADR 0042).
+  const withCoreSlots = await fetchWeaponsWithCoreSlots();
   const weapons = (await fetchWeaponSummaries()).filter(
-    (weapon) =>
-      weapon.tier === "Tier3" &&
-      !isMeleeWeaponType(weapon.type) &&
-      !weaponCoreSlots.has(weapon.name),
+    (weapon) => weapon.tier === "Tier3" && !withCoreSlots.has(weapon.name),
   );
   const byType = [
     ...weapons
@@ -135,7 +133,11 @@ export default async function ContributePage() {
         id="weapon-cores"
         icon={<Hexagon />}
         title="Weapon core slots"
-        description={`${String(weapons.length)} Ultimate weapons still need their five core slots. Every weapon has its own, so each one is checked on its own: its Select Core Slot screen, or a built weapon's tooltip, shows them in order.`}
+        description={
+          weapons.length === 0
+            ? "Every Ultimate weapon has its own five core slots, shown on its page."
+            : `${String(weapons.length)} Ultimate weapons still need their five core slots. Every weapon has its own, so each one is checked on its own: its Select Core Slot screen, or a built weapon's tooltip, shows them in order.`
+        }
       >
         {weapons.length === 0 ? (
           <p className="text-sm text-muted-foreground">

@@ -201,16 +201,41 @@ test("a Transcendent weapon's How to obtain tab lists where it comes from", asyn
   ]);
 });
 
-test("an Ultimate weapon not checked in game lists no core types", async ({
-  page,
-}) => {
-  // Its slots differ by weapon and aren't in NEXON's data (T7SEN, 2026-10-17).
-  // The Help fill in data page's links open the Core slots tab (#core).
+test("every Ultimate weapon shows its own core slots", async ({ page }) => {
+  // They differ by weapon: NEXON's core-slot.json, cross-checked against tfdhub.gg's,
+  // confirmed by T7SEN (2026-10-17; ADR 0042). Links to #core open the Core slots tab.
   await page.goto("/weapons/python#core");
   const cores = page.getByRole("tabpanel", { name: "Core slots" });
   await expect(cores).toContainText("Python has 5 core slots.");
-  await expect(cores).toContainText("isn't known yet");
-  await expect(cores.getByRole("list", { name: "Slots" })).toHaveCount(0);
+  await expect(cores).not.toContainText("Provisional");
+  await expect(
+    cores.getByRole("list", { name: "Slots" }).getByRole("listitem"),
+  ).toHaveText([
+    /^Free/,
+    /^Firepower/,
+    /^Tactical/,
+    /^Precision/,
+    /^Precision/,
+  ]);
+
+  // A Launcher's Firepower cores roll Explosive ATK.
+  await page.goto("/weapons/sigvores-proof#core");
+  await expect(
+    page.getByRole("tabpanel", { name: "Core slots" }),
+  ).toContainText("Explosive ATK");
+
+  // A melee weapon has no Free slot, and shows only its slots' melee cores.
+  await page.goto("/weapons/shadow#core");
+  const melee = page.getByRole("tabpanel", { name: "Core slots" });
+  await expect(
+    melee.getByRole("list", { name: "Slots" }).getByRole("listitem"),
+  ).toHaveText([/^Firepower/, /^Attribute/, /^Hit/, /^Hit/, /^Hit/]);
+  await expect(melee.getByRole("heading", { level: 3 })).toHaveText([
+    "Firepower Augmentation",
+    "Attribute Augmentation",
+    "Hit Augmentation",
+  ]);
+  await expect(melee).toContainText("Melee Weapon ATK");
 });
 
 test("its links lead back to the index and on to the next weapon", async ({

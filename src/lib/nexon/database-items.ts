@@ -13,6 +13,7 @@ import type { DatabaseItem } from "@/features/database/database-items";
 import { rarityOf } from "@/features/game-data/rarity";
 import { versionTier } from "@/features/modules/module-tiers";
 import { fetchComponentGroups } from "@/lib/nexon/component-index";
+import { fetchAmorphousPatterns } from "@/lib/nexon/amorphous-index";
 import { fetchCosmetics } from "@/lib/nexon/cosmetic-index";
 import { fetchMutantCells } from "@/lib/nexon/mutant-cell-index";
 import { fetchDescendantSummaries } from "@/lib/nexon/descendant-page";
@@ -46,6 +47,7 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     vehicles,
     mutantCells,
     cosmetics,
+    amorphous,
   ] = await Promise.all([
     fetchDescendantSummaries(),
     fetchWeaponSummaries(),
@@ -56,6 +58,7 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     fetchVehicles(),
     fetchMutantCells(),
     fetchCosmetics(),
+    fetchAmorphousPatterns(),
   ]);
 
   const descendantItems = descendants.map((descendant): DatabaseItem => ({
@@ -247,6 +250,27 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
       };
     });
 
+  // Each pattern still in the game under its game name, with its tier, found by what
+  // its rewards build too (ADR 0041).
+  const amorphousItems = amorphous.patterns.map((pattern): DatabaseItem => {
+    const rarity = rarityOf(pattern.tier);
+    return {
+      name: `Amorphous Material Pattern: ${pattern.name}`,
+      category: "Amorphous Materials",
+      href: `/amorphous-materials?pattern=${pattern.slug}`,
+      hint: rarity?.name ?? "",
+      keywords: [
+        ...new Set(
+          pattern.rewards.flatMap((reward) =>
+            reward.build === null ? [] : [reward.build.name],
+          ),
+        ),
+      ],
+      imageUrl: pattern.imageUrl,
+      hex: rarity?.hex ?? palette.primary,
+    };
+  });
+
   return [
     ...descendantItems,
     ...weaponItems,
@@ -257,5 +281,6 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     ...vehicleItems,
     ...mutantCellItems,
     ...cosmeticItems,
+    ...amorphousItems,
   ];
 }

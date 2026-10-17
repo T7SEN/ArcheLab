@@ -12,6 +12,7 @@ import {
   House,
   MessageSquareHeart,
   MessageSquareText,
+  PackageOpen,
   PawPrint,
   Shirt,
   Scale,
@@ -30,7 +31,7 @@ export interface SitePage {
   /**
    * False for a page too heavy to prefetch from every page's navbar and footer: the
    * modules index's data is about 35 KB compressed, 368 KB to parse (ADR 0025), and the
-   * Cosmetics index's more (ADR 0039).
+   * Cosmetics and Amorphous Materials indexes' more (ADR 0039, ADR 0041).
    */
   prefetch?: false;
   /**
@@ -108,6 +109,15 @@ export const sitePages: readonly SitePage[] = [
     href: "/cosmetics",
     label: "Cosmetics",
     icon: Shirt,
+    prefetch: false,
+    group: "Database",
+  },
+  // Every Amorphous Material Pattern and what it opens into; each opens in the index's
+  // grid (T7SEN, 2026-10-17; ADR 0041).
+  {
+    href: "/amorphous-materials",
+    label: "Amorphous Materials",
+    icon: PackageOpen,
     prefetch: false,
     group: "Database",
   },

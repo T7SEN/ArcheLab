@@ -17,11 +17,6 @@ import { ShinyText } from "@/components/react-bits/shiny-text";
 import { Badge } from "@/components/ui/badge";
 import { weaponCoreEmailUrl, weaponCoreReportUrl } from "@/data/contribute";
 import { transcendentSourceWeapons } from "@/data/transcendent-weapon-sources";
-import {
-  isMeleeWeaponType,
-  weaponCoreSlots,
-  weaponCoreTypeChoices,
-} from "@/data/weapon-core-slots";
 import { CoreTypeGrid } from "@/features/game-data/core-type-grid";
 import { NeighborLinks } from "@/features/game-data/neighbor-links";
 import { PageTabs, type PageTab } from "@/features/game-data/page-tabs";
@@ -32,7 +27,7 @@ import { StatLevels } from "@/features/game-data/stat-levels";
 import { RoundsIcon } from "@/features/weapons/rounds-icon";
 import { TranscendentSources } from "@/features/weapons/transcendent-sources";
 import { WeaponStats } from "@/features/weapons/weapon-stats";
-import { fetchCoreTypes } from "@/lib/nexon/core-types";
+import { fetchWeaponCores } from "@/lib/nexon/weapon-cores";
 import {
   fetchWeaponPage,
   fetchWeaponSummaries,
@@ -115,14 +110,12 @@ export default async function WeaponPageRoute({
   }
   const rarity = rarityOf(page.tier);
   const accent = rarity?.hex ?? palette.primary;
-  // The weapon's own core slots, once T7SEN has checked them in game (2026-10-17): they
-  // differ by weapon, and NEXON's keyless data doesn't say which.
-  const coreSlotNames =
-    page.coreSlots > 0 ? weaponCoreSlots.get(page.name) : undefined;
-  const coreTypes =
-    coreSlotNames === undefined
-      ? []
-      : await fetchCoreTypes(weaponCoreTypeChoices(coreSlotNames));
+  // The weapon's own core slots, which differ by weapon, from NEXON's `core-slot.json`
+  // (ADR 0042).
+  const { slots: coreSlotNames, types: coreTypes } =
+    page.coreSlots > 0
+      ? await fetchWeaponCores(page.name)
+      : { slots: [], types: [] };
   const lastLevel = page.levels.at(-1);
   const attack = page.attack.at(0);
   const keyStats = keyStatNames
@@ -217,26 +210,21 @@ export default async function WeaponPageRoute({
                     known yet: every weapon has its own, and they only show in
                     game.
                   </p>
-                  {/* Melee weapons' cores aren't covered yet (ADR 0028). */}
-                  {isMeleeWeaponType(page.type) ? null : (
-                    <>
-                      <p>
-                        Seen them? Send them in with a screenshot, or see{" "}
-                        <Link
-                          href="/contribute"
-                          className="text-primary underline-offset-4 hover:underline"
-                        >
-                          what else needs checking
-                        </Link>
-                        .
-                      </p>
-                      <ReportLinks
-                        github={weaponCoreReportUrl(page.name)}
-                        email={weaponCoreEmailUrl(page.name)}
-                        label={`${page.name}'s core slots`}
-                      />
-                    </>
-                  )}
+                  <p>
+                    Seen them? Send them in with a screenshot, or see{" "}
+                    <Link
+                      href="/contribute"
+                      className="text-primary underline-offset-4 hover:underline"
+                    >
+                      what else needs checking
+                    </Link>
+                    .
+                  </p>
+                  <ReportLinks
+                    github={weaponCoreReportUrl(page.name)}
+                    email={weaponCoreEmailUrl(page.name)}
+                    label={`${page.name}'s core slots`}
+                  />
                 </div>
               ) : (
                 <div className="grid gap-5 rounded-2xl border bg-card/60 p-5">
@@ -245,7 +233,7 @@ export default async function WeaponPageRoute({
                     aria-label="Slots"
                     className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5"
                   >
-                    {(coreSlotNames ?? []).map((slot, index) => (
+                    {coreSlotNames.map((slot, index) => (
                       <li
                         // A weapon can have two slots of a type (Hammer and Anvil).
                         key={`${String(index)}-${slot}`}

@@ -28,6 +28,7 @@ const types: CoreTypeRecord[] = [
     core_type: "Defense Augmentation",
     core_option: [
       {
+        core_option_id: "383010201",
         detail: [
           grade(
             "265209010",
@@ -47,6 +48,7 @@ const types: CoreTypeRecord[] = [
     core_type: "Recovery Augmentation",
     core_option: [
       {
+        core_option_id: "383010101",
         detail: [
           grade("265208010", [["Max HP", "Multiply", 0.282, 0.375]], 10),
         ],
@@ -58,6 +60,7 @@ const types: CoreTypeRecord[] = [
     core_type: "Hit Augmentation",
     core_option: [
       {
+        core_option_id: "383000301",
         detail: [
           grade(
             "265107010",

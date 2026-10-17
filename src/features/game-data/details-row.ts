@@ -34,26 +34,63 @@ export function rowEnd(index: number, columns: number, count: number): number {
   return Math.min(count - 1, rowStart + columns - 1);
 }
 
-function subscribeColumns(onChange: () => void): () => void {
-  const lists = gridColumns.map((entry) => window.matchMedia(entry.query));
-  for (const list of lists) {
-    list.addEventListener("change", onChange);
-  }
-  return () => {
-    for (const list of lists) {
-      list.removeEventListener("change", onChange);
-    }
+/**
+ * A roomier grid, for cards with more text to read: one to four columns, at the same
+ * breakpoints (the Amorphous Materials index, ADR 0041). A batch of 60 fills its rows
+ * too.
+ */
+export const roomyGridColumns: typeof gridColumns = [
+  { query: "(min-width: 80rem)", columns: 4 },
+  { query: "(min-width: 64rem)", columns: 3 },
+  { query: "(min-width: 40rem)", columns: 2 },
+];
+
+export const roomyBaseColumns = 1;
+
+/** The roomy grid's classes; a change here changes `roomyGridColumns` too. */
+export const roomyGridClass =
+  "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+
+/** Which grid an index draws. */
+export type GridLayout = "standard" | "roomy";
+
+const layouts = {
+  standard: { columns: gridColumns, base: baseColumns },
+  roomy: { columns: roomyGridColumns, base: roomyBaseColumns },
+} as const;
+
+/** A layout's store, made once each so React sees the same functions every render. */
+function columnStore(layout: GridLayout) {
+  const { columns, base } = layouts[layout];
+  return {
+    subscribe: (onChange: () => void): (() => void) => {
+      const lists = columns.map((entry) => window.matchMedia(entry.query));
+      for (const list of lists) {
+        list.addEventListener("change", onChange);
+      }
+      return () => {
+        for (const list of lists) {
+          list.removeEventListener("change", onChange);
+        }
+      };
+    },
+    read: (): number => {
+      return (
+        columns.find((entry) => window.matchMedia(entry.query).matches)
+          ?.columns ?? base
+      );
+    },
+    server: (): number => base,
   };
 }
 
-function readColumns(): number {
-  return (
-    gridColumns.find((entry) => window.matchMedia(entry.query).matches)
-      ?.columns ?? baseColumns
-  );
-}
+const stores = {
+  standard: columnStore("standard"),
+  roomy: columnStore("roomy"),
+} as const;
 
-/** The grid's column count at the current width; `baseColumns` on the server. */
-export function useGridColumns(): number {
-  return useSyncExternalStore(subscribeColumns, readColumns, () => baseColumns);
+/** The grid's column count at the current width; its base count on the server. */
+export function useGridColumns(layout: GridLayout = "standard"): number {
+  const store = stores[layout];
+  return useSyncExternalStore(store.subscribe, store.read, store.server);
 }

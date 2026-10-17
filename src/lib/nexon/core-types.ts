@@ -12,8 +12,8 @@ import { fetchMaterials, numericId, type MaterialRecord } from "./shared-sets";
 
 /**
  * Core types from NEXON's `core-type.json`, shared by weapon pages and the external
- * components index (ADR 0024, ADR 0027). Which types a slot takes is not in the keyless
- * data (`core-slot` answers 403); it comes from T7SEN's in-game checks in `src/data`.
+ * components index (ADR 0024, ADR 0027). Which types a weapon's slots take comes from
+ * NEXON's `core-slot.json` (`weapon-cores.ts`, ADR 0042); a component's from `src/data`.
  */
 
 const coreTypeSchema = z.object({
@@ -21,6 +21,8 @@ const coreTypeSchema = z.object({
   core_type: z.string().min(1),
   core_option: z.array(
     z.object({
+      // A Free Augmentation type lists the typed types' sets by these ids (ADR 0042).
+      core_option_id: numericId,
       detail: z.array(
         z.object({
           required_core_item: z
@@ -135,15 +137,22 @@ let setsPromise: Promise<
   [readonly CoreTypeRecord[], readonly MaterialRecord[]]
 > | null = null;
 
-/** The chosen core types, read while pages are prerendered. */
-export async function fetchCoreTypes(
-  choices: readonly CoreTypeChoice[],
-): Promise<CoreType[]> {
-  // One fetch per build worker: every weapon page and the components index read it.
+/** `core-type.json` and the materials, fetched once per build worker. */
+export function fetchCoreTypeSets(): Promise<
+  [readonly CoreTypeRecord[], readonly MaterialRecord[]]
+> {
+  // Every weapon page and the components index read them.
   setsPromise ??= Promise.all([
     fetchMetadataSet("core-type", coreTypeSchema),
     fetchMaterials(),
   ]);
-  const [coreTypes, materials] = await setsPromise;
+  return setsPromise;
+}
+
+/** The chosen core types, read while pages are prerendered. */
+export async function fetchCoreTypes(
+  choices: readonly CoreTypeChoice[],
+): Promise<CoreType[]> {
+  const [coreTypes, materials] = await fetchCoreTypeSets();
   return coreTypesFrom(choices, coreTypes, materials);
 }

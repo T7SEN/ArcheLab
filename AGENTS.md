@@ -29,6 +29,7 @@ ArcheLab is an unofficial tools hub for The First Descendant, a NEXON game. The 
 | `src/features/vehicles` | The Vehicles page: big cards with key numbers, a vehicle's details under its row (every stat in its group, research) |
 | `src/features/mutant-cells` | The Mutant Cells index: the grid in batches, its socket filter and search, a cell's effects in the grid |
 | `src/features/cosmetics` | The Cosmetics index: one card per cosmetic, its type, tier and Descendant filters, search and order, a cosmetic's versions and who can use them in the grid |
+| `src/features/amorphous` | The Amorphous Materials index: every pattern with its rewards and chances, the kind and Builds filters and search, a pattern's rewards and drop places in the grid |
 | `src/features/fellows` | The Fellows page: big cards with key numbers, a Fellow's details under its row (passive, Inversion Reinforcement effects, levels, research) |
 | `src/features/database` | The database page: every item in one list, its search, the search box and results |
 | `src/features/game-data` | Shared by the Descendant, weapon, module, reactor, external component, Fellow and vehicle pages: the level slider, research recipe, rarity, page sections, page tabs, previous and next, index filters in the URL, details in an index's grid, the wide art tile, core types and their grade switch, an index's animated grid items, the showcase cards |

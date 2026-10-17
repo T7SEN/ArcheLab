@@ -36,11 +36,34 @@ export const metadataSets = [
   // effects, and their sockets' names (ADR 0040).
   "node-item",
   "node-socket-type",
+  // In NEXON's documented list, read on 2026-10-17: what each Amorphous Material
+  // Pattern opens into, and the names of the places items drop (ADR 0041).
+  "amorphous-reward",
+  "acquisition-detail",
+  // In NEXON's documented list, read on 2026-10-17: the core types each weapon's and
+  // external component's core slots take (ADR 0042).
+  "core-slot",
 ] as const;
 
 export type MetadataSet = (typeof metadataSets)[number];
 
 export const metadataBaseUrl = "https://open.api.nexon.com/static/tfd/meta/en/";
+
+/**
+ * Sets NEXON serves with no language, one level up (its documented list, read
+ * 2026-10-17): `amorphous-reward.json` and `core-slot.json` answer 403 under `en/`.
+ */
+const languageFreeSets: readonly MetadataSet[] = [
+  "amorphous-reward",
+  "core-slot",
+];
+
+/** Where a set lives. */
+export function metadataUrl(set: MetadataSet): string {
+  return languageFreeSets.includes(set)
+    ? `${metadataBaseUrl.replace(/en\/$/, "")}${set}.json`
+    : `${metadataBaseUrl}${set}.json`;
+}
 
 /** Images are only ever loaded from NEXON's static image host. */
 export const imageHost = "https://open.api.nexon.com/static/tfd/img/";
@@ -91,7 +114,7 @@ export async function fetchMetadataSet<T>(
   let failure: unknown;
   for (let attempt = 1; attempt <= fetchAttempts; attempt += 1) {
     try {
-      const response = await fetch(`${metadataBaseUrl}${set}.json`, {
+      const response = await fetch(metadataUrl(set), {
         signal: AbortSignal.timeout(fetchTimeoutMs),
       });
       if (!response.ok) {

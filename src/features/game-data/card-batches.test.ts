@@ -1,10 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { gridColumns, baseColumns } from "./details-row";
+import {
+  baseColumns,
+  gridColumns,
+  roomyBaseColumns,
+  roomyGridColumns,
+} from "./details-row";
 import { batchesThrough, cardBatch, drawnCount } from "./card-batches";
 
 describe("card batches", () => {
   it("fills whole rows at every grid width", () => {
-    for (const columns of [baseColumns, ...gridColumns.map((e) => e.columns)]) {
+    for (const columns of [
+      baseColumns,
+      ...gridColumns.map((e) => e.columns),
+      roomyBaseColumns,
+      ...roomyGridColumns.map((e) => e.columns),
+    ]) {
       expect(cardBatch % columns).toBe(0);
     }
   });

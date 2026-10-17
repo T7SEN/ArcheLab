@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { entriesFrom, imageHost, nexonImageUrl } from "./metadata";
+import { entriesFrom, imageHost, metadataUrl, nexonImageUrl } from "./metadata";
 
 const schema = z.object({ name: z.string().min(1), image: nexonImageUrl });
 
@@ -24,5 +24,16 @@ describe("NEXON metadata entries", () => {
       dropped: 0,
     });
     expect(entriesFrom(undefined, schema)).toEqual({ entries: [], dropped: 0 });
+  });
+});
+
+describe("NEXON metadata addresses", () => {
+  it("puts most sets under the language, and amorphous-reward above it", () => {
+    expect(metadataUrl("descendant")).toBe(
+      "https://open.api.nexon.com/static/tfd/meta/en/descendant.json",
+    );
+    expect(metadataUrl("amorphous-reward")).toBe(
+      "https://open.api.nexon.com/static/tfd/meta/amorphous-reward.json",
+    );
   });
 });
