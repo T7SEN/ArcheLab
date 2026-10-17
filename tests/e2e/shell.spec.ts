@@ -276,6 +276,10 @@ test("the Database item opens its page, and its menu on hover or keyboard focus"
     nav.getByRole("link", { name: "Mutant Cells", exact: true }),
   ).toBeFocused();
   await page.keyboard.press("Tab");
+  await expect(
+    nav.getByRole("link", { name: "Cosmetics", exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press("Tab");
   await expect(reactors).toHaveCount(0);
 
   // A link opens its page and closes the menu.
@@ -329,6 +333,7 @@ test("on a narrow screen the navbar links fold into a menu", async ({
     "Fellows",
     "Vehicles",
     "Mutant Cells",
+    "Cosmetics",
   ]);
 });
 

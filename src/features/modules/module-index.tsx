@@ -12,7 +12,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { FilterRow, filterChipClass } from "@/features/game-data/filter-row";
+import {
+  FilterRow,
+  FilterSelect,
+  filterChipClass,
+} from "@/features/game-data/filter-row";
 import {
   batchesThrough,
   cardBatch,
@@ -445,54 +449,6 @@ export function ModuleIndex({
           />
         </>
       )}
-    </div>
-  );
-}
-
-function FilterSelect({
-  id,
-  label,
-  items,
-  value,
-  onChange,
-}: {
-  id: string;
-  label: string;
-  items: readonly { value: string; label: string }[];
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div className="grid gap-2 sm:flex sm:items-center sm:gap-x-3">
-      <span
-        id={id}
-        className="w-24 shrink-0 text-xs font-medium text-muted-foreground"
-      >
-        {label}
-      </span>
-      <Select
-        items={items}
-        value={value}
-        onValueChange={(next) => {
-          if (typeof next === "string") {
-            onChange(next);
-          }
-        }}
-      >
-        <SelectTrigger
-          aria-labelledby={id}
-          className="h-9 w-full min-w-0 bg-background/60 sm:flex-1"
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {items.map((item) => (
-            <SelectItem key={item.value} value={item.value}>
-              {item.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
     </div>
   );
 }

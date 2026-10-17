@@ -1,6 +1,7 @@
 /**
  * The database page's search (T7SEN, 2026-10-17; ADR 0034): every Descendant, weapon,
- * module, reactor, external component, Fellow, vehicle and Mutant Cell in one list, from a static file,
+ * module, reactor, external component, Fellow, vehicle, Mutant Cell and cosmetic in one
+ * list, from a static file,
  * `/database/items`, loaded once someone searches. Pure, for the browser and the tests.
  */
 
@@ -51,6 +52,12 @@ export const databaseCategories = [
     href: "/mutant-cells",
     description:
       "Every Mutant Cell by socket, what sets it off and its effects.",
+  },
+  {
+    name: "Cosmetics",
+    href: "/cosmetics",
+    description:
+      "Skins, makeup, attachments, paints and spawns, and who can use them.",
   },
 ] as const;
 

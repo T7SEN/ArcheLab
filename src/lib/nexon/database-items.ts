@@ -1,4 +1,5 @@
 import "server-only";
+import { cosmeticTypeName } from "@/data/cosmetics";
 import { fellowArt, fellowPassiveOf, fellowPassives } from "@/data/fellows";
 import { socketIconUrl } from "@/data/module-icons";
 import {
@@ -8,10 +9,15 @@ import {
 } from "@/data/mutant-cells";
 import { chatRegistry } from "@/features/chat/ui/chat-registry";
 import { vehicleKind } from "@/features/vehicles/vehicle-card";
+import {
+  cardDescendants,
+  shownVersion,
+} from "@/features/cosmetics/cosmetic-filters";
 import type { DatabaseItem } from "@/features/database/database-items";
 import { rarityOf } from "@/features/game-data/rarity";
 import { versionTier } from "@/features/modules/module-tiers";
 import { fetchComponentGroups } from "@/lib/nexon/component-index";
+import { fetchCosmetics } from "@/lib/nexon/cosmetic-index";
 import { fetchDescendantSummaries } from "@/lib/nexon/descendant-page";
 import { fetchFellows } from "@/lib/nexon/fellow-index";
 import { fetchVehicles } from "@/lib/nexon/vehicle-index";
@@ -41,6 +47,7 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     components,
     fellows,
     vehicles,
+    cosmetics,
   ] = await Promise.all([
     fetchDescendantSummaries(),
     fetchWeaponSummaries(),
@@ -49,6 +56,7 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     fetchComponentGroups(),
     fetchFellows(),
     fetchVehicles(),
+    fetchCosmetics(),
   ]);
 
   const descendantItems = descendants.map((descendant): DatabaseItem => ({
@@ -199,6 +207,47 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     hex: palette.primary,
   }));
 
+  // Highest tier first, so the database page's Cosmetics card leads with Ultimate art.
+  // A cosmetic's Descendants find it: "bunny pajamas" (ADR 0039).
+  const descendantNames = new Map(
+    cosmetics.descendants.map((descendant) => [
+      descendant.slug,
+      descendant.name,
+    ]),
+  );
+  const cosmeticItems = cosmetics.cards
+    .map((card) => ({
+      card,
+      rarity: card.tier === null ? null : rarityOf(card.tier),
+    }))
+    .sort(
+      (a, b) =>
+        (b.card.tier ?? "").localeCompare(a.card.tier ?? "", "en", {
+          numeric: true,
+        }) || a.card.name.localeCompare(b.card.name),
+    )
+    .map(({ card, rarity }): DatabaseItem => {
+      const type = cosmeticTypeName(card.type);
+      return {
+        name: card.name,
+        category: "Cosmetics",
+        href: `/cosmetics?cosmetic=${card.slug}`,
+        hint: rarity === null ? type : `${rarity.name} · ${type}`,
+        keywords: card.everyone
+          ? ["Cosmetic", "Every Descendant"]
+          : [
+              "Cosmetic",
+              ...present(
+                cardDescendants(card).map(
+                  (slug) => descendantNames.get(slug) ?? null,
+                ),
+              ),
+            ],
+        imageUrl: shownVersion(card, null).imageUrl ?? "",
+        hex: rarity?.hex ?? palette.mutedForeground,
+      };
+    });
+
   return [
     ...descendantItems,
     ...weaponItems,
@@ -208,5 +257,6 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     ...fellowItems,
     ...vehicleItems,
     ...mutantCellItems,
+    ...cosmeticItems,
   ];
 }

@@ -111,6 +111,7 @@ describe("navbarEntries", () => {
           "Fellows",
           "Vehicles",
           "Mutant Cells",
+          "Cosmetics",
         ],
       ],
     ]);

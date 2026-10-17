@@ -162,8 +162,13 @@ function ResultLink({ item }: { item: DatabaseItem }) {
   return (
     <Link
       href={item.href}
-      // The modules index is too heavy to prefetch (sitePages), here as in the navbar.
-      prefetch={item.category === "Modules" ? false : undefined}
+      // The modules and Cosmetics indexes are too heavy to prefetch (sitePages), here as
+      // in the navbar.
+      prefetch={
+        item.category === "Modules" || item.category === "Cosmetics"
+          ? false
+          : undefined
+      }
       className="group flex items-center gap-3 rounded-xl px-2 py-1.5 transition-colors outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       <span

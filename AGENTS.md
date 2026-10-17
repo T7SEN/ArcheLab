@@ -28,6 +28,7 @@ ArcheLab is an unofficial tools hub for The First Descendant, a NEXON game. The 
 | `src/features/changelog` | The Changelog's timeline: React Bits' BranchedMenu over the updates, following the scroll |
 | `src/features/vehicles` | The Vehicles page: big cards with key numbers, a vehicle's details under its row (every stat in its group, research) |
 | `src/features/mutant-cells` | The Mutant Cells index: the grid in batches, its socket filter and search, a cell's effects in the grid |
+| `src/features/cosmetics` | The Cosmetics index: one card per cosmetic, its type, tier and Descendant filters, search and order, a cosmetic's versions and who can use them in the grid |
 | `src/features/fellows` | The Fellows page: big cards with key numbers, a Fellow's details under its row (passive, Inversion Reinforcement effects, levels, research) |
 | `src/features/database` | The database page: every item in one list, its search, the search box and results |
 | `src/features/game-data` | Shared by the Descendant, weapon, module, reactor, external component, Fellow and vehicle pages: the level slider, research recipe, rarity, page sections, page tabs, previous and next, index filters in the URL, details in an index's grid, the wide art tile, core types and their grade switch, an index's animated grid items, the showcase cards |
@@ -35,7 +36,7 @@ ArcheLab is an unofficial tools hub for The First Descendant, a NEXON game. The 
 | `src/lib` | Also: page metadata and the public address (`site-metadata.ts`), link preview images (`og-image.tsx`) |
 | `src/assets` | Files read at build time: the Rajdhani font for link previews, with its license |
 | `scripts` | Maintenance scripts: `make-favicon.mjs` (`pnpm favicon`) |
-| `src/data` | Versioned data: community report links and open checks, where Transcendent weapons come from, chat tag registry, the site's page list, the tool registry, Arche types NEXON's data leaves out, rounds and module icons, melee modules, module tiers, external component sub-stats and core slots, Fellow facts from the update notes, every Mutant Cell from the update notes, weapon core slots and types, how the game writes core options |
+| `src/data` | Versioned data: community report links and open checks, where Transcendent weapons come from, chat tag registry, the site's page list, the tool registry, Arche types NEXON's data leaves out, rounds and module icons, melee modules, module tiers, external component sub-stats and core slots, Fellow facts from the update notes, every Mutant Cell from the update notes, cosmetic type names and the types every Descendant can use, weapon core slots and types, how the game writes core options |
 | `src/components` | Shared UI: hub shell, tool cards, the site's motion helpers and page entrance; `ui/` holds the shadcn/ui components, `react-bits/` the adapted React Bits effects |
 | `src/styles` | Tailwind v4 theme and design tokens |
 | `tests/e2e` | Playwright tests |

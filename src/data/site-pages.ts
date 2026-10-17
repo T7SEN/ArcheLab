@@ -13,6 +13,7 @@ import {
   MessageSquareHeart,
   MessageSquareText,
   PawPrint,
+  Shirt,
   Scale,
   ScrollText,
   ShieldCheck,
@@ -28,7 +29,8 @@ export interface SitePage {
   icon: LucideIcon;
   /**
    * False for a page too heavy to prefetch from every page's navbar and footer: the
-   * modules index's data is about 35 KB compressed, 368 KB to parse (ADR 0025).
+   * modules index's data is about 35 KB compressed, 368 KB to parse (ADR 0025), and the
+   * Cosmetics index's more (ADR 0039).
    */
   prefetch?: false;
   /**
@@ -98,6 +100,15 @@ export const sitePages: readonly SitePage[] = [
     href: "/mutant-cells",
     label: "Mutant Cells",
     icon: Dna,
+    group: "Database",
+  },
+  // Every cosmetic, one card per cosmetic; each opens in the index's grid (T7SEN,
+  // 2026-10-17; ADR 0039).
+  {
+    href: "/cosmetics",
+    label: "Cosmetics",
+    icon: Shirt,
+    prefetch: false,
     group: "Database",
   },
   // What players can check in game and send in (ADR 0028), in the footer's Community

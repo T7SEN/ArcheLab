@@ -29,6 +29,9 @@ export const metadataSets = [
   "weapon-type",
   // Answered keyless on 2026-10-17: the three hover bikes, with art and stats (ADR 0037).
   "vehicle",
+  // Answered keyless on 2026-10-17: 2,123 cosmetics, with art, tiers and who can use
+  // them (ADR 0039).
+  "customizing-item",
 ] as const;
 
 export type MetadataSet = (typeof metadataSets)[number];

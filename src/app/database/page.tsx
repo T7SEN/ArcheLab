@@ -39,8 +39,8 @@ const firstRowSpan: Readonly<Partial<Record<number, string>>> = {
 /**
  * Where a category card sits, so no space is left empty (T7SEN, 2026-10-17): on wide
  * screens (12 columns) rows of three, with the first row taking the rest, two or four
- * (eight categories: two, then three and three); on medium screens pairs, an odd last
- * card across the row.
+ * (nine categories: three rows of three); on medium screens pairs, an odd last card
+ * across the row.
  */
 function cardSpan(index: number, total: number): string {
   const extra = total % 3;
@@ -100,7 +100,7 @@ export default async function DatabasePage() {
           <p className="max-w-xl hero-text">
             {items.length === 0
               ? "The database couldn't be loaded for this build. It comes back with the next one."
-              : `Search all ${numberFormat.format(items.length)} Descendants, weapons, modules, reactors, external components, Fellows, vehicles and Mutant Cells, or browse a category below.`}
+              : `Search all ${numberFormat.format(items.length)} Descendants, weapons, modules, reactors, external components, Fellows, vehicles, Mutant Cells and cosmetics, or browse a category below.`}
           </p>
           <div className="w-full text-left">
             {/* The URL's search is read in the browser; the static HTML holds the
@@ -136,7 +136,12 @@ export default async function DatabasePage() {
               >
                 <Link
                   href={category.href}
-                  prefetch={category.href === "/modules" ? false : undefined}
+                  prefetch={
+                    category.href === "/modules" ||
+                    category.href === "/cosmetics"
+                      ? false
+                      : undefined
+                  }
                   className="group grid h-full content-start gap-4 rounded-2xl border bg-card/60 p-5 transition-colors outline-none hover:border-ring/60 hover:bg-card focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   <div className="flex items-start justify-between gap-3">
