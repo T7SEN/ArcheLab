@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useSlideIn } from "@/components/motion";
 import { ArcheIcon, ElementIcon } from "@/features/descendants/type-icons";
 import { dataFileHook } from "@/features/game-data/data-file";
 import { filterChipClass } from "@/features/game-data/filter-row";
@@ -49,6 +50,11 @@ export function ReactorDetails({
   const tier =
     card.tiers.find((entry) => entry.id === tierId) ?? card.tiers.at(0);
   const levels = useReactorLevels(reactorDataUrl(card.slug));
+  // A tier switch slides the levels in from its side (ADR 0030).
+  const levelsRef = useSlideIn<HTMLElement>(
+    tierId,
+    card.tiers.map((entry) => entry.id),
+  );
   useRevealDetails(sectionRef, titleRef);
 
   if (tier === undefined) {
@@ -195,6 +201,7 @@ export function ReactorDetails({
       </div>
 
       <section
+        ref={levelsRef}
         aria-labelledby={`${ids}-levels`}
         className="grid content-start gap-4"
       >

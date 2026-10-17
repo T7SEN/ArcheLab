@@ -3,6 +3,7 @@
 import { Search, X } from "lucide-react";
 import { useId, type MouseEvent } from "react";
 import { Input } from "@/components/ui/input";
+import { useChangedSince, useClosing } from "@/components/motion";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   gridClass,
@@ -10,6 +11,7 @@ import {
   useGridColumns,
 } from "@/features/game-data/details-row";
 import { FilterRow, filterChipClass } from "@/features/game-data/filter-row";
+import { CardItem, DetailsRowItem } from "@/features/game-data/grid-items";
 import {
   urlSearchOf,
   useSearch,
@@ -72,6 +74,8 @@ export function ComponentIndex({
 }) {
   const ids = useId();
   const tierNames = tiers.map((tier) => tier.name);
+  // Cards a filter brings in fade in; the first render doesn't (ADR 0030).
+  const enter = useChangedSince(search);
   const filters = parseComponentFilters(search, {
     tiers: tierNames,
     cards: entries.map((entry) => entry.slug),
@@ -96,7 +100,7 @@ export function ComponentIndex({
     document.getElementById(cardId(slug))?.focus({ preventScroll: true });
   };
   const items = shown.map((entry) => (
-    <li key={entry.slug}>
+    <CardItem key={entry.slug} enter={enter}>
       <ComponentCardLink
         entry={entry}
         open={entry.slug === openCard?.slug}
@@ -105,30 +109,47 @@ export function ComponentIndex({
           set({ open: entry.slug === openCard?.slug ? null : entry.slug });
         }}
       />
-    </li>
+    </CardItem>
   ));
-  if (openCard !== null) {
+  // Closed, the details fold away before they leave (ADR 0030). A card a filter
+  // hid has nowhere to fold, so its details simply go.
+  const [detailsCard, closing, closed] = useClosing(
+    openCard,
+    (card) => card.slug,
+  );
+  const detailsIndex =
+    detailsCard === null
+      ? -1
+      : shown.findIndex((entry) => entry.slug === detailsCard.slug);
+  if (closing && detailsIndex === -1) {
+    closed();
+  }
+  if (detailsCard !== null && detailsIndex !== -1) {
     // Keyed by card: moving with the grid's width keeps its state, and another card
     // starts afresh.
     items.splice(
-      rowEnd(openIndex, columns, shown.length) + 1,
+      rowEnd(detailsIndex, columns, shown.length) + 1,
       0,
-      <li key={`details-${openCard.slug}`} className="col-span-full">
+      <DetailsRowItem
+        key={`details-${detailsCard.slug}`}
+        closing={closing}
+        onClosed={closed}
+      >
         <ComponentDetails
           id={detailsId}
-          card={openCard}
+          card={detailsCard}
           initialTier={
-            openCard.pieces.some((piece) => piece.tier === filters.tier)
+            detailsCard.pieces.some((piece) => piece.tier === filters.tier)
               ? filters.tier
               : null
           }
           subStats={subStats}
           coreSlots={coreSlots}
           onClose={() => {
-            closeDetails(openCard.slug);
+            closeDetails(detailsCard.slug);
           }}
         />
-      </li>,
+      </DetailsRowItem>,
     );
   }
 
@@ -207,7 +228,7 @@ export function ComponentIndex({
       </div>
 
       {shown.length === 0 ? (
-        <p className="rounded-2xl border border-dashed bg-card/40 p-8 text-center text-muted-foreground">
+        <p className="rounded-2xl border border-dashed bg-card/40 p-8 text-center text-muted-foreground duration-300 motion-safe:animate-in motion-safe:fade-in">
           No external component matches these filters.
         </p>
       ) : (

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useId, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useSlideIn } from "@/components/motion";
 import { dataFileHook } from "@/features/game-data/data-file";
 import { filterChipClass } from "@/features/game-data/filter-row";
 import { useRevealDetails } from "@/features/game-data/reveal-details";
@@ -54,6 +55,10 @@ export function ModuleDetails({
     card.variants.find((entry) => entry.id === variantId) ??
     card.variants.at(0);
   const levels = useLevelsFile(moduleDataUrl(card.slug));
+  // A version switch slides in what changes, from its side (ADR 0030).
+  const versionOrder = card.variants.map((entry) => entry.id);
+  const factsRef = useSlideIn<HTMLDivElement>(variantId, versionOrder);
+  const effectRef = useSlideIn<HTMLElement>(variantId, versionOrder);
 
   useRevealDetails(sectionRef, titleRef);
 
@@ -154,10 +159,13 @@ export function ModuleDetails({
           </div>
         ) : null}
 
-        <Facts variant={variant} />
+        <div ref={factsRef} className="grid">
+          <Facts variant={variant} />
+        </div>
       </div>
 
       <section
+        ref={effectRef}
         aria-labelledby={`${ids}-levels`}
         className="grid content-start gap-4"
       >

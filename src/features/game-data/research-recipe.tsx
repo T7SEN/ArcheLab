@@ -103,7 +103,7 @@ export function ResearchRecipe({
               </span>
             </div>
             {item.recipe === null ? null : (
-              <details className="group rounded-lg border bg-card/60">
+              <details className="group details-glide rounded-lg border bg-card/60">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden">
                   <span>How it&apos;s researched</span>
                   <span className="flex items-center gap-2">

@@ -6,6 +6,7 @@ import {
   type ComponentItem,
 } from "@/components/component-showcase";
 import { GameShowcase } from "@/components/game-showcase";
+import { ScrollReveal } from "@/components/scroll-reveal";
 import {
   ModuleShowcase,
   type ModuleTierTile,
@@ -179,7 +180,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <div className="pt-4 pb-12">
+      {/* Each section fades up the first time it scrolls into view (ADR 0030). */}
+      <ScrollReveal className="pt-4 pb-12">
         {liveTools.map((tool) => (
           <FeaturedTool
             key={tool.slug}
@@ -202,7 +204,7 @@ export default async function HomePage() {
           items={components}
           sets={componentGroups.filter((group) => group.kind === "set").length}
         />
-      </div>
+      </ScrollReveal>
     </>
   );
 }

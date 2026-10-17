@@ -15,6 +15,27 @@ const card = (page: Page, name: string) =>
   grid(page).getByRole("link", { name: new RegExp(`^${name}\\b`) });
 const details = (page: Page, name: string) =>
   grid(page).getByRole("region", { name, exact: true });
+/**
+ * A card, once drawn: the grid draws 60 cards, then a batch more each time the page
+ * nears the last one (ADR 0031), so a card further down needs some scrolling first.
+ */
+const drawnCard = async (page: Page, name: string) => {
+  const found = card(page, name);
+  await expect(async () => {
+    if ((await found.count()) === 0) {
+      await page.evaluate(() => {
+        window.scrollBy({ top: 3000, behavior: "instant" });
+      });
+    }
+    expect(await found.count()).toBe(1);
+  }).toPass();
+  return found;
+};
+/** The total the index states: "573 modules". */
+const statedTotal = async (page: Page) =>
+  Number(
+    (await page.getByText(/^\d+ modules$/).innerText()).replace(" modules", ""),
+  );
 /** The details row, whatever module it shows. */
 const anyDetails = (page: Page) =>
   grid(page)
@@ -28,15 +49,85 @@ test("lists every module by name, with its own address", async ({ page }) => {
     "href",
     `${siteUrl}/modules`,
   );
-  const count = await grid(page).getByRole("listitem").count();
   // 573 names on 2026-10-16; NEXON adds more with updates.
-  expect(count).toBeGreaterThan(500);
-  await expect(
-    page.getByText(`${String(count)} modules`, { exact: true }),
-  ).toBeVisible();
+  expect(await statedTotal(page)).toBeGreaterThan(500);
   // Same-name modules share a card: one Multi-Trigger Rifling, with its versions.
-  await expect(card(page, "Multi-Trigger Rifling")).toHaveCount(1);
-  await expect(card(page, "Multi-Trigger Rifling")).toContainText("6 versions");
+  const rifling = await drawnCard(page, "Multi-Trigger Rifling");
+  await expect(rifling).toContainText("6 versions");
+});
+
+test("draws the cards a batch at a time as the page scrolls", async ({
+  page,
+}) => {
+  // 573 cards at once made the page lag (T7SEN, 2026-10-17; ADR 0031).
+  await open(page, "/modules");
+  const total = await statedTotal(page);
+  const cards = grid(page).getByRole("listitem");
+  await expect(cards).toHaveCount(60);
+  // Scrolling on draws them all, and the loading strip goes.
+  await expect(async () => {
+    await page.evaluate(() => {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "instant",
+      });
+    });
+    expect(await cards.count()).toBe(total);
+  }).toPass({ timeout: 20_000 });
+  await expect(page.getByText(/^Showing \d+ of \d+ modules/)).toHaveCount(0);
+
+  // A filter starts again from one batch.
+  await page.evaluate(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  });
+  await page
+    .getByRole("group", { name: "Tier" })
+    .getByRole("button", { name: "Rare" })
+    .click();
+  await expect(page.getByText(/^\d+ of \d+ modules$/)).toBeVisible();
+  await expect(cards).toHaveCount(60);
+});
+
+test("a shared link to a card far down draws through it, and keeps it drawn", async ({
+  page,
+}) => {
+  await open(page, "/modules");
+  const slugs = await grid(page)
+    .getByRole("link")
+    .evaluateAll((links) =>
+      links.map((link) =>
+        new URL((link as HTMLAnchorElement).href).searchParams.get("module"),
+      ),
+    );
+  expect(slugs).toHaveLength(60);
+  // The 61st card or later: scroll once to draw the next batch, and take one from it.
+  await page.evaluate(() => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: "instant",
+    });
+  });
+  await expect(grid(page).getByRole("link")).not.toHaveCount(60);
+  const far = await grid(page)
+    .getByRole("link")
+    .nth(100)
+    .evaluate((link) =>
+      new URL((link as HTMLAnchorElement).href).searchParams.get("module"),
+    );
+
+  await open(page, `/modules?module=${String(far)}`);
+  // The details scroll into view once the cards above them have their heights.
+  await expect(anyDetails(page)).toBeInViewport({ timeout: 10_000 });
+  // Cards only: the details hold links of their own ("Equipped by").
+  const cards = grid(page)
+    .getByRole("listitem")
+    .filter({ hasNot: page.getByRole("button", { name: "Close details" }) });
+  const drawn = await cards.count();
+  expect(drawn).toBeGreaterThan(100);
+  await anyDetails(page).getByRole("button", { name: "Close details" }).click();
+  await expect(anyDetails(page)).toHaveCount(0);
+  // Closing doesn't undraw the cards above the reader.
+  expect(await cards.count()).toBeGreaterThanOrEqual(drawn);
 });
 
 test("Ancestors and Trigger are tiers of their own, first in the order", async ({
@@ -58,15 +149,16 @@ test("Ancestors and Trigger are tiers of their own, first in the order", async (
 
   await tiers.filter({ hasText: "Trigger" }).click();
   await expect(page).toHaveURL(/\?tier=Trigger$/);
-  await expect(card(page, "Arche Leak")).toContainText("Trigger");
-  await expect(card(page, "Arche Leak")).not.toContainText("Ultimate");
+  const leak = await drawnCard(page, "Arche Leak");
+  await expect(leak).toContainText("Trigger");
+  await expect(leak).not.toContainText("Ultimate");
 });
 
 test("a card opens its details under its row, and Escape closes them", async ({
   page,
 }) => {
   await open(page, "/modules");
-  const rifling = card(page, "Multi-Trigger Rifling");
+  const rifling = await drawnCard(page, "Multi-Trigger Rifling");
   await rifling.click();
   await expect(page).toHaveURL(/\?module=multi-trigger-rifling$/);
   await expect(rifling).toHaveAttribute("aria-expanded", "true");
@@ -127,7 +219,7 @@ test("a card opens its details under its row, and Escape closes them", async ({
 
 test("clicking an open card again closes its details", async ({ page }) => {
   await open(page, "/modules");
-  const rifling = card(page, "Multi-Trigger Rifling");
+  const rifling = await drawnCard(page, "Multi-Trigger Rifling");
   await rifling.click();
   await expect(details(page, "Multi-Trigger Rifling")).toBeVisible();
   await rifling.click();
@@ -166,7 +258,7 @@ test("filters narrow the grid and live in the URL", async ({ page }) => {
   await expect(page.getByText(/^\d+ of \d+ modules$/)).toBeVisible();
   // Melee modules share names with firearm ones; the card stays, and its details open
   // on the melee version.
-  await card(page, "Heat Incinerator").click();
+  await (await drawnCard(page, "Heat Incinerator")).click();
   await expect(
     details(page, "Heat Incinerator")
       .getByRole("button", { name: "Melee Weapon · Impact Rounds" })
@@ -199,10 +291,8 @@ test("a Descendant's module links to their page, and Back reopens it", async ({
 test("an unknown module or filter in a link is ignored", async ({ page }) => {
   await open(page, "/modules?module=no-such-module&class=Arrows");
   await expect(anyDetails(page)).toHaveCount(0);
-  const count = await grid(page).getByRole("listitem").count();
-  await expect(
-    page.getByText(`${String(count)} modules`, { exact: true }),
-  ).toBeVisible();
+  // Every module, unfiltered.
+  expect(await statedTotal(page)).toBeGreaterThan(500);
 });
 
 test("no page prefetches the modules index's data", async ({ page }) => {

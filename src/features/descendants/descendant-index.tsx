@@ -4,6 +4,7 @@ import { Search, X } from "lucide-react";
 import Link from "next/link";
 import { useId } from "react";
 import { Input } from "@/components/ui/input";
+import { useChangedSince } from "@/components/motion";
 import {
   Select,
   SelectContent,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { FilterRow, filterChipClass } from "@/features/game-data/filter-row";
+import { CardItem } from "@/features/game-data/grid-items";
 import {
   urlSearchOf,
   useSearch,
@@ -83,6 +85,8 @@ export function DescendantIndex({
   search: string;
 }) {
   const ids = useId();
+  // Cards a filter brings in fade in; the first render doesn't (ADR 0030).
+  const enter = useChangedSince(search);
   const filters = parseFilters(search, { attributes, archeTypes });
   const shown = filterDescendants(entries, filters);
   const set = (change: Partial<Filters>): void => {
@@ -248,7 +252,7 @@ export function DescendantIndex({
       </div>
 
       {shown.length === 0 ? (
-        <p className="rounded-2xl border border-dashed bg-card/40 p-8 text-center text-muted-foreground">
+        <p className="rounded-2xl border border-dashed bg-card/40 p-8 text-center text-muted-foreground duration-300 motion-safe:animate-in motion-safe:fade-in">
           No Descendant matches these filters.
         </p>
       ) : (
@@ -257,13 +261,13 @@ export function DescendantIndex({
           className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6"
         >
           {shown.map((entry) => (
-            <li key={entry.slug}>
+            <CardItem key={entry.slug} enter={enter}>
               <DescendantCard
                 entry={entry}
                 elementIcons={elementIcons}
                 ultimateColor={ultimateColor}
               />
-            </li>
+            </CardItem>
           ))}
         </ul>
       )}

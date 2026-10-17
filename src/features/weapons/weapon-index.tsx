@@ -4,6 +4,7 @@ import { Search, X } from "lucide-react";
 import Link from "next/link";
 import { useId } from "react";
 import { Input } from "@/components/ui/input";
+import { useChangedSince } from "@/components/motion";
 import {
   Select,
   SelectContent,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { FilterRow, filterChipClass } from "@/features/game-data/filter-row";
+import { CardItem } from "@/features/game-data/grid-items";
 import {
   urlSearchOf,
   useSearch,
@@ -80,6 +82,8 @@ export function WeaponIndex({
 }) {
   const ids = useId();
   const tierNames = tiers.map((tier) => tier.name);
+  // Cards a filter brings in fade in; the first render doesn't (ADR 0030).
+  const enter = useChangedSince(search);
   const filters = parseWeaponFilters(search, {
     tiers: tierNames,
     types,
@@ -253,7 +257,7 @@ export function WeaponIndex({
       </div>
 
       {shown.length === 0 ? (
-        <p className="rounded-2xl border border-dashed bg-card/40 p-8 text-center text-muted-foreground">
+        <p className="rounded-2xl border border-dashed bg-card/40 p-8 text-center text-muted-foreground duration-300 motion-safe:animate-in motion-safe:fade-in">
           No weapon matches these filters.
         </p>
       ) : (
@@ -262,12 +266,12 @@ export function WeaponIndex({
           className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         >
           {shown.map((entry) => (
-            <li key={entry.slug}>
+            <CardItem key={entry.slug} enter={enter}>
               <WeaponCardLink
                 entry={entry}
                 color={colorOf.get(entry.tier) ?? "var(--primary)"}
               />
-            </li>
+            </CardItem>
           ))}
         </ul>
       )}

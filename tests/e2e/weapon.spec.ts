@@ -5,11 +5,15 @@ import { siteUrl } from "../../src/lib/site-metadata";
 // Monster Hunter (Transcendent) and Thunder Cage (Ultimate, with core slots and a
 // recipe) were the approved examples.
 
-/** The page's sections, top level only, in order. */
-const sectionOrder = (page: Page) =>
-  page
-    .locator("main > section[id]")
-    .evaluateAll((sections) => sections.map((section) => section.id));
+/** The page's sections, as its tabs name them, in order (ADR 0029). */
+const tabOrder = (page: Page) =>
+  page.getByRole("tablist").getByRole("tab").allInnerTexts();
+
+/** Opens one of the page's tabs and returns its panel. */
+const openTab = async (page: Page, name: string) => {
+  await page.getByRole("tab", { name, exact: true }).click();
+  return page.getByRole("tabpanel", { name, exact: true });
+};
 
 test("Monster Hunter's page shows the hero, ATK, stats and unique ability", async ({
   page,
@@ -41,33 +45,37 @@ test("Monster Hunter's page shows the hero, ATK, stats and unique ability", asyn
     page.locator('dd img[src$="icon_bullet--GeneralRounds.png"]').first(),
   ).toBeVisible();
 
-  const stats = page.getByRole("region", { name: "Stats" });
+  // The unique ability leads (T7SEN, 2026-10-16), so its tab opens first.
+  const ability = page.getByRole("tabpanel", { name: "Unique ability" });
+  await expect(
+    ability.getByRole("heading", { name: "Hunter's Sense" }),
+  ).toBeVisible();
+  // Its How to obtain tab: Update 1.4.5 put it in every Transcendent Weapon Loot.
+  expect(await tabOrder(page)).toEqual([
+    "Unique ability",
+    "ATK",
+    "Stats",
+    "How to obtain",
+    "Builds",
+  ]);
+
+  const stats = await openTab(page, "Stats");
   for (const group of ["Damage", "Handling", "Range", "Movement"]) {
     await expect(stats.getByRole("heading", { name: group })).toBeVisible();
   }
   await expect(stats.getByText("Fire Rate", { exact: true })).toBeVisible();
 
-  const ability = page.getByRole("region", { name: "Unique ability" });
-  await expect(
-    ability.getByRole("heading", { name: "Hunter's Sense" }),
-  ).toBeVisible();
-
-  // The unique ability leads (T7SEN, 2026-10-16), and every section stands on its own.
-  expect(await sectionOrder(page)).toEqual([
-    "ability",
-    "atk",
-    "stats",
-    "builds",
-  ]);
-
-  // A Transcendent weapon has no core slot or research in NEXON's data.
-  await expect(page.getByRole("region", { name: "Core slots" })).toHaveCount(0);
-  await expect(page.getByRole("region", { name: "Research" })).toHaveCount(0);
+  // A Transcendent weapon has no core slot in NEXON's data.
+  await expect(page.getByRole("tab", { name: "Core slots" })).toHaveCount(0);
+  const obtain = await openTab(page, "How to obtain");
+  await expect(obtain.getByRole("note")).toContainText(
+    "not Monster Hunter specifically",
+  );
 });
 
 test("the level slider changes the ATK", async ({ page }) => {
   await page.goto("/weapons/monster-hunter");
-  const atk = page.getByRole("region", { name: "ATK" });
+  const atk = await openTab(page, "ATK");
   await expect(
     atk.getByRole("list", { name: /ATK at level 100$/ }),
   ).toBeVisible();
@@ -95,7 +103,15 @@ test("an Ultimate weapon's page shows its core slots and research recipe", async
   );
   await expect(page.getByText("Ultimate", { exact: true })).toBeVisible();
   // Five in game for the one NEXON lists (T7SEN, 2026-10-17).
-  const cores = page.getByRole("region", { name: "Core slots" });
+  expect(await tabOrder(page)).toEqual([
+    "Unique ability",
+    "ATK",
+    "Stats",
+    "Core slots",
+    "How to obtain",
+    "Builds",
+  ]);
+  const cores = await openTab(page, "Core slots");
   await expect(cores).toContainText("Thunder Cage has 5 core slots.");
   // Its own slots, read from T7SEN's tooltip (2026-10-17): they differ by weapon.
   await expect(
@@ -123,16 +139,7 @@ test("an Ultimate weapon's page shows its core slots and research recipe", async
     cores.getByText("Special Augmentation", { exact: true }).locator(".."),
   ).toContainText("Fits the Free slot");
 
-  expect(await sectionOrder(page)).toEqual([
-    "ability",
-    "atk",
-    "stats",
-    "core",
-    "research",
-    "builds",
-  ]);
-
-  const research = page.getByRole("region", { name: "Research" });
+  const research = await openTab(page, "How to obtain");
   await expect(
     research.getByRole("heading", { name: "Research Thunder Cage" }),
   ).toBeVisible();
@@ -140,12 +147,67 @@ test("an Ultimate weapon's page shows its core slots and research recipe", async
   await expect(research.getByText(/Gold/).first()).toBeVisible();
 });
 
+test("a Transcendent weapon's How to obtain tab lists where it comes from", async ({
+  page,
+}) => {
+  // From the Update 1.4.0 notes T7SEN pointed to (2026-10-17, ADR 0032).
+  await page.goto("/weapons/storm-cage#obtain");
+  const obtain = page.getByRole("tabpanel", { name: "How to obtain" });
+  await expect(obtain).toBeVisible();
+  const drops = obtain.getByRole("table").first();
+  // Update 1.4.0's 71 contents, and three added by 1.4.3 and 1.4.5.
+  await expect(drops.getByRole("row")).toHaveCount(75);
+  for (const added of [
+    "Breach Tracking",
+    "Cradle of Evolution",
+    "Onslaught - Stage 5",
+  ]) {
+    await expect(drops.getByRole("rowheader", { name: added })).toBeVisible();
+  }
+  await expect(obtain).toContainText("As of Update 1.4.5.");
+  // The long list scrolls inside its card, and takes focus so keys can scroll it.
+  const scroller = obtain.getByRole("region", { name: "Mission rewards" });
+  expect(
+    await scroller.evaluate(
+      (element) => element.scrollHeight > element.clientHeight,
+    ),
+  ).toBe(true);
+  await expect(scroller).toHaveAttribute("tabindex", "0");
+  // Trials: a row per round, a column per build, with no sideways scroll.
+  const trials = obtain.getByRole("table").filter({
+    has: page.getByRole("columnheader", { name: "Rotational Build" }),
+  });
+  await expect(trials.getByRole("row")).toHaveCount(5);
+  await expect(
+    drops.getByRole("row", { name: /^Onslaught - Stage 1 / }),
+  ).toContainText("261–400");
+  for (const heading of [
+    "Mission rewards",
+    "First clear",
+    "Karel's Mothership",
+    "Trials",
+    "Deslin in Albion",
+  ]) {
+    await expect(
+      obtain.getByRole("heading", { name: heading, level: 3 }),
+    ).toBeVisible();
+  }
+  await expect(obtain).toContainText("[Range 4] Transcendent Weapon Box");
+  // The chances are for a random one, and bonuses raise them (T7SEN, 2026-10-17).
+  const note = obtain.getByRole("note");
+  await expect(note.getByRole("paragraph")).toHaveText([
+    "Chances are for a random Transcendent weapon, not Storm Cage specifically. Drop-rate bonuses raise them.",
+    "One-time first-clear guarantees aren't in Mission rewards.",
+  ]);
+});
+
 test("an Ultimate weapon not checked in game lists no core types", async ({
   page,
 }) => {
   // Its slots differ by weapon and aren't in NEXON's data (T7SEN, 2026-10-17).
-  await page.goto("/weapons/python");
-  const cores = page.getByRole("region", { name: "Core slots" });
+  // The Help fill in data page's links open the Core slots tab (#core).
+  await page.goto("/weapons/python#core");
+  const cores = page.getByRole("tabpanel", { name: "Core slots" });
   await expect(cores).toContainText("Python has 5 core slots.");
   await expect(cores).toContainText("isn't known yet");
   await expect(cores.getByRole("list", { name: "Slots" })).toHaveCount(0);

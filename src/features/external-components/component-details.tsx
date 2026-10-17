@@ -5,6 +5,7 @@ import { useId, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useSlideIn } from "@/components/motion";
 import { dataFileHook } from "@/features/game-data/data-file";
 import { filterChipClass } from "@/features/game-data/filter-row";
 import { CoreTypeGrid } from "@/features/game-data/core-type-grid";
@@ -93,6 +94,20 @@ export function ComponentDetails({
   const [levelIndex, setLevelIndex] = useState<number | null>(null);
   const tier = tiers.find((entry) => entry.name === tierName) ?? tiers.at(0);
   const levels = useComponentLevels(componentDataUrl(card.slug));
+  // Switches slide in what changes, from their side (ADR 0030): a tier the pieces,
+  // and a tier or a piece the piece shown, in the card's order of pieces.
+  const piecesRef = useSlideIn<HTMLDivElement>(
+    tierName,
+    tiers.map((entry) => entry.name),
+  );
+  const shownPiece =
+    card.pieces.find(
+      (entry) => entry.tier === tierName && entry.slot === slot,
+    ) ?? card.pieces.find((entry) => entry.tier === tierName);
+  const pieceRef = useSlideIn<HTMLDivElement>(
+    shownPiece?.id ?? "",
+    card.pieces.map((entry) => entry.id),
+  );
   useRevealDetails(sectionRef, titleRef);
 
   if (tier === undefined) {
@@ -223,6 +238,7 @@ export function ComponentDetails({
           {/* Picking a piece shows it on the right; the pick is by slot, so it holds
               across tiers. Each row shows its base stat at the level shown. */}
           <ToggleGroup
+            ref={piecesRef}
             aria-labelledby={`${ids}-pieces`}
             orientation="vertical"
             variant="outline"
@@ -277,7 +293,7 @@ export function ComponentDetails({
         </section>
       </div>
 
-      <div className="grid content-start">
+      <div ref={pieceRef} className="grid content-start">
         {levels.status === "loading" ? (
           <p aria-busy="true" className="text-sm text-muted-foreground">
             Loading their levels…

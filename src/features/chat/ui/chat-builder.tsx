@@ -610,8 +610,12 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
               backgroundColor="color-mix(in srgb, var(--primary) 22%, var(--card))"
               className="px-4 py-2.5 text-sm font-semibold"
             >
+              {/* The check pops in on "Copied" (ADR 0030). */}
               {copyStatus.kind === "done" && copyStatus.target === "markup" ? (
-                <Check aria-hidden="true" className="size-4" />
+                <Check
+                  aria-hidden="true"
+                  className="size-4 duration-200 motion-safe:animate-in motion-safe:zoom-in-50 motion-safe:fade-in"
+                />
               ) : (
                 <Copy aria-hidden="true" className="size-4" />
               )}
@@ -644,7 +648,10 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
               }}
             >
               {copyStatus.kind === "done" && copyStatus.target === "link" ? (
-                <Check aria-hidden="true" />
+                <Check
+                  aria-hidden="true"
+                  className="duration-200 motion-safe:animate-in motion-safe:zoom-in-50 motion-safe:fade-in"
+                />
               ) : (
                 <Link2 aria-hidden="true" />
               )}

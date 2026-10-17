@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useSlideIn } from "@/components/motion";
 import {
   coreOptionLabel,
   formatCoreRange,
@@ -42,6 +43,11 @@ export function CoreTypeGrid({
   const [picked, setPicked] = useState<number | null>(null);
   const grade = picked ?? grades.at(-1) ?? 1;
   const Heading = headingLevel === 3 ? "h3" : "h5";
+  // A grade switch slides the cards in from its side (ADR 0030).
+  const cardsRef = useSlideIn<HTMLDivElement>(
+    String(grade),
+    grades.map(String),
+  );
 
   return (
     <div className="grid gap-3">
@@ -76,6 +82,7 @@ export function CoreTypeGrid({
         </ToggleGroup>
       </div>
       <div
+        ref={cardsRef}
         className={`grid gap-3 sm:grid-cols-2 ${types.length > 2 ? "xl:grid-cols-3" : ""}`}
       >
         {types.map((type) => {

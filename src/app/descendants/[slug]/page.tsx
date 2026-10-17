@@ -3,9 +3,9 @@ import {
   ArrowLeft,
   ArrowRight,
   Cpu,
-  FlaskConical,
   Hammer,
   Hexagon,
+  PackageSearch,
   Sparkles,
   UserRound,
 } from "lucide-react";
@@ -27,7 +27,7 @@ import {
 } from "@/features/descendants/reactor-cards";
 import { rarityOf } from "@/features/game-data/rarity";
 import { NeighborLinks } from "@/features/game-data/neighbor-links";
-import { PageSection, SectionLinks } from "@/features/game-data/page-section";
+import { PageTabs, type PageTab } from "@/features/game-data/page-tabs";
 import { ResearchRecipe } from "@/features/game-data/research-recipe";
 import { SkillsSection } from "@/features/descendants/skills-section";
 import { StatLevels } from "@/features/game-data/stat-levels";
@@ -72,15 +72,6 @@ export async function generateMetadata({
         : `${page.name}'s stats at every level, skills, exclusive modules and research recipe.`,
   });
 }
-
-const sectionLinks = [
-  { id: "stats", label: "Stats" },
-  { id: "skills", label: "Skills" },
-  { id: "modules", label: "Modules" },
-  { id: "reactors", label: "Reactors" },
-  { id: "research", label: "Research" },
-  { id: "builds", label: "Builds" },
-] as const;
 
 export default async function DescendantPage({
   params,
@@ -156,16 +147,110 @@ export default async function DescendantPage({
     .filter((part) => part !== null)
     .join(", ")
     .replace(/, ([^,]*)$/, " and $1");
-  const links = sectionLinks.filter(
-    (link) =>
-      (link.id !== "research" || page.research !== null) &&
-      (link.id !== "reactors" || reactors.length > 0),
-  );
+  // The page's sections, as tabs (ADR 0029); Reactors and Research only when there are some.
+  const tabs: PageTab[] = [
+    {
+      id: "stats",
+      label: "Stats",
+      icon: <Activity />,
+      description: "At every level. Drag the slider to see how they grow.",
+      content: (
+        <StatLevels
+          name={page.name}
+          levels={page.levels}
+          stats={page.stats}
+          baseName={page.baseName}
+        />
+      ),
+    },
+    {
+      id: "skills",
+      label: "Skills",
+      icon: <Sparkles />,
+      description: `All ${String(page.skills.length)} of ${page.name}'s skills.`,
+      content: (
+        <SkillsSection
+          skills={page.skills}
+          modules={transcendent}
+          elementIcons={elementIcons}
+        />
+      ),
+    },
+    {
+      id: "modules",
+      label: "Modules",
+      title: "Exclusive modules",
+      icon: <Cpu />,
+      description:
+        page.baseName === null || ultimateOnly === 0
+          ? `Modules only ${page.name} can equip.`
+          : `Modules only ${page.name} can equip, ${String(ultimateOnly)} of them not available to ${page.baseName}.`,
+      content:
+        page.modules.length === 0 ? (
+          <p className="text-muted-foreground">
+            No modules are exclusive to {page.name}.
+          </p>
+        ) : (
+          <ModuleCards modules={page.modules} ultimateColor={ultimateColor} />
+        ),
+    },
+    ...(reactors.length === 0
+      ? []
+      : [
+          {
+            id: "reactors",
+            label: "Reactors",
+            icon: <Hexagon />,
+            description: `The ${String(reactors.length)} reactors whose attribute and Arche type match ${page.name}'s.`,
+            content: (
+              <ReactorCards
+                reactors={reactors}
+                attributeIcons={elementIconUrls(
+                  reactors.map((reactor) => reactor.attribute),
+                )}
+              />
+            ),
+          },
+        ]),
+    ...(page.research === null
+      ? []
+      : [
+          {
+            // Named for where the Descendant comes from: its research (T7SEN, 2026-10-17).
+            id: "obtain",
+            label: "How to obtain",
+            icon: <PackageSearch />,
+            description: `What researching ${page.name} takes, part by part.`,
+            content: <ResearchRecipe name={page.name} recipe={page.research} />,
+          },
+        ]),
+    {
+      id: "builds",
+      label: "Builds",
+      icon: <Hammer />,
+      description: `Builds for ${page.name} are coming to ArcheLab.`,
+      content: (
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-dashed bg-card/40 p-5">
+          <p className="max-w-xl text-sm text-muted-foreground">
+            Descendant builds are the next tool on the way. When they land,
+            builds for {page.name} show here.
+          </p>
+          <Link
+            href="/#coming-soon"
+            className="inline-flex items-center gap-2 rounded-[10px] border border-border bg-card/60 px-4 py-2 text-sm font-semibold transition-colors outline-none hover:border-ring/60 hover:bg-accent focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            What&apos;s coming
+            <ArrowRight aria-hidden="true" className="size-4" />
+          </Link>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <>
       {/* The hero slides up under the floating navbar, as on the other pages. */}
-      <section className="relative -mt-(--site-header-height) overflow-hidden border-b">
+      <section className="relative -mt-(--site-header-height) overflow-hidden">
         <HeroBackdrop />
         <div className="relative mx-auto grid max-w-6xl gap-8 px-4 pt-[calc(var(--site-header-height)+2.5rem)] pb-8 md:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] md:items-center lg:pt-[calc(var(--site-header-height)+3.5rem)]">
           <div className="relative mx-auto w-full max-w-64 overflow-hidden rounded-3xl border bg-card/60 shadow-2xl shadow-primary/20 md:max-w-none">
@@ -319,102 +404,10 @@ export default async function DescendantPage({
             )}
           </div>
         </div>
-        <SectionLinks label={`${page.name}'s sections`} links={links} />
       </section>
 
-      <PageSection
-        id="stats"
-        icon={<Activity />}
-        title="Stats"
-        description="At every level. Drag the slider to see how they grow."
-      >
-        <StatLevels
-          name={page.name}
-          levels={page.levels}
-          stats={page.stats}
-          baseName={page.baseName}
-        />
-      </PageSection>
+      <PageTabs label={`${page.name}'s sections`} tabs={tabs} />
 
-      <PageSection
-        id="skills"
-        icon={<Sparkles />}
-        title="Skills"
-        description={`All ${String(page.skills.length)} of ${page.name}'s skills.`}
-      >
-        <SkillsSection
-          skills={page.skills}
-          modules={transcendent}
-          elementIcons={elementIcons}
-        />
-      </PageSection>
-
-      <PageSection
-        id="modules"
-        icon={<Cpu />}
-        title="Exclusive modules"
-        description={
-          page.baseName === null || ultimateOnly === 0
-            ? `Modules only ${page.name} can equip.`
-            : `Modules only ${page.name} can equip, ${String(ultimateOnly)} of them not available to ${page.baseName}.`
-        }
-      >
-        {page.modules.length === 0 ? (
-          <p className="text-muted-foreground">
-            No modules are exclusive to {page.name}.
-          </p>
-        ) : (
-          <ModuleCards modules={page.modules} ultimateColor={ultimateColor} />
-        )}
-      </PageSection>
-
-      {reactors.length === 0 ? null : (
-        <PageSection
-          id="reactors"
-          icon={<Hexagon />}
-          title="Reactors"
-          description={`The ${String(reactors.length)} reactors whose attribute and Arche type match ${page.name}'s.`}
-        >
-          <ReactorCards
-            reactors={reactors}
-            attributeIcons={elementIconUrls(
-              reactors.map((reactor) => reactor.attribute),
-            )}
-          />
-        </PageSection>
-      )}
-
-      {page.research === null ? null : (
-        <PageSection
-          id="research"
-          icon={<FlaskConical />}
-          title="Research"
-          description={`What researching ${page.name} takes, part by part.`}
-        >
-          <ResearchRecipe name={page.name} recipe={page.research} />
-        </PageSection>
-      )}
-
-      <PageSection
-        id="builds"
-        icon={<Hammer />}
-        title="Builds"
-        description={`Builds for ${page.name} are coming to ArcheLab.`}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-dashed bg-card/40 p-5">
-          <p className="max-w-xl text-sm text-muted-foreground">
-            Descendant builds are the next tool on the way. When they land,
-            builds for {page.name} show here.
-          </p>
-          <Link
-            href="/#coming-soon"
-            className="inline-flex items-center gap-2 rounded-[10px] border border-border bg-card/60 px-4 py-2 text-sm font-semibold transition-colors outline-none hover:border-ring/60 hover:bg-accent focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            What&apos;s coming
-            <ArrowRight aria-hidden="true" className="size-4" />
-          </Link>
-        </div>
-      </PageSection>
       <NeighborLinks
         label="More Descendants"
         basePath="/descendants"

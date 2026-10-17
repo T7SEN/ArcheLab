@@ -3,6 +3,7 @@
 import { Search, X } from "lucide-react";
 import { useId, type MouseEvent } from "react";
 import { Input } from "@/components/ui/input";
+import { useChangedSince, useClosing } from "@/components/motion";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ArcheIcon, ElementIcon } from "@/features/descendants/type-icons";
 import {
@@ -11,6 +12,7 @@ import {
   useGridColumns,
 } from "@/features/game-data/details-row";
 import { FilterRow, filterChipClass } from "@/features/game-data/filter-row";
+import { CardItem, DetailsRowItem } from "@/features/game-data/grid-items";
 import {
   urlSearchOf,
   useSearch,
@@ -70,6 +72,8 @@ export function ReactorIndex({
   search: string;
 }) {
   const ids = useId();
+  // Cards a filter brings in fade in; the first render doesn't (ADR 0030).
+  const enter = useChangedSince(search);
   const filters = parseReactorFilters(search, {
     attributes,
     archeTypes,
@@ -99,7 +103,7 @@ export function ReactorIndex({
     document.getElementById(cardId(slug))?.focus({ preventScroll: true });
   };
   const items = shown.map((entry) => (
-    <li key={entry.slug}>
+    <CardItem key={entry.slug} enter={enter}>
       <ReactorCardLink
         entry={entry}
         attributeIcons={attributeIcons}
@@ -109,24 +113,41 @@ export function ReactorIndex({
           set({ open: entry.slug === openCard?.slug ? null : entry.slug });
         }}
       />
-    </li>
+    </CardItem>
   ));
-  if (openCard !== null) {
+  // Closed, the details fold away before they leave (ADR 0030). A card a filter
+  // hid has nowhere to fold, so its details simply go.
+  const [detailsCard, closing, closed] = useClosing(
+    openCard,
+    (card) => card.slug,
+  );
+  const detailsIndex =
+    detailsCard === null
+      ? -1
+      : shown.findIndex((entry) => entry.slug === detailsCard.slug);
+  if (closing && detailsIndex === -1) {
+    closed();
+  }
+  if (detailsCard !== null && detailsIndex !== -1) {
     // Keyed by reactor: moving with the grid's width keeps its state, and another
     // reactor starts afresh.
     items.splice(
-      rowEnd(openIndex, columns, shown.length) + 1,
+      rowEnd(detailsIndex, columns, shown.length) + 1,
       0,
-      <li key={`details-${openCard.slug}`} className="col-span-full">
+      <DetailsRowItem
+        key={`details-${detailsCard.slug}`}
+        closing={closing}
+        onClosed={closed}
+      >
         <ReactorDetails
           id={detailsId}
-          card={openCard}
+          card={detailsCard}
           attributeIcons={attributeIcons}
           onClose={() => {
-            closeDetails(openCard.slug);
+            closeDetails(detailsCard.slug);
           }}
         />
-      </li>,
+      </DetailsRowItem>,
     );
   }
 
@@ -228,7 +249,7 @@ export function ReactorIndex({
       </div>
 
       {shown.length === 0 ? (
-        <p className="rounded-2xl border border-dashed bg-card/40 p-8 text-center text-muted-foreground">
+        <p className="rounded-2xl border border-dashed bg-card/40 p-8 text-center text-muted-foreground duration-300 motion-safe:animate-in motion-safe:fade-in">
           No reactor matches these filters.
         </p>
       ) : (

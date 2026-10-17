@@ -114,7 +114,9 @@ test("a Descendant's page lists the reactors that match its skills", async ({
   page,
 }) => {
   await page.goto("/descendants/blair");
-  const reactors = page.getByRole("region", { name: "Reactors" });
+  // Reactors is one of the page's tabs (ADR 0029).
+  await page.getByRole("tab", { name: "Reactors" }).click();
+  const reactors = page.getByRole("tabpanel", { name: "Reactors" });
   const phase = reactors.getByRole("link", {
     name: "Burning Phase Reactor",
     exact: true,
@@ -134,8 +136,8 @@ test("Raven's Singular counts for Non-Attribute Singular, like any other Arche t
   // NEXON lists her skills as Non-Attribute Fusion; T7SEN found she is Singular too
   // (arche-types.ts), and all her skills are Non-Attribute. No page notes how
   // (T7SEN, 2026-10-16).
-  await page.goto("/descendants/raven");
-  const reactors = page.getByRole("region", { name: "Reactors" });
+  await page.goto("/descendants/raven#reactors");
+  const reactors = page.getByRole("tabpanel", { name: "Reactors" });
   await expect(
     reactors.getByRole("link", {
       name: "Materialized Singularity Reactor",

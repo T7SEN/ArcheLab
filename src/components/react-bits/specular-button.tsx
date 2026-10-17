@@ -4,7 +4,8 @@
  * SpecularButton from React Bits (https://reactbits.dev/components/specular-button),
  * adapted for ArcheLab: colors from the design tokens, an `href` that renders a real
  * link (navigation must stay a link), no placeholder label, class merging with cn,
- * lint fixes and named export (ADR 0009).
+ * lint fixes, named export (ADR 0009), and a WebGL context freed only once the canvas
+ * leaves the page, with the canvas hidden if its context is lost.
  * Copyright (c) 2026 David Haz. MIT + Commons Clause License Condition v1.0, see
  * LICENSE.md in this folder.
  */
@@ -312,6 +313,10 @@ const SpecularButton = ({
       stencil: false,
     });
     if (!button || !canvas || !gl) return undefined;
+    // Chromium paints a lost context as a white box with a broken-image icon. Hide the
+    // canvas instead, so the button keeps its plain look.
+    canvas.hidden = gl.isContextLost();
+    if (canvas.hidden) return undefined;
     const program = link(gl);
     if (!program) return undefined;
     const uniforms: Record<string, WebGLUniformLocation | null> = {};
@@ -487,7 +492,13 @@ const SpecularButton = ({
     };
 
     const wake = () => {
-      if (!raf && visible) raf = requestAnimationFrame(frame);
+      if (!raf && visible && !canvas.hidden) raf = requestAnimationFrame(frame);
+    };
+
+    const onContextLost = () => {
+      cancelAnimationFrame(raf);
+      raf = 0;
+      canvas.hidden = true;
     };
 
     const measure = (entry?: ResizeObserverEntry) => {
@@ -550,6 +561,7 @@ const SpecularButton = ({
     window.addEventListener("pointercancel", onPointerEnd, { passive: true });
     document.documentElement.addEventListener("pointerleave", onPointerLeave);
     button.addEventListener("pointerdown", onPointerDown);
+    canvas.addEventListener("webglcontextlost", onContextLost);
     measure();
     wakeRef.current = wake;
 
@@ -566,10 +578,15 @@ const SpecularButton = ({
         onPointerLeave,
       );
       button.removeEventListener("pointerdown", onPointerDown);
+      canvas.removeEventListener("webglcontextlost", onContextLost);
       gl.deleteBuffer(buffer);
       gl.deleteVertexArray(vao);
       gl.deleteProgram(program);
-      gl.getExtension("WEBGL_lose_context")?.loseContext();
+      // Strict Mode (dev) and a hidden <Activity> run this cleanup and then the effect
+      // again on the same canvas, which gets this context back: losing it there leaves
+      // the canvas lost for good. Free it only once the canvas has left the page.
+      if (!canvas.isConnected)
+        gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
   }, []);
 

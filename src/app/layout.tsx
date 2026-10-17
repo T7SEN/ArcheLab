@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Rajdhani } from "next/font/google";
 import type { ReactNode } from "react";
+import { PageEnter } from "@/components/page-enter";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -78,7 +79,11 @@ export default async function RootLayout({
             components={components}
           >
             <SiteHeader />
-            <main className="flex-1">{children}</main>
+            {/* Clipped sideways, so content sliding in never widens the page
+                (ADR 0030); `clip` keeps the tab strip sticky, unlike `hidden`. */}
+            <main className="flex-1 overflow-x-clip">
+              <PageEnter>{children}</PageEnter>
+            </main>
             <SiteFooter />
           </PaletteProvider>
         </TooltipProvider>

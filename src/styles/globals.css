@@ -50,6 +50,14 @@
   /* The gold ring of a character ticket in the chat preview. Matched by eye to
      T7SEN's screenshots (test sheet Q5 to Q7), not sampled. */
   --ticket-ring: #d9b25f;
+  /* Scrollbars (T7SEN, 2026-10-17): a thin violet-tinted thumb on a clear track,
+     brighter under the pointer in Chromium and Safari. */
+  --scrollbar-thumb: color-mix(in srgb, var(--primary) 35%, var(--border));
+  --scrollbar-thumb-hover: color-mix(
+    in srgb,
+    var(--primary) 70%,
+    var(--border)
+  );
 }
 
 @theme inline {
@@ -93,6 +101,19 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Every scrollbar, the page's included: thin, in the tokens' colors. Firefox takes
+     the standard properties; the color is inherited, the width set on each element,
+     and a class such as [scrollbar-width:none] still hides one. Chromium and Safari
+     take the WebKit rules at the end of this file instead: set here, the standard
+     properties would make Chromium ignore those and draw its arrow buttons. */
+  @supports (-moz-appearance: none) {
+    html {
+      scrollbar-color: var(--scrollbar-thumb) transparent;
+    }
+    * {
+      scrollbar-width: thin;
+    }
   }
   html {
     @apply font-sans;
@@ -264,4 +285,94 @@
       transparent
     );
   }
+}
+
+/*
+ * Site motion (ADR 0030): short and light, decoration only. Hooks in
+ * src/components/motion.ts drive the rest.
+ */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Buttons and links press in slightly while held. Inline text links can't scale, so
+     only block-like ones move; tabs stay put under their sliding shape. */
+  :where(button, a[href], summary, [role="button"]):not(
+      :disabled,
+      [aria-disabled="true"],
+      [role="tab"]
+    ):active {
+    scale: 0.98;
+  }
+
+  /* The home page's sections fade up the first time they scroll into view
+     (ScrollReveal), and their carousel cards follow one after another. */
+  [data-reveal],
+  [data-reveal] .card-carousel-track > li {
+    transition:
+      opacity 500ms ease-out,
+      translate 500ms ease-out;
+  }
+  [data-reveal="waiting"] {
+    opacity: 0;
+    translate: 0 1.5rem;
+  }
+  [data-reveal] .card-carousel-track > li {
+    transition-delay: calc(var(--reveal-step, 0) * 70ms);
+  }
+  [data-reveal="waiting"] .card-carousel-track > li {
+    opacity: 0;
+    translate: 0 1rem;
+  }
+  .card-carousel-track > li:nth-child(2) {
+    --reveal-step: 1;
+  }
+  .card-carousel-track > li:nth-child(3) {
+    --reveal-step: 2;
+  }
+  .card-carousel-track > li:nth-child(4) {
+    --reveal-step: 3;
+  }
+  .card-carousel-track > li:nth-child(n + 5) {
+    --reveal-step: 4;
+  }
+
+  /* A <details> that glides open and shut. Browsers without ::details-content or
+     interpolate-size open it at once, as before. */
+  .details-glide {
+    interpolate-size: allow-keywords;
+  }
+  .details-glide::details-content {
+    block-size: 0;
+    overflow-y: clip;
+    transition:
+      block-size 200ms ease-out,
+      content-visibility 200ms allow-discrete;
+  }
+  .details-glide[open]::details-content {
+    block-size: auto;
+  }
+}
+
+/*
+ * Chromium and Safari: a thin, rounded thumb on a clear track, brighter under the
+ * pointer, with no arrow buttons (T7SEN, 2026-10-17). Firefox uses the standard
+ * properties in the base layer above.
+ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-button {
+  display: none;
+}
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 9999px;
+  background: var(--scrollbar-thumb) padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
 }

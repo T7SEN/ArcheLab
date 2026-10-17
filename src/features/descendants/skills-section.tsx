@@ -95,7 +95,8 @@ export function SkillsSection({
           <div aria-live="polite">
             {choice === null ? null : (
               <div
-                className="flex items-start gap-4 rounded-xl border px-4 py-3"
+                key={choice.module.name}
+                className="flex items-start gap-4 rounded-xl border px-4 py-3 duration-300 motion-safe:animate-in motion-safe:fade-in"
                 style={{
                   borderColor: `color-mix(in srgb, ${choice.hex} 45%, var(--border))`,
                   backgroundImage: `radial-gradient(circle at 0% 50%, color-mix(in srgb, ${choice.hex} 14%, transparent), transparent 70%)`,

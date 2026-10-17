@@ -62,8 +62,9 @@ test("the footer links it, and the navbar doesn't", async ({ page }) => {
 test("a weapon whose core slots are unknown asks players to send them in", async ({
   page,
 }) => {
-  await page.goto("/weapons/python");
-  const cores = page.getByRole("region", { name: "Core slots" });
+  // The Help page links to the Core slots tab (ADR 0029).
+  await page.goto("/weapons/python#core");
+  const cores = page.getByRole("tabpanel", { name: "Core slots" });
   await expect(
     cores.getByRole("link", {
       name: "Report on GitHub for Python's core slots (opens in a new tab)",
@@ -74,10 +75,15 @@ test("a weapon whose core slots are unknown asks players to send them in", async
   ).toHaveAttribute("href", "/contribute");
 
   // A checked weapon shows its slots instead.
-  await page.goto("/weapons/thunder-cage");
+  await page.goto("/weapons/thunder-cage#core");
+  await expect(
+    page.getByRole("tabpanel", { name: "Core slots" }).getByRole("list", {
+      name: "Slots",
+    }),
+  ).toBeVisible();
   await expect(
     page
-      .getByRole("region", { name: "Core slots" })
+      .getByRole("tabpanel", { name: "Core slots" })
       .getByRole("link", { name: /Report on GitHub/ }),
   ).toHaveCount(0);
 });

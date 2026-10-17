@@ -15,13 +15,14 @@
    - `generateStaticParams` maps the summaries to slugs, and `dynamicParams = false` makes any other slug a 404;
    - `generateMetadata` and the page each call `fetchWeaponPage(slug)`; a null result calls `notFound()`;
    - `dynamicRoutes` in `site-pages.ts` names the route's source, which `site-pages.test.ts` requires.
-3. The page renders the hero ("← All weapons", the badges, the name, type and rounds with its icon, the summary, key stats, the art), the section links (`SectionLinks`), then sections (`PageSection`):
+3. The page renders the hero ("← All weapons", the badges, the name, type and rounds with its icon, the summary, key stats, the art), then its sections as browser-style tabs (`PageTabs`, ADR 0029, as on the Descendant pages; the Descendant walkthrough explains it), with the same ids the section links had, so `/weapons/<slug>#core` from the Help fill in data page opens Core slots:
    - **Unique ability** first, when the weapon has one (T7SEN, 2026-10-16);
    - **ATK:** `StatLevels` from `src/features/game-data/` with `what="ATK"`;
    - **Stats:** `WeaponStats` (`src/features/weapons/weapon-stats.tsx`), cards from `groupStats` in `stat-groups.ts`;
-   - **Core slots** and **Research** (`ResearchRecipe`) when the weapon has them;
+   - **Core slots** when the weapon has them;
+   - **How to obtain** (`#obtain`, ADR 0032): an Ultimate's research recipe (`ResearchRecipe`), or, for the 12 Transcendent weapons (`transcendentSourceWeapons`), `TranscendentSources` (`src/features/weapons/transcendent-sources.tsx`): mission rewards, first clears, Karel's Mothership, Trials, Deslin's boxes, the daily boost and trading, as of Update 1.4.5, from `src/data/transcendent-weapon-sources.ts`;
    - **Builds:** a placeholder;
-   - "More weapons": `NeighborLinks`.
+   - after the tabs, "More weapons": `NeighborLinks`.
 
    The tier's name and color come from `rarityOf` (the chat registry's tier tags), resolved on the server.
 4. `src/app/weapons/page.tsx` (the index, static) fetches the summaries, resolves each tier's name and color, orders the types (A–Z) and rounds (known order first), and renders, inside `<Suspense>`, `WeaponIndexFromUrl` (client, `weapon-index.tsx`), with the unfiltered `WeaponIndex` as the fallback the static HTML holds:

@@ -3,6 +3,7 @@
 import { Search, X } from "lucide-react";
 import { useId, type MouseEvent } from "react";
 import { Input } from "@/components/ui/input";
+import { useChangedSince, useClosing } from "@/components/motion";
 import {
   Select,
   SelectContent,
@@ -12,6 +13,17 @@ import {
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { FilterRow, filterChipClass } from "@/features/game-data/filter-row";
+import {
+  batchesThrough,
+  cardBatch,
+  drawnCount,
+} from "@/features/game-data/card-batches";
+import {
+  CardItem,
+  DetailsRowItem,
+  MoreCards,
+  useCardBatches,
+} from "@/features/game-data/grid-items";
 import {
   urlSearchOf,
   useSearch,
@@ -96,6 +108,8 @@ export function ModuleIndex({
 }) {
   const ids = useId();
   const tierNames = options.tiers.map((tier) => tier.name);
+  // Cards a filter brings in fade in; the first render doesn't (ADR 0030).
+  const enter = useChangedSince(search);
   const filters = parseModuleFilters(search, {
     tiers: tierNames,
     sockets: options.sockets,
@@ -133,8 +147,17 @@ export function ModuleIndex({
     // The details held focus; it goes back to the card that opened them.
     document.getElementById(cardId(slug))?.focus({ preventScroll: true });
   };
-  const items = shown.map((entry) => (
-    <li key={entry.slug}>
+  // A batch of cards at first, and more as the page nears the last one drawn (T7SEN,
+  // like tfdhub.gg's modules page; ADR 0031): 573 at once made the page lag. New filters
+  // start again from one batch; the open card is always drawn.
+  const [batches, more] = useCardBatches(
+    urlSearchOf(moduleFiltersToSearch({ ...filters, open: null })),
+    batchesThrough(openIndex),
+  );
+  const drawn = shown.slice(0, drawnCount(batches, shown.length));
+  const items = drawn.map((entry, index) => (
+    // Cards a later batch draws fade in too.
+    <CardItem key={entry.slug} enter={enter || index >= cardBatch}>
       <ModuleCardLink
         entry={entry}
         tiers={tierNames}
@@ -145,30 +168,47 @@ export function ModuleIndex({
           set({ open: entry.slug === openCard?.slug ? null : entry.slug });
         }}
       />
-    </li>
+    </CardItem>
   ));
-  if (openCard !== null) {
+  // Closed, the details fold away before they leave (ADR 0030). A card a filter
+  // hid has nowhere to fold, so its details simply go.
+  const [detailsCard, closing, closed] = useClosing(
+    openCard,
+    (card) => card.slug,
+  );
+  const detailsIndex =
+    detailsCard === null
+      ? -1
+      : drawn.findIndex((entry) => entry.slug === detailsCard.slug);
+  if (closing && detailsIndex === -1) {
+    closed();
+  }
+  if (detailsCard !== null && detailsIndex !== -1) {
     // Keyed by module: moving with the grid's width keeps its state, and another module
     // starts afresh.
     items.splice(
-      rowEnd(openIndex, columns, shown.length) + 1,
+      rowEnd(detailsIndex, columns, drawn.length) + 1,
       0,
-      <li key={`details-${openCard.slug}`} className="col-span-full">
+      <DetailsRowItem
+        key={`details-${detailsCard.slug}`}
+        closing={closing}
+        onClosed={closed}
+      >
         <ModuleDetails
           id={detailsId}
-          card={openCard}
+          card={detailsCard}
           initialVariant={
             (
-              matchingVariants(openCard.variants, filters).at(0) ??
-              openCard.variants.at(0)
+              matchingVariants(detailsCard.variants, filters).at(0) ??
+              detailsCard.variants.at(0)
             )?.id ?? ""
           }
           colorOf={colorOf}
           onClose={() => {
-            closeDetails(openCard.slug);
+            closeDetails(detailsCard.slug);
           }}
         />
-      </li>,
+      </DetailsRowItem>,
     );
   }
 
@@ -389,13 +429,21 @@ export function ModuleIndex({
       </div>
 
       {shown.length === 0 ? (
-        <p className="rounded-2xl border border-dashed bg-card/40 p-8 text-center text-muted-foreground">
+        <p className="rounded-2xl border border-dashed bg-card/40 p-8 text-center text-muted-foreground duration-300 motion-safe:animate-in motion-safe:fade-in">
           No module matches these filters.
         </p>
       ) : (
-        <ul aria-label="Modules" className={gridClass}>
-          {items}
-        </ul>
+        <>
+          <ul aria-label="Modules" className={gridClass}>
+            {items}
+          </ul>
+          <MoreCards
+            drawn={drawn.length}
+            total={shown.length}
+            noun="modules"
+            onMore={more}
+          />
+        </>
       )}
     </div>
   );

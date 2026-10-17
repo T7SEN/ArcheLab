@@ -38,7 +38,7 @@ export function SkillList({
           <li
             key={skill.name}
             data-changed={changed || undefined}
-            className={`grid grid-cols-[3.5rem_minmax(0,1fr)] gap-4 rounded-2xl border bg-card/60 p-4 transition-colors motion-reduce:transition-none sm:grid-cols-[4.5rem_minmax(0,1fr)] sm:p-5 ${passive ? "border-primary/40 lg:col-span-2" : ""}`}
+            className={`grid grid-cols-[3.5rem_minmax(0,1fr)] gap-4 rounded-2xl border bg-card/60 p-4 transition-[border-color,box-shadow] duration-300 motion-reduce:transition-none sm:grid-cols-[4.5rem_minmax(0,1fr)] sm:p-5 ${passive ? "border-primary/40 lg:col-span-2" : ""}`}
             style={
               changed
                 ? {
@@ -102,7 +102,7 @@ export function SkillList({
               </div>
               {changed ? (
                 <div
-                  className="mt-1 grid gap-1 rounded-xl border px-3 py-2 text-sm"
+                  className="mt-1 grid gap-1 rounded-xl border px-3 py-2 text-sm duration-300 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-1"
                   style={{
                     borderColor: `color-mix(in srgb, ${change.hex} 45%, transparent)`,
                     backgroundColor: `color-mix(in srgb, ${change.hex} 8%, transparent)`,

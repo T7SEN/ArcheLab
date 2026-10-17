@@ -49,9 +49,12 @@ export function StatLevels({
             big number is for the eye only: in the name it was read twice. */}
         <label htmlFor={sliderId} className="flex items-baseline gap-2">
           <span className="text-sm text-muted-foreground">Level</span>
+          {/* Each new number fades up from dim (ADR 0030); keyed by value, so a
+              number that holds stays still. */}
           <span
+            key={level}
             aria-hidden="true"
-            className="min-w-[2ch] font-display text-4xl font-semibold text-primary tabular-nums"
+            className="min-w-[2ch] font-display text-4xl font-semibold text-primary tabular-nums duration-150 motion-safe:animate-in motion-safe:fade-in-40"
           >
             {level}
           </span>
@@ -99,7 +102,10 @@ export function StatLevels({
                 <span className="text-sm text-muted-foreground">
                   {stat.name}
                 </span>
-                <span className="font-display text-2xl font-semibold tabular-nums">
+                <span
+                  key={value}
+                  className="font-display text-2xl font-semibold tabular-nums duration-150 motion-safe:animate-in motion-safe:fade-in-40"
+                >
                   {numberFormat.format(value)}
                 </span>
               </div>
