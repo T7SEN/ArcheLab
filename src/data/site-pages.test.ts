@@ -101,6 +101,8 @@ describe("navbarEntries", () => {
       [
         "Database",
         [
+          // The database's own page leads its menu (ADR 0034).
+          "Database",
           "Descendants",
           "Weapons",
           "Modules",
@@ -109,6 +111,14 @@ describe("navbarEntries", () => {
         ],
       ],
     ]);
+  });
+
+  it("makes the page named as its group the page the group's button opens", () => {
+    const database = navbarEntries().find((entry) => "group" in entry);
+    expect(database !== undefined && "group" in database).toBe(true);
+    if (database !== undefined && "group" in database) {
+      expect(database.home?.href).toBe("/database");
+    }
   });
 
   it("gives a group the place of its first page, and keeps every page once", () => {

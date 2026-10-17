@@ -4,10 +4,10 @@ import { expect, test, type Page } from "@playwright/test";
 // history updates in 10 seconds and Firefox ignores them past its limit, which once froze
 // the search box, so this spec runs in Chromium, Firefox and WebKit.
 
-/** Opens the navbar's Database menu (ADR 0027) and clicks one of its links. */
+/** Opens the navbar's Database menu on hover (ADR 0034) and clicks one of its links. */
 async function clickDatabaseLink(page: Page, name: string): Promise<void> {
   const nav = page.getByRole("navigation", { name: "Main" });
-  await nav.getByRole("button", { name: "Database" }).click();
+  await nav.getByRole("link", { name: "Database", exact: true }).hover();
   await nav.getByRole("link", { name, exact: true }).click();
 }
 

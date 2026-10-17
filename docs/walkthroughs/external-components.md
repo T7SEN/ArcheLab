@@ -17,11 +17,13 @@
 
 ## The navbar's Database menu
 
-1. `src/data/site-pages.ts`: the database pages carry `group: "Database"`. `navbarEntries()` returns a page's own entry, or one group entry, at its first page's place, holding the group's pages in order.
-2. `src/components/site-nav.tsx` maps entries to PillNav items: a link, or a `PillNavGroup` whose links carry their page icons.
+1. `src/data/site-pages.ts`: the database pages carry `group: "Database"`. `navbarEntries()` returns a page's own entry, or one group entry, at its first page's place, holding the group's pages in order. The page named as its group, `/database`, is also the entry's `home` (ADR 0034).
+2. `src/components/site-nav.tsx` maps entries to PillNav items: a link, or a `PillNavGroup` whose links carry their page icons, with the home's `href`.
 3. `src/components/react-bits/pill-nav.tsx`:
-   - The bar renders a group as a button (`isGroup`), with the same faces, fill and dot as a link, plus a chevron that turns while open. `activeIndex` counts a group active when one of its links is the current page or section, and the button then takes `aria-current="true"`.
-   - `toggleMenu` stores the open group's index, the menu's left edge (centered under the button, 16px inside the screen) and the page it opened on. `shownMenu` is that state only while it is the same page and the bar is unfolded, so moving to another page closes the menu with no effect.
+   - The bar renders a group with an `href` as a link to that page (ADR 0034), and one without as a button (`isGroup`), each with the same faces, fill and dot as a link, plus a chevron that turns while open. `activeIndex` counts a group active when its page or one of its links is the current page or section; the link then takes `aria-current="page"` on its own page and `"true"` elsewhere, the button `"true"`.
+   - A group with an `href` opens its menu on hover and on keyboard focus (ADR 0034). `hoverMenu` opens it when a mouse or pen enters the item; `unhoverMenu`, on leaving the item or the menu, closes it `menuCloseDelay` (200ms) later, and entering either again cancels that, so the pointer can cross the 8px gap. Touch is left out: a tap opens the page. `focusMenu` opens it when the link gets `:focus-visible` focus, so Tab goes on into its links; `refocusRef` keeps Escape's return of focus from opening it again. Its rows leave out the group's own page.
+   - The menu's rows (`MENU_ROW`) copy the bar's fill (T7SEN, 2026-10-17): `ROW_FILL`, a circle rising from the bottom center, and `ROW_FACE` and `ROW_FACE_ALT`, the label rolling up as its twin rolls in, on `:hover` and `:focus-visible` through `group/row` variants. CSS runs them, since the bar's engine only drives the bar's slots. `fillSize` sets each row's `--pn-fill` from its size on pointer enter and focus (`fillReach`, the bar's own measure); the row's own `--pn-roll` matches its taller height. The current page's row isn't filled: `ROW_DOT`, the bar's 4px dot, sits after `ROW_FACE` in the row's flow, so it stays right of the label while the label rolls, and turns the ink color on hover or focus (T7SEN, 2026-10-17: a filled current row replayed the fill on hover). The folded menu's rows keep a plain hover color and a filled current row: they are for touch.
+   - `openMenu` (through `toggleMenu` for a button) stores the open group's index, the menu's left edge (centered under the button, 16px inside the screen) and the page it opened on. `shownMenu` is that state only while it is the same page and the bar is unfolded, so moving to another page closes the menu with no effect.
    - The menu (`DROPDOWN`) is the nav's child, right after the bar: glass inside the bar's glass would blur only the bar, and this place keeps Tab running from the button into the links.
    - An effect listens while the menu is open: a pointerdown outside the button and the menu closes it; Escape closes it and focuses the button. `leaveMenu` closes it when focus moves to anything else, but not on a blur to nothing, which a press elsewhere causes and the pointerdown handles. Folding closes it too (`evaluate`).
    - Folded, a group is a `HEADING` label over a nested list of its rows, named by the label.
@@ -34,7 +36,8 @@
 - **Sub-stats by slot.** The lists are the same for every tier and set of a slot, so the index carries 26 names, not 180 lists.
 - **Core slots as a count.** NEXON lists one core slot id per Ultimate piece, and the game shows two core slots for it (T7SEN, 2026-10-17); the details say "2 core slots". Which core types fit is not in the keyless data; T7SEN stated it (one Recovery and one Defense Augmentation core), and `core-type.json` gives everything else.
 - **Levels in data files.** About 1 KB compressed per card, loaded when its details open, as for modules and reactors.
-- **A disclosure, not a menu widget.** The Database button opens a list of links; ARIA's menu role is for application commands and expects arrow keys.
+- **A disclosure, not a menu widget.** The Database item shows a list of links; ARIA's menu role is for application commands and expects arrow keys. As a link, it states the list with `aria-expanded`, which ARIA 1.2 allows on links.
+- **Hover with a delay to close, focus for the keyboard.** T7SEN asked for the menu on hover and the item to open the database page (2026-10-17). A link can't also toggle on a press, so keyboard users get the menu on focus.
 
 ## What would break it
 
@@ -43,7 +46,8 @@
 - A stat id in `component-sub-stats.ts` that `stat.json` stops naming: it drops out of the list quietly (`componentSubStats`), and the count in the heading drops with it.
 - NEXON changing the core type ids in `component-core-slots.ts`: the Core slots section drops the missing type quietly, or disappears with both.
 - A link placed after the Database group in `sitePages`: Tab would reach it before the group's menu links.
-- Changing the menu's `w-60` without `menuWidth` in `toggleMenu`: the menu is no longer centered and can pass the screen's edge.
+- Changing the menu's `w-60` without `menuWidth` in `openMenu`: the menu is no longer centered and can pass the screen's edge.
+- Widening the gap under the bar past what 200ms of pointer travel covers: the menu closes on the way to it.
 
 ## Checked by
 

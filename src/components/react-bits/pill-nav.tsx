@@ -6,7 +6,8 @@
  * gone), Next.js links, a logo node instead of an image URL, a trailing pill (the
  * search button, ADR 0022), a section mark for pages under a link (ADR 0023), a fold
  * by CSS until the links are measured (`foldBelow`, ADR 0010), groups of links under
- * one button (ADR 0027), class merging with cn, lint fixes and named export (ADR 0009).
+ * one button (ADR 0027) that can open a page of its own and its menu on hover
+ * (ADR 0034), class merging with cn, lint fixes and named export (ADR 0009).
  * Copyright (c) 2026 David Haz. MIT + Commons Clause License Condition v1.0, see
  * LICENSE.md in this folder.
  */
@@ -43,12 +44,36 @@ export interface PillNavLink {
 export interface PillNavGroup {
   label: string;
   icon?: ReactNode;
+  /**
+   * The group's own page (ADR 0034): the button becomes a link to it, and its menu opens
+   * on hover and on keyboard focus instead of on a press. The menu leaves that page out;
+   * folded, it stays among the links.
+   */
+  href?: string;
+  prefetch?: false;
   links: readonly PillNavLink[];
 }
 
 export type PillNavItem = PillNavLink | PillNavGroup;
 
 const isGroup = (item: PillNavItem): item is PillNavGroup => "links" in item;
+
+/** The fill circle's size: rising from an item's bottom center, it reaches its top corners. */
+const fillReach = (element: HTMLElement) =>
+  Math.ceil(
+    2 * Math.sqrt((element.offsetWidth / 2) ** 2 + element.offsetHeight ** 2),
+  ) + 2;
+
+/** Sizes a menu row's fill as the pointer or focus reaches it. */
+const fillSize = (event: { currentTarget: HTMLElement }) => {
+  event.currentTarget.style.setProperty(
+    "--pn-fill",
+    `${String(fillReach(event.currentTarget))}px`,
+  );
+};
+
+/** How long a hover menu stays open once the pointer leaves it, so it can cross the gap. */
+const menuCloseDelay = 200;
 
 const keyOf = (item: PillNavItem) =>
   isGroup(item) ? `group:${item.label}` : item.href;
@@ -103,6 +128,8 @@ interface LinkProps {
   "aria-current"?: "page" | "true";
   "aria-label"?: string;
   tabIndex?: number;
+  onPointerEnter?: (event: ReactPointerEvent<HTMLElement>) => void;
+  onFocus?: (event: ReactFocusEvent<HTMLElement>) => void;
   onClick?: (event: ReactMouseEvent<HTMLElement>) => void;
 }
 
@@ -222,8 +249,26 @@ const LINE_BOTTOM =
 const PANEL =
   "absolute inset-x-0 top-0 z-[1] box-border rounded-[24px] px-[6px] pb-[6px] pt-[calc(var(--pn-h)_+_10px)] group-data-[layout=joined]/nav:pt-[calc(var(--pn-h)_+_4px)]";
 const MENU = "m-0 flex list-none flex-col gap-[2px] p-0";
-const ROW =
-  "box-border flex h-[calc(var(--pn-h)_+_2px)] w-full cursor-pointer items-center gap-[10px] rounded-[18px] border-0 px-[16px] text-left [background:none] [font-family:inherit] text-[length:calc(var(--pn-font)_+_1px)] leading-none font-medium text-[var(--pn-strong)] no-underline outline-none transition-[background-color] duration-200 ease-[ease] [&_svg]:h-[1.15em] [&_svg]:w-[1.15em] [&_svg]:flex-none hover:[background:var(--pn-row-hover)] aria-[current=page]:[background:var(--pn-pill)] aria-[current=page]:[box-shadow:var(--pn-pill-shadow)] aria-[current=page]:text-[var(--pn-pill-ink)] aria-[current=true]:[background:var(--pn-pill)] aria-[current=true]:[box-shadow:var(--pn-pill-shadow)] aria-[current=true]:text-[var(--pn-pill-ink)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--pn-ring)] motion-reduce:transition-none";
+const ROW_BASE =
+  "box-border flex h-[calc(var(--pn-h)_+_2px)] w-full cursor-pointer items-center gap-[10px] rounded-[18px] border-0 px-[16px] text-left [background:none] [font-family:inherit] text-[length:calc(var(--pn-font)_+_1px)] leading-none font-medium text-[var(--pn-strong)] no-underline outline-none transition-[background-color] duration-200 ease-[ease] [&_svg]:h-[1.15em] [&_svg]:w-[1.15em] [&_svg]:flex-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--pn-ring)] motion-reduce:transition-none";
+// A row of the folded menu, for touch first: a plain hover color, and the current page
+// filled.
+const ROW = `${ROW_BASE} hover:[background:var(--pn-row-hover)] aria-[current=page]:[background:var(--pn-pill)] aria-[current=page]:[box-shadow:var(--pn-pill-shadow)] aria-[current=page]:text-[var(--pn-pill-ink)] aria-[current=true]:[background:var(--pn-pill)] aria-[current=true]:[box-shadow:var(--pn-pill-shadow)] aria-[current=true]:text-[var(--pn-pill-ink)]`;
+// A row of a group's menu, with the bar's own fill (ADR 0034): on hover or keyboard
+// focus a circle rises from the bottom as the label rolls up and its twin rolls in.
+// CSS runs it, since the bar's engine only drives the bar; `fillSize` sizes the circle.
+const MENU_ROW = `${ROW_BASE} group/row relative isolate overflow-hidden [--pn-roll:calc((var(--pn-h)_+_2px)/2_+_0.7em)]`;
+const ROW_FACE =
+  "inline-flex items-center gap-[10px] transition-transform duration-[360ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/row:-translate-y-[var(--pn-roll)] group-hover/row:duration-500 group-focus-visible/row:-translate-y-[var(--pn-roll)] group-focus-visible/row:duration-500 motion-reduce:transition-none";
+const ROW_FACE_ALT =
+  "absolute inset-0 flex translate-y-[var(--pn-roll)] items-center gap-[10px] px-[16px] text-[var(--pn-pill-ink)] transition-transform duration-[360ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/row:translate-y-0 group-hover/row:duration-500 group-focus-visible/row:translate-y-0 group-focus-visible/row:duration-500 motion-reduce:transition-none";
+// The current page's mark in a group's menu: the bar's dot, right of the label instead
+// of under it (T7SEN, 2026-10-17). In the row's flow after the label, it stays put while
+// the label rolls, and turns the fill's ink color under it, as the bar's dot does.
+const ROW_DOT =
+  "pointer-events-none h-[4px] w-[4px] flex-none rounded-full [background:var(--pn-dot)] transition-[background-color] duration-300 ease-[ease] group-hover/row:[background:var(--pn-pill-ink)] group-focus-visible/row:[background:var(--pn-pill-ink)] motion-reduce:transition-none";
+const ROW_FILL =
+  "pointer-events-none absolute left-1/2 top-full z-[-1] h-[var(--pn-fill,200%)] w-[var(--pn-fill,200%)] scale-0 rounded-full [background:var(--pn-pill)] [margin:calc(var(--pn-fill,200%)/-2)_0_0_calc(var(--pn-fill,200%)/-2)] transition-transform duration-[360ms] ease-[cubic-bezier(0.4,0,0.2,1)] group-hover/row:scale-100 group-hover/row:duration-[550ms] group-hover/row:ease-[cubic-bezier(0.22,1,0.36,1)] group-focus-visible/row:scale-100 group-focus-visible/row:duration-[550ms] group-focus-visible/row:ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none";
 // A group's menu, under its button. It is the nav's child, not the bar's: glass inside
 // the bar's glass would blur only the bar.
 const DROPDOWN =
@@ -311,7 +356,10 @@ const PillNav = ({
   const measureListRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const slotRefs = useRef<(HTMLLIElement | null)[]>([]);
-  const groupRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const groupRefs = useRef<(HTMLElement | null)[]>([]);
+  const menuCloseRef = useRef<number | undefined>(undefined);
+  // Set while Escape gives focus back to a group's link, which would open its menu again.
+  const refocusRef = useRef(false);
   const engineRef = useRef<Engine | null>(null);
   const introRef = useRef(intro);
   const slideRef = useRef(false);
@@ -338,7 +386,8 @@ const PillNav = ({
   const activeIndex = controlled
     ? items.findIndex((item) =>
         isGroup(item)
-          ? item.links.some((link) => link.href === activeHref)
+          ? item.href === activeHref ||
+            item.links.some((link) => link.href === activeHref)
           : item.href === activeHref,
       )
     : selected;
@@ -423,11 +472,7 @@ const PillNav = ({
       slotRefs.current.forEach((slot, index) => {
         if (!slot) return;
         rects[index] = { left: slot.offsetLeft, width: slot.offsetWidth };
-        const reach =
-          Math.ceil(
-            2 * Math.sqrt((slot.offsetWidth / 2) ** 2 + slot.offsetHeight ** 2),
-          ) + 2;
-        slot.style.setProperty("--pn-fill", `${String(reach)}px`);
+        slot.style.setProperty("--pn-fill", `${String(fillReach(slot))}px`);
       });
     };
 
@@ -918,7 +963,9 @@ const PillNav = ({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       setMenu(null);
+      refocusRef.current = true;
       groupRefs.current[menuIndex]?.focus();
+      refocusRef.current = false;
     };
     document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
@@ -927,6 +974,13 @@ const PillNav = ({
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [menuIndex]);
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(menuCloseRef.current);
+    },
+    [],
+  );
 
   // One turn of the mark per hover, as in React Bits: not for touch, not while a turn
   // is still running, and never under reduced motion.
@@ -958,11 +1012,9 @@ const PillNav = ({
   // The menu is as wide as DROPDOWN's w-60, centered under its button and kept 16px
   // inside the screen.
   const menuWidth = 240;
-  const toggleMenu = (index: number) => {
-    if (menuIndex === index) {
-      setMenu(null);
-      return;
-    }
+  const openMenu = (index: number) => {
+    window.clearTimeout(menuCloseRef.current);
+    if (menuIndex === index) return;
     const slot = slotRefs.current[index];
     const root = rootRef.current;
     if (!slot || !root) return;
@@ -974,6 +1026,53 @@ const PillNav = ({
       window.innerWidth - 16 - menuWidth,
     );
     setMenu({ index, left: left - origin, at: activeHref });
+  };
+  const toggleMenu = (index: number) => {
+    if (menuIndex === index) {
+      setMenu(null);
+      return;
+    }
+    openMenu(index);
+  };
+
+  // A group with a page of its own opens its menu while a mouse or pen is over its link
+  // or the menu, and closes it a moment after the pointer leaves both (ADR 0034). Touch
+  // has no hover: a tap opens the page.
+  const hoverMenu = (
+    item: PillNavItem,
+    index: number,
+    event: ReactPointerEvent,
+  ) => {
+    if (
+      isGroup(item) &&
+      item.href !== undefined &&
+      event.pointerType !== "touch"
+    ) {
+      openMenu(index);
+    }
+  };
+  const unhoverMenu = (event: ReactPointerEvent) => {
+    if (event.pointerType === "touch" || menuIndex === null) return;
+    window.clearTimeout(menuCloseRef.current);
+    menuCloseRef.current = window.setTimeout(() => {
+      setMenu(null);
+    }, menuCloseDelay);
+  };
+  // Keyboard focus on such a link opens its menu too, so Tab reaches its links next.
+  const focusMenu = (
+    item: PillNavItem,
+    index: number,
+    event: ReactFocusEvent,
+  ) => {
+    if (
+      isGroup(item) &&
+      item.href !== undefined &&
+      !refocusRef.current &&
+      event.target === groupRefs.current[index] &&
+      event.target.matches(":focus-visible")
+    ) {
+      openMenu(index);
+    }
   };
 
   // Focus moving out of a group's button and menu closes the menu. A press elsewhere
@@ -1100,19 +1199,49 @@ const PillNav = ({
                     }
                     onPointerEnter={(event) => {
                       engineRef.current?.enter(index, event);
+                      hoverMenu(item, index, event);
                     }}
+                    onPointerLeave={unhoverMenu}
                     onPointerDown={(event) => {
                       engineRef.current?.press(event);
                     }}
                     onFocus={(event) => {
                       engineRef.current?.focus(index, event);
+                      focusMenu(item, index, event);
                     }}
                     onBlur={(event) => {
                       engineRef.current?.blur();
                       leaveMenu(index, event);
                     }}
                   >
-                    {isGroup(item) ? (
+                    {isGroup(item) && item.href !== undefined ? (
+                      // A link to the group's page that also shows whether its
+                      // menu is open (aria-expanded is valid on a link in ARIA 1.2;
+                      // ADR 0034). The page itself, or a section while one of its
+                      // links is current.
+                      <Link
+                        ref={(element) => {
+                          groupRefs.current[index] = element;
+                        }}
+                        href={item.href}
+                        prefetch={item.prefetch}
+                        className={cn(ITEM, "group/menu")}
+                        aria-expanded={menuIndex === index}
+                        aria-controls={menuIndex === index ? menuId : undefined}
+                        aria-current={
+                          index !== activeIndex
+                            ? undefined
+                            : item.href === activeHref
+                              ? activeCurrent
+                              : "true"
+                        }
+                        onClick={() => {
+                          setMenu(null);
+                        }}
+                      >
+                        {faces}
+                      </Link>
+                    ) : isGroup(item) ? (
                       // A disclosure button: its menu is a list of links, not a
                       // menu widget (ADR 0027). Marked as a section while one of
                       // its links is current.
@@ -1183,25 +1312,45 @@ const PillNav = ({
           onBlur={(event) => {
             leaveMenu(shownMenu.index, event);
           }}
+          onPointerEnter={(event) => {
+            if (event.pointerType !== "touch") {
+              window.clearTimeout(menuCloseRef.current);
+            }
+          }}
+          onPointerLeave={unhoverMenu}
         >
           <ul className={MENU}>
-            {menuGroup.links.map((item) => (
-              <li key={item.href}>
-                {link(
-                  item,
-                  {
-                    className: ROW,
-                    "aria-current":
-                      item.href === activeHref ? activeCurrent : undefined,
-                    onClick: (event) => {
-                      choose(item, shownMenu.index, event);
-                      setMenu(null);
+            {/* The group's own page is its button's link, not a row here. */}
+            {menuGroup.links
+              .filter((item) => item.href !== menuGroup.href)
+              .map((item) => (
+                <li key={item.href}>
+                  {link(
+                    item,
+                    {
+                      className: MENU_ROW,
+                      "aria-current":
+                        item.href === activeHref ? activeCurrent : undefined,
+                      onPointerEnter: fillSize,
+                      onFocus: fillSize,
+                      onClick: (event) => {
+                        choose(item, shownMenu.index, event);
+                        setMenu(null);
+                      },
                     },
-                  },
-                  face(item),
-                )}
-              </li>
-            ))}
+                    <>
+                      <span className={ROW_FILL} aria-hidden="true" />
+                      <span className={ROW_FACE}>{face(item)}</span>
+                      {item.href === activeHref && (
+                        <span className={ROW_DOT} aria-hidden="true" />
+                      )}
+                      <span className={ROW_FACE_ALT} aria-hidden="true">
+                        {face(item)}
+                      </span>
+                    </>,
+                  )}
+                </li>
+              ))}
           </ul>
           <span className={RIM} />
         </div>

@@ -36,19 +36,27 @@ for (const current of navbarPages) {
   }) => {
     await page.goto(current.href);
     const nav = page.getByRole("navigation", { name: "Main" });
-    const database = nav.getByRole("button", { name: "Database" });
+    const database = nav.getByRole("link", { name: "Database", exact: true });
 
-    // The game's items are in the Database menu (ADR 0027), marked while one is the
-    // page shown.
+    // The game's items are in the Database menu (ADR 0027), whose item opens the
+    // database page (ADR 0034): marked as the page there, as the section while one of
+    // the items is the page shown.
     await measured(nav);
+    await expect(database).toHaveAttribute("href", "/database");
     if (current.group === undefined) {
       await expect(database).not.toHaveAttribute("aria-current");
     } else {
-      await expect(database).toHaveAttribute("aria-current", "true");
+      await expect(database).toHaveAttribute(
+        "aria-current",
+        current.href === "/database" ? "page" : "true",
+      );
     }
-    await database.click();
+    await database.hover();
     await expect(database).toHaveAttribute("aria-expanded", "true");
     for (const { href, label } of navbarPages) {
+      if (href === "/database") {
+        continue;
+      }
       const link = nav.getByRole("link", { name: label, exact: true });
       await expect(link).toHaveAttribute("href", href);
       if (href === current.href) {
@@ -69,14 +77,14 @@ for (const [path, section] of [
   }) => {
     await page.goto(path);
     const nav = page.getByRole("navigation", { name: "Main" });
-    const database = nav.getByRole("button", { name: "Database" });
+    const database = nav.getByRole("link", { name: "Database", exact: true });
     await measured(nav);
     await expect(database).toHaveAttribute("aria-current", "true");
-    await database.click();
+    await database.hover();
     const current = nav.getByRole("link", { name: section, exact: true });
     await expect(current).toHaveAttribute("aria-current", "true");
     for (const { label } of navbarPages) {
-      if (label !== section) {
+      if (label !== section && label !== "Database") {
         await expect(
           nav.getByRole("link", { name: label, exact: true }),
         ).not.toHaveAttribute("aria-current");
@@ -200,34 +208,51 @@ test("the navbar's first paint folds and lays out as PillNav measures it", async
   expect(await layouts(false)).toEqual(await layouts(true));
 });
 
-test("the Database menu links the game's items and closes as a menu should", async ({
+test("the Database item opens its page, and its menu on hover or keyboard focus", async ({
   page,
 }) => {
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Main" });
-  const database = nav.getByRole("button", { name: "Database" });
+  const database = nav.getByRole("link", { name: "Database", exact: true });
   const reactors = nav.getByRole("link", { name: "Reactors", exact: true });
   await measured(nav);
   await expect(reactors).toHaveCount(0);
 
-  // Escape closes it and gives focus back to its button.
-  await database.click();
+  // Hover opens it (ADR 0034); it stays open while the pointer crosses into it, and
+  // closes a moment after the pointer leaves both. Its rows leave out the database
+  // page, which the item itself opens.
+  await database.hover();
+  await expect(database).toHaveAttribute("aria-expanded", "true");
+  await reactors.hover();
+  await page.waitForTimeout(400);
+  await expect(reactors).toBeVisible();
+  await expect(
+    nav.getByRole("link", { name: "Database", exact: true }),
+  ).toHaveCount(1);
+  await page.mouse.move(8, 600);
+  await expect(reactors).toHaveCount(0);
+
+  // Escape closes it and gives focus to the item, without opening it again.
+  await database.hover();
   await expect(reactors).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(reactors).toHaveCount(0);
   await expect(database).toBeFocused();
   await expect(database).toHaveAttribute("aria-expanded", "false");
+  await page.mouse.move(8, 600);
 
   // A press outside closes it: the page's left edge, clear of the menu, which covers
   // the middle of the hero.
-  await database.click();
+  await database.hover();
   await expect(reactors).toBeVisible();
   await page.mouse.click(8, 600);
   await expect(reactors).toHaveCount(0);
 
-  // Tab runs from its button through its links; leaving them closes it.
-  await database.click();
-  await database.focus();
+  // Tab onto the item opens it, then runs through its links; leaving them closes it.
+  await nav.getByRole("link", { name: "Chat builder", exact: true }).focus();
+  await page.keyboard.press("Tab");
+  await expect(database).toBeFocused();
+  await expect(database).toHaveAttribute("aria-expanded", "true");
   for (let step = 0; step < 5; step++) {
     await page.keyboard.press("Tab");
   }
@@ -238,11 +263,17 @@ test("the Database menu links the game's items and closes as a menu should", asy
   await expect(reactors).toHaveCount(0);
 
   // A link opens its page and closes the menu.
-  await database.click();
+  await database.hover();
   await reactors.click();
   await expect(page).toHaveURL("/reactors");
   await expect(reactors).toHaveCount(0);
   await expect(database).toHaveAttribute("aria-current", "true");
+
+  // A click on the item opens the database page.
+  await page.mouse.move(8, 600);
+  await database.click();
+  await expect(page).toHaveURL("/database");
+  await expect(database).toHaveAttribute("aria-current", "page");
 });
 
 test("on a narrow screen the navbar links fold into a menu", async ({
@@ -273,6 +304,7 @@ test("on a narrow screen the navbar links fold into a menu", async ({
   await nav.getByRole("button", { name: "Open menu" }).click();
   const database = nav.getByRole("list", { name: "Database" });
   await expect(database.getByRole("link")).toHaveText([
+    "Database",
     "Descendants",
     "Weapons",
     "Modules",

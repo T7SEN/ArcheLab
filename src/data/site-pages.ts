@@ -1,5 +1,6 @@
 import {
   CircuitBoard,
+  Database,
   HandHelping,
   Cpu,
   Crosshair,
@@ -43,6 +44,10 @@ export const sitePages: readonly SitePage[] = [
   // The chat tool's own icon (`tools.ts`).
   { href: "/tools/chat", label: "Chat builder", icon: MessageSquareText },
   // The game's items, under the navbar's Database button (ADR 0027).
+  // The database's own page: a search over every item and a card per category. Named
+  // as its group, it is the page the Database button opens (T7SEN, 2026-10-17;
+  // ADR 0034).
+  { href: "/database", label: "Database", icon: Database, group: "Database" },
   // Every Descendant, with filters (ADR 0023); each one's page is under it.
   {
     href: "/descendants",
@@ -82,11 +87,17 @@ export const sitePages: readonly SitePage[] = [
 /** A navbar entry: a page's link, or a group's button over its pages' links. */
 export type NavbarEntry =
   | { readonly page: SitePage }
-  | { readonly group: string; readonly pages: readonly SitePage[] };
+  | {
+      readonly group: string;
+      readonly pages: readonly SitePage[];
+      /** The group's own page, named as the group, which its button opens. */
+      readonly home?: SitePage;
+    };
 
 /**
  * The navbar's entries in `sitePages` order: a page with a group joins its group's
- * button, which takes the place of the group's first page (ADR 0027).
+ * button, which takes the place of the group's first page (ADR 0027). A page named as
+ * its group is the group's `home` (ADR 0034), and stays among its pages.
  */
 export function navbarEntries(
   pages: readonly SitePage[] = sitePages,
@@ -110,7 +121,13 @@ export function navbarEntries(
       members.push(page);
     }
   }
-  return entries;
+  return entries.map((entry) => {
+    if ("page" in entry) {
+      return entry;
+    }
+    const home = entry.pages.find((page) => page.label === entry.group);
+    return home === undefined ? entry : { ...entry, home };
+  });
 }
 
 /**
