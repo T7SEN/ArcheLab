@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mutantCells } from "@/data/mutant-cells";
+import { mutantCellNotes } from "@/data/mutant-cells";
 import {
   defaultMutantCellFilters,
   filterMutantCells,
@@ -8,7 +8,13 @@ import {
   parseMutantCellFilters,
 } from "./mutant-cell-filters";
 
-const cards = mutantCellCards(mutantCells);
+// The notes' cells stand in for NEXON's, which have the same names, sockets and
+// numbers (ADR 0040), each with a made-up icon.
+const icon = (name: string) =>
+  `https://open.api.nexon.com/static/tfd/img/${name.length.toString(16).padStart(32, "0")}`;
+const cards = mutantCellCards(
+  mutantCellNotes.map((cell) => ({ ...cell, imageUrl: icon(cell.name) })),
+);
 const slugs = cards.map((card) => card.slug);
 const names = (search: string) =>
   filterMutantCells(cards, parseMutantCellFilters(search, slugs)).map(
@@ -21,11 +27,8 @@ describe("the Mutant Cells index's cards", () => {
       name: "Activate Thrust",
       slug: "activate-thrust",
     });
-    for (const card of cards) {
-      expect(card.imageUrl).toMatch(
-        /^https:\/\/open\.api\.nexon\.com\/static\/tfd\/img\/[0-9a-f]{32}$/,
-      );
-    }
+    // Each keeps its icon.
+    expect(cards.at(0)?.imageUrl).toBe(icon("Activate Thrust"));
     expect(cards.at(-1)?.name).toBe("Venomous Spike");
     const sockets = cards.map((card) => card.socket);
     expect(sockets.indexOf("Cerulean")).toBe(12);

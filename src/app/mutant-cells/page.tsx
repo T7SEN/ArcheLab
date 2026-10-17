@@ -4,12 +4,12 @@ import { Suspense } from "react";
 import { HeroBackdrop } from "@/components/hero-backdrop";
 import { ShinyText } from "@/components/react-bits/shiny-text";
 import { Badge } from "@/components/ui/badge";
-import { mutantCells } from "@/data/mutant-cells";
 import { mutantCellCards } from "@/features/mutant-cells/mutant-cell-filters";
 import {
   MutantCellIndex,
   MutantCellIndexFromUrl,
 } from "@/features/mutant-cells/mutant-cell-index";
+import { fetchMutantCells } from "@/lib/nexon/mutant-cell-index";
 import { pageMetadata } from "@/lib/site-metadata";
 import { palette } from "@/styles/tokens";
 
@@ -20,9 +20,10 @@ export const metadata: Metadata = pageMetadata({
     "Every Mutant Cell of The First Descendant, with its socket, what sets it off and its effects, and a socket filter.",
 });
 
-export default function MutantCellsPage() {
-  // The cells are the site's own data, from the update notes (ADR 0038).
-  const entries = mutantCellCards(mutantCells);
+export default async function MutantCellsPage() {
+  // NEXON's cells, fetched once while the page is prerendered and refreshed by the
+  // weekly deploy; the build checks them against the update notes (ADR 0040).
+  const entries = mutantCellCards(await fetchMutantCells());
 
   return (
     <>
@@ -45,7 +46,9 @@ export default function MutantCellsPage() {
             </ShinyText>
           </h1>
           <p className="mt-3 max-w-2xl hero-text">
-            {`All ${String(entries.length)} Mutant Cells a Mutant Cell Slot can take, by socket. Open one for its effects and numbers.`}
+            {entries.length === 0
+              ? "The Mutant Cells couldn't be loaded for this build. They come back with the next one."
+              : `All ${String(entries.length)} Mutant Cells a Mutant Cell Slot can take, by socket. Open one for its effects and numbers.`}
           </p>
         </div>
       </section>

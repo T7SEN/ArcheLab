@@ -1,5 +1,4 @@
 import {
-  mutantCellImageUrl,
   mutantCellSlug,
   mutantCellSockets,
   type MutantCell,
@@ -12,10 +11,15 @@ import {
  * of the URL.
  */
 
-/** A card on the index: a cell with its address and icon. */
-export interface MutantCellCard extends MutantCell {
-  readonly slug: string;
+/** A cell as NEXON lists it, with its icon (ADR 0040). */
+export interface MutantCellWithIcon extends MutantCell {
+  /** Null if NEXON lists none; the card shows its socket's icon. */
   readonly imageUrl: string | null;
+}
+
+/** A card on the index: a cell with its address and icon. */
+export interface MutantCellCard extends MutantCellWithIcon {
+  readonly slug: string;
 }
 
 /**
@@ -27,14 +31,10 @@ export const mutantCellBatch = 20;
 
 /** Every cell as a card, by socket, then A–Z (as tfdhub.gg lists them). */
 export function mutantCellCards(
-  cells: readonly MutantCell[],
+  cells: readonly MutantCellWithIcon[],
 ): MutantCellCard[] {
   return cells
-    .map((cell) => ({
-      ...cell,
-      slug: mutantCellSlug(cell.name),
-      imageUrl: mutantCellImageUrl(cell.name),
-    }))
+    .map((cell) => ({ ...cell, slug: mutantCellSlug(cell.name) }))
     .sort(
       (a, b) =>
         mutantCellSockets.indexOf(a.socket) -

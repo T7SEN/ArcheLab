@@ -32,6 +32,10 @@ export const metadataSets = [
   // Answered keyless on 2026-10-17: 2,123 cosmetics, with art, tiers and who can use
   // them (ADR 0039).
   "customizing-item",
+  // In NEXON's documented list, read on 2026-10-17: the 64 Mutant Cells with icons and
+  // effects, and their sockets' names (ADR 0040).
+  "node-item",
+  "node-socket-type",
 ] as const;
 
 export type MetadataSet = (typeof metadataSets)[number];

@@ -1,7 +1,9 @@
 /**
- * Every Mutant Cell, from the game's official update notes (T7SEN, 2026-10-17; ADR 0038):
- * NEXON's metadata has no Mutant Cell set, only the Arche Tuning Board's five "Mutant
- * Cell Slot" nodes. Sources, read on 2026-10-17 (research_notes/TFD Mutant Cells/):
+ * Mutant Cells as the game's official update notes added them: the cross-check for
+ * NEXON's `node-item.json`, which the Mutant Cells page reads (T7SEN, 2026-10-17; ADR
+ * 0040). Each build compares NEXON's cells with these and warns about a cell missing on
+ * either side, a different socket or different numbers (`crossCheckMutantCells`).
+ * Sources, read on 2026-10-17 (research_notes/TFD Mutant Cells/):
  * - Update 1.2.18 (https://tfd.nexon.com/en/news/2907889): the first 27.
  * - Update 1.3.3 (https://tfd.nexon.com/en/news/3126231): 8.
  * - Update 1.3.6 (https://tfd.nexon.com/en/news/3164584): 9.
@@ -9,11 +11,11 @@
  * - Update 1.3.12 (https://tfd.nexon.com/en/news/3295754): Corrosive Overshield.
  *
  * Since Update 1.3.25 a slot takes a Mutant Cell effect picked from this list instead of
- * a Mutant Cell item. tfdhub.gg lists the same 64 with the same sockets and numbers, so
- * none changed after its notes and none is provisional (T7SEN: a changed one would take
- * tfdhub's numbers, marked provisional). Names, sockets, descriptions and numbers are
- * as the notes write them; `[x]` and `[+]` are the game's own marks, and a positive
- * number drops the "+" some notes give it.
+ * a Mutant Cell item. On 2026-10-17 NEXON's set had the same 64 cells, names, sockets
+ * and numbers, worded differently in places ("Missing HP Ratio" where the notes say
+ * "Consumed HP Ratio", "[+]" marks the notes leave off); the page shows NEXON's words.
+ * Names, sockets, descriptions and numbers here are as the notes write them; `[x]` and
+ * `[+]` are the game's own marks, and a positive number drops the "+" some notes give it.
  */
 
 /** A Mutant Cell Slot's Socket Type: a cell fits a slot of its own type. */
@@ -35,8 +37,8 @@ export interface MutantCellStat {
 /** One effect a cell grants or inflicts, with its numbers. */
 export interface MutantCellEffect {
   /**
-   * The effect's name when a cell has two (Singular Tuning, Fusion Tuning), or the
-   * condition the notes head its numbers with; null when the cell's name says it.
+   * The heading over its numbers: the effect's name (Singular Tuning), NEXON's "Basic
+   * Info", or the condition the notes head them with; null when the cell's name says it.
    */
   readonly title: string | null;
   readonly stats: readonly MutantCellStat[];
@@ -49,9 +51,13 @@ export type MutantCellUpdate =
 export interface MutantCell {
   readonly name: string;
   readonly socket: MutantCellSocket;
-  /** What sets it off, as the notes word it. */
+  /** What sets it off; NEXON's has line breaks in some. */
   readonly description: string;
   readonly effects: readonly MutantCellEffect[];
+}
+
+/** A cell as the notes added it. */
+export interface MutantCellNote extends MutantCell {
   readonly added: MutantCellUpdate;
 }
 
@@ -87,7 +93,7 @@ function tuning(
   first: keyof typeof tunings,
   second: keyof typeof tunings,
   socket: MutantCellSocket,
-): MutantCell {
+): MutantCellNote {
   return {
     name: `${first} ${second} Tuning`,
     socket,
@@ -98,7 +104,10 @@ function tuning(
 }
 
 /** Update 1.2.18: more Skill Power against a target with a status. */
-function vulnerability(status: string, socket: MutantCellSocket): MutantCell {
+function vulnerability(
+  status: string,
+  socket: MutantCellSocket,
+): MutantCellNote {
   return {
     name: `${status} Vulnerability`,
     socket,
@@ -116,7 +125,7 @@ function cohesion(
   attribute: string,
   power: string,
   socket: MutantCellSocket,
-): MutantCell {
+): MutantCellNote {
   const name = `${attribute} Cohesion`;
   return {
     name,
@@ -138,7 +147,7 @@ function adaptation(
   attribute: string,
   resistance: string,
   socket: MutantCellSocket,
-): MutantCell {
+): MutantCellNote {
   const name = `${attribute} Element Adaptation`;
   return {
     name,
@@ -159,7 +168,7 @@ function chainCatalyst(
   name: string,
   attribute: string,
   socket: MutantCellSocket,
-): MutantCell {
+): MutantCellNote {
   return {
     name,
     socket,
@@ -178,7 +187,10 @@ function chainCatalyst(
 }
 
 /** Update 1.3.6: a debuffed target deals less damage. */
-function impairment(attribute: string, socket: MutantCellSocket): MutantCell {
+function impairment(
+  attribute: string,
+  socket: MutantCellSocket,
+): MutantCellNote {
   const name = `${attribute} Impairment`;
   return {
     name,
@@ -198,7 +210,10 @@ function impairment(attribute: string, socket: MutantCellSocket): MutantCell {
 }
 
 /** Update 1.3.6: a skill type's Skill Power Boost Ratio grows with the HP spent. */
-function damageConversion(skill: string, socket: MutantCellSocket): MutantCell {
+function damageConversion(
+  skill: string,
+  socket: MutantCellSocket,
+): MutantCellNote {
   return {
     name: `${skill} Damage Conversion`,
     socket,
@@ -218,7 +233,7 @@ const neutralization = (debuff: string) =>
   `On Skill Attack upon enemies with max HP, inflicts ${debuff}.`;
 
 /** Every Mutant Cell, in the order the notes add them. */
-export const mutantCells: readonly MutantCell[] = [
+export const mutantCellNotes: readonly MutantCellNote[] = [
   // Update 1.2.18
   {
     name: "Attack Neutralization",
@@ -631,84 +646,4 @@ export function mutantCellSlug(name: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
-}
-
-/**
- * Each cell's icon on NEXON's image host, by name: the art tfdhub.gg shows for it, used at
- * T7SEN's request (2026-10-17; ADR 0038). NEXON's keyless sets don't list these images,
- * so the match is tfdhub's. Linked, never copied into the repository; each is 144 by 144.
- */
-export const mutantCellArt: Readonly<Partial<Record<string, string>>> = {
-  "Activate Thrust": "be5e98a98016864cc08c475b1e4d85ce",
-  "Arche Chain Catalyst": "10c2ae9bdc92d8b09ead809c6b935f62",
-  "Arche Concentration": "84d48d03bfd85dc9804684ce54adaad3",
-  "Arche Efficiency Enhancement": "eb9453c277ab96f58a1f7ae96f2e6c1c",
-  "Arche Maximization": "595e319e852d5f42c5058b94b9d51ea9",
-  "Arche Overheat Shield": "f6c9dffade975afd374059d5d8bbdba8",
-  "Arche Reload": "4079f2d3b5405f3f06be4b9a333fe280",
-  "Attack Neutralization": "691e9aafd9a809d552b8daf68dbfeafa",
-  "Battlesuit Efficiency Enhancement": "ea2c81421ad7a223d9db07c6c843e67b",
-  "Burn Vulnerability": "2de09723b9d6e587b36fa4f19deaeb27",
-  "Chill Chain Catalyst": "07d33ef90178e592d4480327f3ea0f86",
-  "Chill Cohesion": "4b972082dfb9fe2da272024293b99337",
-  "Chill Element Adaptation": "a76a0ddfc9009685de7fc4a5c592ee7f",
-  "Chill Focus Aiming": "3f88336b401c1b4132acf8c34e2cf714",
-  "Chill Impairment": "883f34c2d0d66e13991fc4baae7145d2",
-  "Corrosive Overshield": "0131c4a65ce9d0a2a9f3952654e886f3",
-  "Defense Neutralization": "fbe440ae8eeeb8b6304e612e3be4d390",
-  "Dimension Damage Conversion": "a24d8152b9eaa1ace1920045f8940ebc",
-  "Electric Chain Catalyst": "80b498572206014c797354be53ec8946",
-  "Electric Cohesion": "35cd13677dea809bd1856dcef8d13459",
-  "Electric Element Adaptation": "d5e4fb7dabc3cead1c6ee1f0c3677304",
-  "Electric Impairment": "17d14309e30351c66b9bd4095f88bd20",
-  "Electric Release": "9d2c9a46d00f496f19be7443d6ad954b",
-  "Electrocution Vulnerability": "0c154c6bcd96528e17ea5965a0fcd542",
-  "Exploding Gunpowder Cache": "90bb06e0ffefcc68776d80b967ef6376",
-  "Fiery Forced Rally": "98e97c78f74de60fa1b28dd3f91bf385",
-  "Fight Song": "72534b3fa18abf36cc2ffb8ed23ba933",
-  "Final Preparations": "6ddc0c1319a4851533041ba1e170b74a",
-  "Fire Chain Catalyst": "d13075e264025f40c36d58f52ab1e9a7",
-  "Fire Cohesion": "b8745b1f1457e53d593a257aaf7afe81",
-  "Fire Element Adaptation": "984e882f423573c929a77607ec651bfc",
-  "Fire Impairment": "039a776871cabd5d2c0c3b464cf9deae",
-  "Frostbite Vulnerability": "f5f5f336e01b83003735b35d4e6f8b94",
-  "Fusion Damage Conversion": "18ee0af5b75873cde1333416aae49e43",
-  "Fusion Dimension Tuning": "48c8588fd41a686394317841c2fac3f1",
-  "Fusion Tech Tuning": "a4b2e2a203936919b1b4b576990db3e3",
-  "Fusion Zone": "cdbb462e50ab53730dc35a74905d2043",
-  "Induced Arche Eruption": "90dc1f6fa719ac77d98d8cece4b74e27",
-  "Inflict Piercing Wound": "97ca63930ae102df7e60c63e299463ef",
-  "Maximize Piercing Wound": "7c8ad20a3e48d534918203a65599f374",
-  "Mixed Enhancer Healing": "8bab291fb2eeec38ca78a74458db0a5a",
-  "Non-Attribute Cohesion": "143d1bba29c148db11388d4ac223aaa8",
-  "Non-Attribute Impairment": "bb16ec3b4be4253f648afb32112d5a16",
-  "Poison Vulnerability": "2c5504e1ecb37e43964255b69a4d80c5",
-  "Putrid Zone": "c4d0c0b9efbad60acdc58a178d1042c6",
-  "Rapid Supply Support": "4d98a2ccb51457b7c04065d5dcee2be2",
-  "Recover MP": "c9cdb28151b205dff79535ed68cf6a86",
-  "Recovery Amplification Wave": "4cd1c947d80a4f1382555c0eef7e1218",
-  "Reinforced Barrier Tactics": "15c8ba941a199806939e324fb264ac18",
-  "Shield Enhanced Arche": "8af9c3e30a7eede092c496c6a869fc8e",
-  "Singular Damage Conversion": "f8244b0e889b0b361408ee0320388cf0",
-  "Singular Dimension Tuning": "ca4aad17595845e2bdff9bc36fc43b1c",
-  "Singular Fusion Tuning": "fd4902491f1c082ffc5a8a71071599ba",
-  "Singular Tech Tuning": "082c419d1435e9232f66da8b3225c130",
-  "Steady Hands": "d352e5a0bf68dc246d716a07c62c7d46",
-  "Survival Instinct": "d68891c0c9c639a2306d368f5b679256",
-  "Tech Damage Conversion": "c76554a304edcacc2bd24c1fd231b1af",
-  "Tech Dimension Tuning": "b42b937aa72ca5c53f834a26368cc65c",
-  "Toxic Element Adaptation": "e6e99fda3dd2b5c76f855bd55dab90a8",
-  "Toxic Impairment": "50010f197695ed98413cc012d8850e51",
-  "Toxin Chain Catalyst": "cb7e1af9ecface5b63f3fe9edf698ccd",
-  "Toxin Cohesion": "a0144bdb3736c806fcb5b32d70b88e29",
-  "Venomous Spike": "65435fde1782e89871b6cfe45c043410",
-  "Wide Range Battery": "546869498bcd40ae459616e9d5c91049",
-};
-
-const imageHost = "https://open.api.nexon.com/static/tfd/img/";
-
-/** A cell's icon, or null for a cell with none listed. */
-export function mutantCellImageUrl(name: string): string | null {
-  const id = mutantCellArt[name];
-  return id === undefined ? null : imageHost + id;
 }

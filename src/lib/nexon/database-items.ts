@@ -2,11 +2,7 @@ import "server-only";
 import { cosmeticTypeName } from "@/data/cosmetics";
 import { fellowArt, fellowPassiveOf, fellowPassives } from "@/data/fellows";
 import { socketIconUrl } from "@/data/module-icons";
-import {
-  mutantCellImageUrl,
-  mutantCells,
-  mutantCellSlug,
-} from "@/data/mutant-cells";
+import { mutantCellSlug } from "@/data/mutant-cells";
 import { chatRegistry } from "@/features/chat/ui/chat-registry";
 import { vehicleKind } from "@/features/vehicles/vehicle-card";
 import {
@@ -18,6 +14,7 @@ import { rarityOf } from "@/features/game-data/rarity";
 import { versionTier } from "@/features/modules/module-tiers";
 import { fetchComponentGroups } from "@/lib/nexon/component-index";
 import { fetchCosmetics } from "@/lib/nexon/cosmetic-index";
+import { fetchMutantCells } from "@/lib/nexon/mutant-cell-index";
 import { fetchDescendantSummaries } from "@/lib/nexon/descendant-page";
 import { fetchFellows } from "@/lib/nexon/fellow-index";
 import { fetchVehicles } from "@/lib/nexon/vehicle-index";
@@ -47,6 +44,7 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     components,
     fellows,
     vehicles,
+    mutantCells,
     cosmetics,
   ] = await Promise.all([
     fetchDescendantSummaries(),
@@ -56,6 +54,7 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     fetchComponentGroups(),
     fetchFellows(),
     fetchVehicles(),
+    fetchMutantCells(),
     fetchCosmetics(),
   ]);
 
@@ -195,15 +194,15 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     };
   });
 
-  // The site's own data, from the update notes (ADR 0038), each with its icon (its
-  // socket's when none is listed).
+  // NEXON's Mutant Cells (ADR 0040), each with its icon (its socket's when NEXON lists
+  // none).
   const mutantCellItems = mutantCells.map((cell): DatabaseItem => ({
     name: cell.name,
     category: "Mutant Cells",
     href: `/mutant-cells?cell=${mutantCellSlug(cell.name)}`,
     hint: cell.socket,
     keywords: ["Mutant Cell", "Arche Tuning"],
-    imageUrl: mutantCellImageUrl(cell.name) ?? socketIconUrl(cell.socket) ?? "",
+    imageUrl: cell.imageUrl ?? socketIconUrl(cell.socket) ?? "",
     hex: palette.primary,
   }));
 

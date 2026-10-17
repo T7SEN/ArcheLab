@@ -41,7 +41,7 @@ export const changelog: readonly ChangelogEntry[] = [
           "A Database page: search every Descendant, weapon, module, reactor, external component, Fellow, vehicle, Mutant Cell and cosmetic at once, or browse by category.",
           "Fellows: each one's passive and stats at every level, the Inversion Reinforcement effects it unlocks, and its research.",
           "Vehicles: each hover bike's speed, turning and boost at every level, and its research.",
-          "Mutant Cells: all 64 by socket, each with its icon, what sets it off and its effects.",
+          "Mutant Cells: all 64 by socket, each with its icon, what sets it off and its effects, worded as the game words them.",
           "Cosmetics: every skin, makeup, attachment, paint and spawn, with each Descendant's version and who can use it. Pick a Descendant to see everything they can use.",
           "How to obtain on Transcendent weapons: the missions and their chances, first clears, Trials and more, up to Update 1.4.5.",
           "Core slots on Ultimate external components and on the Ultimate weapons checked so far, with what each core can roll at grades I to X.",

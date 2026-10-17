@@ -5,7 +5,6 @@ import { PageEnter } from "@/components/page-enter";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { mutantCells as mutantCellList } from "@/data/mutant-cells";
 import { PaletteProvider } from "@/features/command-palette/palette-provider";
 import { paletteDescendants } from "@/features/command-palette/palette-descendants";
 import { paletteComponents } from "@/features/command-palette/palette-components";
@@ -18,6 +17,7 @@ import { fetchDescendantSummaries } from "@/lib/nexon/descendant-page";
 import { fetchComponentGroups } from "@/lib/nexon/component-index";
 import { fetchFellows } from "@/lib/nexon/fellow-index";
 import { fetchVehicles } from "@/lib/nexon/vehicle-index";
+import { fetchMutantCells } from "@/lib/nexon/mutant-cell-index";
 import { fetchReactorGroups } from "@/lib/nexon/reactor-index";
 import { fetchWeaponSummaries } from "@/lib/nexon/weapon-page";
 import { siteDescription, siteName, siteUrl } from "@/lib/site-metadata";
@@ -48,9 +48,10 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
-  // NEXON's Descendants, weapons, reactors, external components, Fellows and vehicles
-  // for the palette, fetched once while the pages are prerendered (ADR 0023, ADR 0024,
-  // ADR 0026, ADR 0027, ADR 0035, ADR 0037). Empty when NEXON can't be reached.
+  // NEXON's Descendants, weapons, reactors, external components, Fellows, vehicles and
+  // Mutant Cells for the palette, fetched once while the pages are prerendered (ADR
+  // 0023, ADR 0024, ADR 0026, ADR 0027, ADR 0035, ADR 0037, ADR 0040). Empty when NEXON
+  // can't be reached.
   const [
     descendantList,
     weaponList,
@@ -58,6 +59,7 @@ export default async function RootLayout({
     componentList,
     fellowList,
     vehicleList,
+    mutantCellList,
   ] = await Promise.all([
     fetchDescendantSummaries(),
     fetchWeaponSummaries(),
@@ -65,6 +67,7 @@ export default async function RootLayout({
     fetchComponentGroups(),
     fetchFellows(),
     fetchVehicles(),
+    fetchMutantCells(),
   ]);
   const descendants = paletteDescendants(descendantList);
   const weapons = paletteWeapons(weaponList);
@@ -72,7 +75,6 @@ export default async function RootLayout({
   const components = paletteComponents(componentList);
   const fellows = paletteFellows(fellowList);
   const vehicles = paletteVehicles(vehicleList);
-  // The site's own data, from the update notes (ADR 0038).
   const mutantCells = paletteMutantCells(mutantCellList);
   return (
     // The inline background paints before the stylesheet loads, so there is no white flash.

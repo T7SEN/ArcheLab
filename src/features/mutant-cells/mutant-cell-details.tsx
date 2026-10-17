@@ -127,13 +127,16 @@ export function MutantCellDetails({
             </p>
           </div>
         </div>
-        <p className="leading-relaxed">{card.description}</p>
+        {/* NEXON breaks some descriptions into lines, one per trigger. */}
+        <p className="leading-relaxed whitespace-pre-line">
+          {card.description}
+        </p>
       </div>
 
       <div className="grid content-start gap-3">
         {card.effects.map((effect, index) => (
           <EffectBlock
-            // The notes never give a cell two effects of one name.
+            // No cell has two sections under one heading.
             key={effect.title ?? String(index)}
             effect={effect}
           />

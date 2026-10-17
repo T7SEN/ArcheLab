@@ -1,8 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// The Mutant Cells index (ADR 0038): every cell from the update notes, a card each by
-// socket with its icon, drawn 20 at a time as the page scrolls, opening its effects in a
-// row under its own.
+// The Mutant Cells index (ADR 0038, ADR 0040): every cell in NEXON's node-item.json,
+// checked against the update notes at build, a card each by socket with its icon, drawn
+// 20 at a time as the page scrolls, opening its effects in a row under its own.
 
 const open = async (page: Page, url: string) => {
   await page.goto(url);
@@ -62,7 +62,7 @@ test("a card opens its effects with their numbers", async ({ page }) => {
     "10s",
     "13.5%[+]",
   ]);
-  // Nothing on the page is provisional: tfdhub.gg agrees with every number.
+  // Nothing on the page is provisional: NEXON's numbers agree with the notes'.
   await expect(page.getByText(/Provisional/)).toHaveCount(0);
 
   // Escape closes it and gives focus back to the card.
@@ -91,6 +91,18 @@ test("the socket filter and the search narrow the cells", async ({ page }) => {
   await expect(
     page.getByText("64 Mutant Cells", { exact: true }),
   ).toBeVisible();
+});
+
+test("a cell reads as the game words it", async ({ page }) => {
+  await open(page, "/mutant-cells?cell=singular-damage-conversion");
+  const shown = details(page, "Singular Damage Conversion");
+  await expect(shown.getByRole("heading", { level: 3 })).toHaveText([
+    "Basic Info",
+  ]);
+  await expect(shown.getByRole("definition")).toHaveText([
+    "Missing HP Ratio x 32.5%",
+    "17.1%",
+  ]);
 });
 
 test("a shared link opens a cell past the first batch", async ({ page }) => {
