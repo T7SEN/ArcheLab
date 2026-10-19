@@ -65,7 +65,14 @@ const materials = [
 ];
 
 // The cycle names operations this test has no places for: each warns, as at build.
-const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+// Vitest clears a spy's calls before each test, and these warnings come while the file
+// loads: they're kept in a list of their own.
+const warnings: string[] = [];
+const warn = vi
+  .spyOn(console, "warn")
+  .mockImplementation((...args: unknown[]) => {
+    warnings.push(args.map(String).join(" "));
+  });
 afterAll(() => {
   warn.mockRestore();
 });
@@ -128,6 +135,81 @@ describe("infiltration400", () => {
         ways: ["Mission Monster"],
       },
     ]);
+  });
+});
+
+describe("an operation's modules, reactor and external component sets", () => {
+  // The Shelter's lists in src/data/infiltration-400-equipment.ts (tfdhub's, read
+  // 2026-10-19). Enlightened Mage is left out of the links, as a name NEXON's data
+  // lacked would be.
+  const link = (name: string, slug: string) => ({
+    name,
+    slug,
+    imageUrl: `${imageHost}${slug}`,
+  });
+  const shelter = infiltration400({
+    acquisitions,
+    materials,
+    research: [],
+    itemHrefs: new Map(),
+    equipment: {
+      modules: new Map(
+        [
+          "Explosive Evade",
+          "Release Cutting Force",
+          "Turret Engineering",
+          "Water Play",
+        ].map((name) => [
+          name,
+          link(name, name.toLowerCase().replace(/ /g, "-")),
+        ]),
+      ),
+      reactors: new Map([
+        [
+          "Burning Phase Reactor",
+          link("Burning Phase Reactor", "burning-phase-reactor"),
+        ],
+      ]),
+      // By the pieces' name; the set's own name can differ.
+      componentSets: new Map([
+        ["Annihilation", link("Annihilation Set", "annihilation")],
+      ]),
+    },
+  }).at(0);
+  const gear = (shelter?.drops ?? []).filter(
+    (drop) => drop.kind !== "material" && drop.kind !== "core",
+  );
+
+  it("lead the rewards, modules, then the reactor, then the sets", () => {
+    expect(shelter?.drops.slice(0, gear.length)).toEqual(gear);
+    expect(gear.map((drop) => [drop.kind, drop.name])).toEqual([
+      ["module", "Explosive Evade"],
+      ["module", "Release Cutting Force"],
+      ["module", "Turret Engineering"],
+      ["module", "Water Play"],
+      ["reactor", "Burning Phase Reactor"],
+      ["component", "Annihilation Set"],
+      ["component", "Enlightened Mage"],
+    ]);
+  });
+
+  it("link each page, a set as all four pieces under the site's name", () => {
+    expect(gear.at(4)?.href).toBe("/reactors?reactor=burning-phase-reactor");
+    expect(gear.at(5)).toEqual({
+      name: "Annihilation Set",
+      imageUrl: `${imageHost}annihilation`,
+      kind: "component",
+      href: "/external-components?component=annihilation",
+      ways: [],
+      detail: "all 4 pieces",
+    });
+  });
+
+  it("warn at build of a name NEXON's data lacks, and show it without a page", () => {
+    expect(gear.at(6)?.href).toBeNull();
+    expect(warnings).toContainEqual(
+      expect.stringContaining('component "Enlightened Mage"'),
+    );
   });
 });
 

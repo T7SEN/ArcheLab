@@ -35,6 +35,8 @@ blob-report/
 playwright/.cache/
 # Vitest 5 writes reporter output and attachments here.
 .vitest/
+# The daily check's report and NEXON set versions (ADR 0055).
+.daily-check/
 
 # Logs
 pnpm-debug.log*

@@ -2,6 +2,7 @@ import { Heart, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { LogoMark } from "@/components/logo-mark";
+import { changelog } from "@/data/changelog";
 import {
   footerCommunityHrefs,
   footerDatabaseHrefs,
@@ -21,6 +22,14 @@ export const footerText =
   "Made with love by T7SEN. © 2026 ArcheLab, a fan site not affiliated with Nexon.";
 const loveWord = "love";
 
+/** T7SEN's name in the line links their page of links (T7SEN, 2026-10-19). */
+const ownerName = "T7SEN";
+const ownerUrl = "https://links.t7sen.com/";
+
+/** Not underlined, in the site's violet so it stands out (T7SEN, 2026-10-19). */
+const ownerLinkClass =
+  "rounded-sm font-medium text-primary transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50";
+
 /**
  * Required on every page: NEXON's API terms ask sites to name Nexon as the data source
  * (§8.4), and the builder shows NEXON portraits (AGENTS.md critical rule 3).
@@ -30,6 +39,10 @@ export const attributionText = "Data based on NEXON Open API.";
 /** The attribution's link: "NEXON Open API" in it opens NEXON's API site (T7SEN, 2026-10-17). */
 const apiName = "NEXON Open API";
 const apiUrl = "https://openapi.nexon.com/";
+
+/** A link inside a line of footer text, opening in a new tab. */
+const inlineLinkClass =
+  "rounded-sm underline decoration-muted-foreground/50 underline-offset-2 transition-colors outline-none hover:text-foreground hover:decoration-foreground focus-visible:ring-3 focus-visible:ring-ring/50";
 
 const linkClass =
   "inline-flex items-start gap-2 rounded-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -52,6 +65,8 @@ const pagesAt = (hrefs: readonly string[]): SitePage[] =>
 const toolPages = pagesAt(footerToolHrefs);
 const databasePages = pagesAt(footerDatabaseHrefs);
 const communityPages = pagesAt(footerCommunityHrefs);
+/** The site's version, the Changelog's newest, which is `package.json`'s too. */
+const version = changelog[0]?.version;
 const liveTools = tools.filter((tool) => tool.status === "live");
 const comingTools = tools.filter((tool) => tool.status !== "live");
 
@@ -68,14 +83,17 @@ function PageLink({ page }: { page: SitePage }) {
 }
 
 /**
- * Every page's footer (ADR 0018): ArcheLab's mark and a line, then Tools (the live
+ * Every page's footer (ADR 0018): ArcheLab's mark, the site's version linking the
+ * Changelog (T7SEN, 2026-10-19) and a line, then Tools (the live
  * tools, the database, then the coming ones), the main database indexes, Community and
- * the legal pages (ADR 0021), then T7SEN's line and NEXON's attribution, whose "NEXON
- * Open API" links NEXON's API site (T7SEN, 2026-10-17).
+ * the legal pages (ADR 0021), then T7SEN's line, whose name links their page of links
+ * (T7SEN, 2026-10-19), and NEXON's attribution, whose "NEXON Open API" links NEXON's API
+ * site (T7SEN, 2026-10-17).
  */
 export function SiteFooter() {
   const [beforeApi, afterApi] = attributionText.split(apiName);
-  const [beforeLove, afterLove] = footerText.split(loveWord);
+  const [beforeLove, afterLove = ""] = footerText.split(loveWord);
+  const [beforeOwner, afterOwner] = afterLove.split(ownerName);
   return (
     <footer className="border-t bg-card/30">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.6fr)_repeat(4,minmax(0,1fr))]">
@@ -83,6 +101,15 @@ export function SiteFooter() {
           <p className="flex items-center gap-2.5 font-display text-2xl font-semibold tracking-wide">
             <LogoMark className="h-6 w-auto text-primary" />
             ArcheLab
+            {version === undefined ? null : (
+              // As the Changelog's hero shows it.
+              <Link
+                href="/changelog"
+                className="rounded-full border border-primary/50 bg-card/60 px-2.5 py-1 font-sans text-xs font-medium tracking-normal text-primary transition-colors outline-none hover:border-primary hover:bg-primary/15 focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                Version {version}
+              </Link>
+            )}
           </p>
           <p className="max-w-xs text-sm text-muted-foreground">
             {/* No "built on NEXON's game data": only the attribution names NEXON
@@ -138,7 +165,16 @@ export function SiteFooter() {
               className="inline size-3.5 fill-primary align-[-0.125em] text-primary"
             />
             <span className="sr-only">{loveWord}</span>
-            {afterLove}
+            {beforeOwner}
+            <a
+              href={ownerUrl}
+              target="_blank"
+              rel="noreferrer"
+              className={ownerLinkClass}
+            >
+              {ownerName}
+            </a>
+            {afterOwner}
           </p>
           <p className="text-xs">
             {beforeApi}
@@ -146,7 +182,7 @@ export function SiteFooter() {
               href={apiUrl}
               target="_blank"
               rel="noreferrer"
-              className="rounded-sm underline decoration-muted-foreground/50 underline-offset-2 transition-colors outline-none hover:text-foreground hover:decoration-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+              className={inlineLinkClass}
             >
               {apiName}
             </a>

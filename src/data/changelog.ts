@@ -81,6 +81,45 @@ export function nextChangelogVersion(
 
 export const changelog: readonly ChangelogEntry[] = [
   {
+    date: "2026-10-19",
+    version: "1.2.0",
+    title: "Game info pages and a grouped database",
+    summary:
+      "Axion Operational Areas, Void Erosion Purge and Timers, 400% modules and external components, the Database page in four groups, the site's version, and a menu that fits.",
+    groups: [
+      {
+        title: "Database",
+        items: [
+          "Axion Operational Areas: the two missions active now, every rotation of the week in your time, and each mission's Amorphous Material Pattern, Transcendent weapon chance and rewards. Missions can be starred, with an alert when one becomes active.",
+          "Void Erosion Purge: today's Normal Stage 10 map and the time to the reset, the five-map rotation with each map's picture, and what each Normal and Challenge stage gives. Each map can have an alert for its day.",
+          "Timers: Wall Crasher's next spawn with an alert, ETA-0, the daily and weekly resets, Bounty Operations' target each day, the rotation pages' changes, HQ Special Orders by cycle and every running event, in your time.",
+          "The Database page shows its categories in the navbar menu's four groups: Equipment, Consumable, Collection and Game info.",
+          "Drop places that are an Axion Operational Area mission open it, and each Transcendent weapon's How to obtain links its Axion missions.",
+          "Drop places in Void Erosion Purge open their stage on its page, and the Database page searches its maps.",
+          "Drop places for a Bounty Operations target or Wall Crasher open it on Timers, and the Database page searches the timers.",
+          "400% Infiltration Operations list each operation's modules, reactor and external component sets first among its rewards, each in a tab of its own and linking its page.",
+          "400% Infiltration Operations no longer marks its rotation as provisional.",
+        ],
+      },
+      {
+        title: "Look and feel",
+        items: [
+          "The footer shows the site's version beside its name, linking the Changelog.",
+          "T7SEN's name in the footer opens their page of links.",
+          "Picking an operation on 400% Infiltration Operations, or a mission on Axion Operational Areas, brings its rewards into view.",
+          "Picking a map on Void Erosion Purge brings it into view, and its picture opens bigger on a click.",
+        ],
+      },
+      {
+        title: "Fixes",
+        items: [
+          "The navbar's Database menu fits on the screen, its pages in four columns: Equipment, Consumable, Collection and Game info. In the menu on a narrow phone, each group opens on a tap.",
+          'Cores on 400% Infiltration Operations show "complete" before "Mission Monster", as every other reward does.',
+        ],
+      },
+    ],
+  },
+  {
     date: "2026-10-18",
     version: "1.1.0",
     title: "Materials, cores and rewards",

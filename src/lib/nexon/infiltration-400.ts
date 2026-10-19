@@ -1,13 +1,17 @@
 import "server-only";
 import { cycle400, outside400Cycle } from "@/data/infiltration-400";
+import { equipment400 } from "@/data/infiltration-400-equipment";
 import { transcendentDrops } from "@/data/transcendent-weapon-sources";
 import type {
   Drop400,
   Operation400,
 } from "@/features/infiltration-400/operation-filters";
 import { slugOf } from "@/lib/slug";
+import { fetchComponentGroups } from "./component-index";
 import { fetchItemHrefs } from "./difficulty-rewards";
 import { materialHref } from "./material-links";
+import { fetchModuleGroups } from "./module-index";
+import { fetchReactorGroups } from "./reactor-index";
 import {
   fetchAcquisitions,
   fetchMaterials,
@@ -23,8 +27,28 @@ import {
  * has a 400% difficulty in the drop places (`acquisition-detail.json`, ids ending
  * `:Hard_400`; 13 on 2026-10-18), what drops there (`consumable-material.json`), and
  * its Transcendent weapon chance from Update 1.4.0's table. Which two are 400% each day
- * is `src/data/infiltration-400.ts`.
+ * is `src/data/infiltration-400.ts`. Its modules, reactor and external component sets,
+ * which NEXON's open data doesn't list, are tfdhub's lists in
+ * `src/data/infiltration-400-equipment.ts` (T7SEN, 2026-10-19).
  */
+
+/** A piece of equipment's name as the site shows it, its page and its art. */
+export interface EquipmentLink {
+  readonly name: string;
+  readonly slug: string;
+  readonly imageUrl: string;
+}
+
+/**
+ * Equipment by the names the operations' lists use: modules, reactors, and component
+ * sets by their pieces' name without the slot ("Volcanic" for "Volcanic Sensor"), as
+ * a set's own name can differ (the Volcanic pieces are the Active Volcano set).
+ */
+export interface EquipmentLinks {
+  readonly modules: ReadonlyMap<string, EquipmentLink>;
+  readonly reactors: ReadonlyMap<string, EquipmentLink>;
+  readonly componentSets: ReadonlyMap<string, EquipmentLink>;
+}
 
 export interface Infiltration400Sets {
   readonly acquisitions: readonly AcquisitionRecord[];
@@ -32,6 +56,76 @@ export interface Infiltration400Sets {
   readonly research: readonly ResearchRecord[];
   /** Pages for drops that aren't Basic or Core Materials, by item name. */
   readonly itemHrefs: ReadonlyMap<string, string>;
+  /** The equipment the operations' lists name; without it, they list none. */
+  readonly equipment?: EquipmentLinks;
+}
+
+/**
+ * An operation's modules, reactor and external component sets, in that order, each
+ * linking its page. A name
+ * NEXON's data doesn't have warns at build and shows without a page or art.
+ */
+function equipmentDrops(
+  operation: string,
+  links: EquipmentLinks | undefined,
+): Drop400[] {
+  const lists = equipment400[operation];
+  if (lists === undefined || links === undefined) {
+    return [];
+  }
+  const drop = (
+    kind: Drop400["kind"],
+    name: string,
+    found: EquipmentLink | undefined,
+    path: string,
+    detail?: string,
+  ): Drop400 => {
+    if (found === undefined) {
+      console.warn(
+        `400% Infiltration Operations: "${operation}" lists ${kind} "${name}", which NEXON's data doesn't have.`,
+      );
+    }
+    return {
+      name: found?.name ?? name,
+      imageUrl: found?.imageUrl ?? "",
+      kind,
+      href: found === undefined ? null : `${path}${found.slug}`,
+      ways: [],
+      ...(detail === undefined ? {} : { detail }),
+    };
+  };
+  // Every 400% operation gives two external component sets (T7SEN, 2026-10-19: "This
+  // is how the game is coded."), HP Support counting as one at Magister Lab, as T7SEN
+  // checked in game: a list that names another number warns at build.
+  if (lists.componentSets.length !== 2) {
+    console.warn(
+      `400% Infiltration Operations: "${operation}" lists ${String(lists.componentSets.length)} external component sets; every 400% operation gives two.`,
+    );
+  }
+  return [
+    ...lists.modules.map((name) =>
+      drop("module", name, links.modules.get(name), "/modules?module="),
+    ),
+    ...(lists.reactor === null
+      ? []
+      : [
+          drop(
+            "reactor",
+            lists.reactor,
+            links.reactors.get(lists.reactor),
+            "/reactors?reactor=",
+          ),
+        ]),
+    ...lists.componentSets.map((name) =>
+      drop(
+        "component",
+        name,
+        links.componentSets.get(name),
+        "/external-components?component=",
+        "all 4 pieces",
+      ),
+    ),
+  ];
 }
 
 /** The regions in Update 1.4.0's table order, as the drop places write them. */
@@ -194,7 +288,8 @@ export function infiltration400(sets: Infiltration400Sets): Operation400[] {
                 max: transcendent.quality.max,
               },
         inCycle: inCycle.has(name),
-        drops: items,
+        // Equipment first: the reason most players come (T7SEN, 2026-10-19).
+        drops: [...equipmentDrops(name, sets.equipment), ...items],
       };
     })
     .sort((a, b) => regionRank(a.region) - regionRank(b.region));
@@ -210,8 +305,63 @@ export function fetchInfiltration400(): Promise<Operation400[]> {
     fetchMaterials(),
     fetchResearch(),
     fetchItemHrefs(),
-  ]).then(([acquisitions, materials, research, itemHrefs]) =>
-    infiltration400({ acquisitions, materials, research, itemHrefs }),
+    fetchModuleGroups(),
+    fetchReactorGroups(),
+    fetchComponentGroups(),
+  ]).then(
+    ([
+      acquisitions,
+      materials,
+      research,
+      itemHrefs,
+      modules,
+      reactors,
+      components,
+    ]) =>
+      infiltration400({
+        acquisitions,
+        materials,
+        research,
+        itemHrefs,
+        equipment: {
+          modules: new Map(
+            modules.map((group) => [
+              group.name,
+              {
+                name: group.name,
+                slug: group.slug,
+                imageUrl: group.variants.at(0)?.imageUrl ?? "",
+              },
+            ]),
+          ),
+          // Highest tier first: the art of the Ultimate one.
+          reactors: new Map(
+            reactors.map((group) => [
+              group.name,
+              {
+                name: group.name,
+                slug: group.slug,
+                imageUrl: group.versions.at(0)?.imageUrl ?? "",
+              },
+            ]),
+          ),
+          // Sets and standalone names alike: Magister Lab's HP Support has no set.
+          componentSets: new Map(
+            components.flatMap((group) =>
+              group.pieces.map((piece): [string, EquipmentLink] => [
+                piece.name.endsWith(` ${piece.slot}`)
+                  ? piece.name.slice(0, -piece.slot.length - 1)
+                  : piece.name,
+                {
+                  name: group.name,
+                  slug: group.slug,
+                  imageUrl: group.pieces.at(0)?.imageUrl ?? "",
+                },
+              ]),
+            ),
+          ),
+        },
+      }),
   );
   return indexPromise;
 }

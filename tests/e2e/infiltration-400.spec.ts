@@ -22,9 +22,8 @@ test("today's two operations, and when they reset", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     "400% Infiltration Operations",
   );
-  await expect(
-    page.getByText("Provisional: not verified in game yet"),
-  ).toBeVisible();
+  // tfdhub's cycle is a valid source, not provisional (T7SEN, 2026-10-19).
+  await expect(page.getByText(/Provisional/)).toHaveCount(0);
   // 19 hours to 07:00 UTC; the clock stands still.
   await expect(page.getByText("Resets in")).toContainText("19:00:00");
 
@@ -89,6 +88,68 @@ test("an operation's rewards, each linking its page", async ({ page }) => {
   ).toHaveCount(0);
 });
 
+test("an operation's modules, reactor and external component sets lead its rewards", async ({
+  page,
+}) => {
+  // tfdhub's lists (T7SEN, 2026-10-19), a valid source: no provisional mark.
+  await open(page, "/infiltration-400?operation=the-shelter");
+  const shelter = panel(page, /The Shelter$/);
+  const tabs = shelter.getByRole("group", { name: "Rewards" });
+  await expect(tabs.getByRole("button", { name: /^Modules/ })).toContainText(
+    "4",
+  );
+  await expect(tabs.getByRole("button", { name: /^Reactors/ })).toContainText(
+    "1",
+  );
+  await expect(
+    tabs.getByRole("button", { name: /^External Components/ }),
+  ).toContainText("2");
+  await expect(
+    shelter.locator('a[href="/reactors?reactor=burning-phase-reactor"]'),
+  ).toContainText("Burning Phase Reactor");
+  await expect(
+    shelter.locator('a[href="/external-components?component=annihilation"]'),
+  ).toContainText("all 4 pieces");
+  await expect(shelter.getByText("Provisional")).toHaveCount(0);
+
+  // Magister Lab's two, Slayer and HP Support, as T7SEN checked in game (2026-10-19).
+  await open(page, "/infiltration-400?operation=magister-lab");
+  const magister = panel(page, /Magister Lab$/);
+  await expect(
+    magister.locator('a[href="/external-components?component=slayer"]'),
+  ).toContainText("all 4 pieces");
+  await expect(
+    magister.locator('a[href="/external-components?component=hp-support"]'),
+  ).toContainText("HP Support");
+  await expect(magister.getByText("Provisional")).toHaveCount(0);
+});
+
+test("picking an operation brings its rewards into view, and picking a day doesn't", async ({
+  page,
+}) => {
+  // A plain visit stays at the top.
+  await open(page, "/infiltration-400");
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+
+  // Tomorrow's second operation (T7SEN, 2026-10-19).
+  const tomorrow = page
+    .getByRole("list", { name: "Days" })
+    .locator(":scope > li")
+    .nth(1);
+  await tomorrow.getByRole("link").nth(1).click();
+  const heading = page.getByRole("heading", { level: 2 }).filter({
+    has: page.locator(":scope:focus"),
+  });
+  await expect(heading).toHaveCount(1);
+  await expect(heading).toBeInViewport();
+
+  // A link that names an operation opens on its rewards.
+  await open(page, "/infiltration-400?operation=the-shelter");
+  const shelter = page.getByRole("heading", { level: 2, name: /The Shelter$/ });
+  await expect(shelter).toBeFocused();
+  await expect(shelter).toBeInViewport();
+});
+
 test("weapons, drop places and the database lead to an operation", async ({
   page,
 }) => {
@@ -118,7 +179,8 @@ test("weapons, drop places and the database lead to an operation", async ({
   await expect(
     page.getByRole("listitem").filter({
       has: page.getByRole("heading", {
-        level: 3,
+        // The database page's cards are h4s under their group's h3 (ADR 0051).
+        level: 4,
         name: "400% Infiltration Operations",
       }),
     }),

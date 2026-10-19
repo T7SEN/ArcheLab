@@ -16,6 +16,7 @@ import { coreEquipment, rollNames } from "@/features/cores/core-filters";
 import { fetchComponentGroups } from "@/lib/nexon/component-index";
 import { fetchCoreKinds } from "@/lib/nexon/core-index";
 import { fetchDifficultyRewards } from "@/lib/nexon/difficulty-rewards";
+import { fetchAxionOperationalAreas } from "@/lib/nexon/axion-operational-areas";
 import { fetchInfiltration400 } from "@/lib/nexon/infiltration-400";
 import { fetchAmorphousPatterns } from "@/lib/nexon/amorphous-index";
 import { fetchBasicMaterials } from "@/lib/nexon/basic-material-index";
@@ -27,6 +28,8 @@ import { fetchMutantCells } from "@/lib/nexon/mutant-cell-index";
 import { fetchDescendantSummaries } from "@/lib/nexon/descendant-page";
 import { fetchFellows } from "@/lib/nexon/fellow-index";
 import { fetchVehicles } from "@/lib/nexon/vehicle-index";
+import { fetchVoidErosionPurge } from "@/lib/nexon/void-erosion-purge";
+import { bountyTargets, trials, wallCrasher } from "@/data/timers";
 import { fetchModuleGroups } from "@/lib/nexon/module-index";
 import { fetchReactorGroups } from "@/lib/nexon/reactor-index";
 import { fetchWeaponSummaries } from "@/lib/nexon/weapon-page";
@@ -63,6 +66,8 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     miscellaneous,
     rewards,
     operations400,
+    axionMissions,
+    purge,
   ] = await Promise.all([
     fetchDescendantSummaries(),
     fetchWeaponSummaries(),
@@ -81,6 +86,8 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     fetchMiscellaneous(),
     fetchDifficultyRewards(),
     fetchInfiltration400(),
+    fetchAxionOperationalAreas(),
+    fetchVoidErosionPurge(),
   ]);
 
   const descendantItems = descendants.map((descendant): DatabaseItem => ({
@@ -426,6 +433,75 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     hex: palette.primary,
   }));
 
+  // Each Axion Operational Area mission, found by the pattern its completion gives (ADR
+  // 0052). It has no art of its own.
+  const axionItems = axionMissions.map((mission): DatabaseItem => ({
+    name: mission.name,
+    category: "Axion Operational Areas",
+    href: `/axion-operational-areas?mission=${mission.slug}`,
+    hint: "Axion Plains",
+    keywords: [
+      "Axion Plains",
+      "Operational Area",
+      ...(mission.pattern === null ? [] : [mission.pattern.name]),
+    ],
+    imageUrl: "",
+    hex: palette.primary,
+  }));
+
+  // Each of Void Erosion Purge's Stage 10 maps, with its picture (ADR 0053).
+  const purgeItems = purge.maps.map((map): DatabaseItem => ({
+    name: map.name,
+    category: "Void Erosion Purge",
+    href: `/void-erosion-purge?map=${map.slug}`,
+    hint: "Normal Stage 10",
+    keywords: ["Void Erosion Purge", "Stage 10", "map"],
+    imageUrl: map.imageUrl,
+    hex: palette.primary,
+  }));
+
+  // The Timers page's timers, each opening its own (ADR 0054); the bounty targets find
+  // Bounty Operations.
+  const timerItems = (
+    [
+      [
+        wallCrasher.name,
+        "wall-crasher",
+        "Every hour",
+        ["Axion Plains", "Intercept Battle"],
+      ],
+      ["ETA-0", "eta-0", "Friday to Monday", ["shop", "Albion"]],
+      ["Daily reset", "daily-reset", "07:00 UTC", ["reset"]],
+      ["Weekly reset", "weekly-reset", "Thursday", ["reset"]],
+      [
+        "Bounty Operations",
+        "bounty-operations",
+        "A target each day",
+        bountyTargets.map((target) => target.name),
+      ],
+      [
+        "Trials",
+        "trials",
+        trials.paused.showing,
+        trials.dungeons.map((dungeon) => dungeon.legion),
+      ],
+      [
+        "HQ Special Orders",
+        "hq-special-orders",
+        "Every three days",
+        ["orders"],
+      ],
+    ] as const
+  ).map(([name, anchor, hint, keywords]): DatabaseItem => ({
+    name,
+    category: "Timers",
+    href: `/timers#${anchor}`,
+    hint,
+    keywords: ["timer", ...keywords],
+    imageUrl: "",
+    hex: palette.primary,
+  }));
+
   return [
     ...descendantItems,
     ...weaponItems,
@@ -445,5 +521,8 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     ...miscellaneousItems,
     ...battlefieldItems,
     ...operation400Items,
+    ...axionItems,
+    ...purgeItems,
+    ...timerItems,
   ];
 }

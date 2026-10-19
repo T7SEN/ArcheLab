@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { menuSections, sitePages } from "../../src/data/site-pages";
 import { databaseCategories } from "../../src/features/database/database-items";
 
 // The database page (ADR 0034): one search over every item, loaded from a static file
@@ -106,23 +107,47 @@ test("a failed load offers to try again", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("each category's card links its index and counts its items", async ({
+test("each category's card sits under its group, links its index and counts its items", async ({
   page,
 }) => {
   await open(page, "/database");
   const section = page.getByRole("region", { name: "Browse by category" });
-  const cards = section.getByRole("listitem");
-  await expect(cards).toHaveCount(databaseCategories.length);
-  for (const [index, category] of databaseCategories.entries()) {
-    const card = cards.nth(index);
-    await expect(card.getByRole("heading", { level: 3 })).toHaveText(
-      category.name,
+  await expect(section.getByRole("listitem")).toHaveCount(
+    databaseCategories.length,
+  );
+  // The navbar menu's groups, in its order, each a heading over its cards (T7SEN,
+  // 2026-10-19; ADR 0051).
+  await expect(
+    section.getByRole("region").getByRole("heading", { level: 3 }),
+  ).toHaveText([...menuSections]);
+  for (const name of menuSections) {
+    const cards = section
+      .getByRole("region", { name, exact: true })
+      .getByRole("listitem");
+    const categories = databaseCategories.filter(
+      (category) =>
+        sitePages.find((page) => page.href === category.href)?.section === name,
     );
-    await expect(card.getByRole("link")).toHaveAttribute("href", category.href);
-    await expect(card).toContainText(/\b[1-9][\d,]* [A-Za-z ]+$/);
+    await expect(cards).toHaveCount(categories.length);
+    for (const [index, category] of categories.entries()) {
+      const card = cards.nth(index);
+      await expect(card.getByRole("heading", { level: 4 })).toHaveText(
+        category.name,
+      );
+      await expect(card.getByRole("link")).toHaveAttribute(
+        "href",
+        category.href,
+      );
+      await expect(card).toContainText(/\b[1-9][\d,]* [A-Za-z ]+$/);
+    }
   }
 
-  await cards.nth(1).getByRole("link").click();
+  await section
+    .getByRole("region", { name: "Equipment", exact: true })
+    .getByRole("listitem")
+    .nth(1)
+    .getByRole("link")
+    .click();
   await expect(page).toHaveURL("/weapons");
 });
 

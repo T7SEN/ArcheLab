@@ -17,16 +17,18 @@
 
 ## The navbar's Database menu
 
-1. `src/data/site-pages.ts`: the database pages carry `group: "Database"`. `navbarEntries()` returns a page's own entry, or one group entry, at its first page's place, holding the group's pages in order. The page named as its group, `/database`, is also the entry's `home` (ADR 0034).
-2. `src/components/site-nav.tsx` maps entries to PillNav items: a link, or a `PillNavGroup` whose links carry their page icons, with the home's `href`.
+1. `src/data/site-pages.ts`: the database pages carry `group: "Database"`, and all but the database's own a `section` from `menuSections`, Equipment, Consumable, Collection and Game info, Game info always last (T7SEN, 2026-10-19; ADR 0051). `sitePages` lists a section's pages together, the sections in that order. `navbarEntries()` returns a page's own entry, or one group entry, at its first page's place, holding the group's pages in order. The page named as its group, `/database`, is also the entry's `home` (ADR 0034).
+2. `src/components/site-nav.tsx` maps entries to PillNav items: a link, or a `PillNavGroup` whose links carry their page icons and sections, with the home's `href`.
 3. `src/components/react-bits/pill-nav.tsx`:
    - The bar renders a group with an `href` as a link to that page (ADR 0034), and one without as a button (`isGroup`), each with the same faces, fill and dot as a link, plus a chevron that turns while open. `activeIndex` counts a group active when its page or one of its links is the current page or section; the link then takes `aria-current="page"` on its own page and `"true"` elsewhere, the button `"true"`.
    - A group with an `href` opens its menu on hover and on keyboard focus (ADR 0034). `hoverMenu` opens it when a mouse or pen enters the item; `unhoverMenu`, on leaving the item or the menu, closes it `menuCloseDelay` (200ms) later, and entering either again cancels that, so the pointer can cross the 8px gap. Touch is left out: a tap opens the page. `focusMenu` opens it when the link gets `:focus-visible` focus, so Tab goes on into its links; `refocusRef` keeps Escape's return of focus from opening it again. Its rows leave out the group's own page.
    - The menu's rows (`MENU_ROW`) copy the bar's fill (T7SEN, 2026-10-17): `ROW_FILL`, a circle rising from the bottom center, and `ROW_FACE` and `ROW_FACE_ALT`, the label rolling up as its twin rolls in, on `:hover` and `:focus-visible` through `group/row` variants. CSS runs them, since the bar's engine only drives the bar's slots. `fillSize` sets each row's `--pn-fill` from its size on pointer enter and focus (`fillReach`, the bar's own measure); the row's own `--pn-roll` matches its taller height. The current page's row isn't filled: `ROW_DOT`, the bar's 4px dot, sits after `ROW_FACE` in the row's flow, so it stays right of the label while the label rolls, and turns the ink color on hover or focus (T7SEN, 2026-10-17: a filled current row replayed the fill on hover). The folded menu's rows keep a plain hover color and a filled current row: they are for touch.
-   - `openMenu` (through `toggleMenu` for a button) stores the open group's index, the menu's left edge (centered under the button, 16px inside the screen) and the page it opened on. `shownMenu` is that state only while it is the same page and the bar is unfolded, so moving to another page closes the menu with no effect.
-   - The menu (`DROPDOWN`) is the nav's child, right after the bar: glass inside the bar's glass would blur only the bar, and this place keeps Tab running from the button into the links.
+   - `openMenu` (through `toggleMenu` for a button) stores the open group's index, how many columns its sections may take (`fit`, at first all of them) and the page it opened on. `shownMenu` is that state only while it is the same page and the bar is unfolded, so moving to another page closes the menu with no effect.
+   - The menu's sections (ADR 0051): `sectionsOf` cuts the group's links, but its own page, into runs of one `section`; `menuColumns` lays them out, a column each when `fit` allows, else the cut into at most `fit` columns whose longest column is shortest (a heading counting half a row), with the fewest columns among equals. Each column (`COLUMNS`, a grid flowing by column, each as wide as its widest row and at least 200px) holds a `COLUMN_HEADING`, with a line under it, over a list named by it.
+   - A layout effect places the open menu before it paints: too wide for the page (`clientWidth`, without the scrollbar, less 32px), it lowers `fit` by one and comes back; once it fits, it centers the menu under its button, 16px inside the page, and `fitScreen` caps the links' scroll box (`SCROLL`) at the screen below it, so a short screen scrolls them instead of hiding the last ones. The menu slides in from 4px up, so the cap is measured again when its `animationend` fires: measured only at the start, it left the menu up to 4px past the screen (found by `shell.spec.ts` on 2026-10-19, once Game info's five pages made the shared column tall enough). A resize starts again from every column.
+   - The menu (`DROPDOWN`) is the nav's child, right after the bar: glass inside the bar's glass would blur only the bar, and this place keeps Tab running from the button into the links, column by column.
    - An effect listens while the menu is open: a pointerdown outside the button and the menu closes it; Escape closes it and focuses the button. `leaveMenu` closes it when focus moves to anything else, but not on a blur to nothing, which a press elsewhere causes and the pointerdown handles. Folding closes it too (`evaluate`).
-   - Folded, a group is a `HEADING` label over a nested list of its rows, named by the label.
+   - Folded, a group is a `HEADING` label over a nested list, named by the label: its own page's row, then a button per section (`SECTION_TOGGLE`, its name and a chevron that turns, `aria-expanded` and `aria-controls`) over its rows (T7SEN, 2026-10-19). `toggle` opens the menu with the current page's section open (`openSections`), the rest closed; `flipSection` opens or closes one. A closed section's `SECTION_BODY` eases its grid row to `0fr` and is `inert`, so its links leave the tab order and the accessibility tree; the opening animation staggers only the rows not inside an `inert` section. The panel's links scroll inside it on a short screen (`fitScreen`, run before the opening animation reads the panel's height).
 
 ## Why it is shaped this way
 
@@ -38,6 +40,7 @@
 - **Levels in data files.** About 1 KB compressed per card, loaded when its details open, as for modules and reactors.
 - **A disclosure, not a menu widget.** The Database item shows a list of links; ARIA's menu role is for application commands and expects arrow keys. As a link, it states the list with `aria-expanded`, which ARIA 1.2 allows on links.
 - **Hover with a delay to close, focus for the keyboard.** T7SEN asked for the menu on hover and the item to open the database page (2026-10-17). A link can't also toggle on a press, so keyboard users get the menu on focus.
+- **Sections in columns, measured in the browser.** One list of 17 rows ran off a laptop's screen (T7SEN, 2026-10-19). Columns' widths come from the fonts, which differ by system, so the menu measures itself rather than guess a width; the cut is a pure function, `menuColumns`, unit-tested. On a phone, columns don't fit, so sections open on a tap, as tfdhub.gg's menu does (ADR 0051).
 
 ## What would break it
 
@@ -46,10 +49,12 @@
 - A stat id in `component-sub-stats.ts` that `stat.json` stops naming: it drops out of the list quietly (`componentSubStats`), and the count in the heading drops with it.
 - NEXON changing the core type ids in `component-core-slots.ts`: the Core slots section drops the missing type quietly, or disappears with both.
 - A link placed after the Database group in `sitePages`: Tab would reach it before the group's menu links.
-- Changing the menu's `w-60` without `menuWidth` in `openMenu`: the menu is no longer centered and can pass the screen's edge.
+- A `section` out of `menuSections` order in `sitePages`, or split by another section's page: the section shows twice (`site-pages.test.ts` fails).
+- A style on the menu that keeps it from being its content's width (`w-max` on `DROPDOWN`): the width check can't see it is too wide, and it passes the screen's edge.
+- Passing `style` to the menu: React would reset the left edge the layout effect sets.
 - Widening the gap under the bar past what 200ms of pointer travel covers: the menu closes on the way to it.
 
 ## Checked by
 
-- `src/lib/nexon/component-index.test.ts`, `src/features/external-components/component-filters.test.ts`, `src/features/command-palette/commands.test.ts`, `src/data/site-pages.test.ts`.
-- `tests/e2e/external-components.spec.ts`, the Database menu and folded group tests in `shell.spec.ts`, the 390px check, and `index-url.spec.ts` through the menu in three browsers.
+- `src/lib/nexon/component-index.test.ts`, `src/features/external-components/component-filters.test.ts`, `src/features/command-palette/commands.test.ts`, `src/data/site-pages.test.ts` (the sections as T7SEN grouped them, together and in order), `src/components/react-bits/pill-nav.test.ts` (`sectionsOf`, `menuColumns`).
+- `tests/e2e/external-components.spec.ts`, the Database menu, menu columns and folded group tests in `shell.spec.ts`, the 390px check, and `index-url.spec.ts` through the menu in three browsers.

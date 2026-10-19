@@ -12,9 +12,9 @@ import {
 
 /**
  * The navbar's items: a link per page, and the Database button over the game's items
- * (ADR 0027), which opens the database page; its menu opens on hover (ADR 0034). Bar
- * links show labels only, as the footer shows the pages' icons; the Database menu
- * shows them.
+ * (ADR 0027), which opens the database page; its menu opens on hover (ADR 0034), its
+ * pages under their sections' headings (T7SEN, 2026-10-19). Bar links show labels only,
+ * as the footer shows the pages' icons; the Database menu shows them.
  */
 const items: PillNavItem[] = navbarEntries().map((entry) =>
   "page" in entry
@@ -27,12 +27,15 @@ const items: PillNavItem[] = navbarEntries().map((entry) =>
         label: entry.group,
         href: entry.home?.href,
         prefetch: entry.home?.prefetch,
-        links: entry.pages.map(({ href, label, icon: Icon, prefetch }) => ({
-          href,
-          label,
-          prefetch,
-          icon: <Icon aria-hidden="true" />,
-        })),
+        links: entry.pages.map(
+          ({ href, label, icon: Icon, prefetch, section }) => ({
+            href,
+            label,
+            prefetch,
+            section,
+            icon: <Icon aria-hidden="true" />,
+          }),
+        ),
       },
 );
 

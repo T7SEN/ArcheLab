@@ -47,8 +47,8 @@ export const fellowPassiveOf: Readonly<Partial<Record<string, FellowPassive>>> =
 /**
  * Each Fellow's art, 296 by 176 like NEXON's reactor and component art. NEXON's data
  * and hosts have none, so these are files T7SEN supplied on 2026-10-17, kept in
- * `public/art/fellows/`: the one exception to never copying NEXON art into the
- * repository, at T7SEN's decision (ADR 0035).
+ * `public/art/fellows/`: an exception to never copying NEXON art into the repository,
+ * at T7SEN's decision (ADR 0035), as Void Erosion Purge's map pictures are (ADR 0053).
  */
 export const fellowArt: Readonly<Partial<Record<string, string>>> = {
   "Hagios Sheepdog": "/art/fellows/hagios-sheepdog.webp",

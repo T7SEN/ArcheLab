@@ -14,7 +14,8 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["src/**/*.test.ts"],
+    // The daily check's runner helpers are plain JavaScript (ADR 0055).
+    include: ["src/**/*.test.ts", "scripts/**/*.test.mjs"],
     environment: "node",
   },
 });

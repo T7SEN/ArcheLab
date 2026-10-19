@@ -7,7 +7,7 @@
 import { dayKey, dayOfKey } from "./day-400";
 
 /** What kind of drop a reward is, for the page's reward tabs. */
-export type DropKind = "material" | "core";
+export type DropKind = "module" | "reactor" | "component" | "material" | "core";
 
 /** An item that drops in an operation, with each way it comes, in the game's words. */
 export interface Drop400 {
@@ -16,8 +16,10 @@ export interface Drop400 {
   readonly kind: DropKind;
   /** Its page on ArcheLab, or null. */
   readonly href: string | null;
-  /** "complete", "Mission Monster". */
+  /** "complete", "Mission Monster"; none for equipment, whose lists don't say. */
   readonly ways: readonly string[];
+  /** A word after its name: "all 4 pieces" for an external component set. */
+  readonly detail?: string;
 }
 
 /** An operation that has a 400% difficulty. */
@@ -108,6 +110,7 @@ export interface RewardEntry {
   readonly kind: DropKind;
   readonly href: string | null;
   readonly ways: readonly string[];
+  readonly detail?: string;
 }
 
 const romanValues: Readonly<Record<string, number>> = {
@@ -140,10 +143,19 @@ function gradeText(grades: readonly string[]): string {
   return consecutive ? `${first}–${last}` : sorted.join(", ");
 }
 
+/** The ways a drop comes, in the order the drop lists give them, then any other A–Z. */
+const wayOrder = ["complete", "Mission Monster"];
+
+const wayRank = (way: string) => {
+  const at = wayOrder.indexOf(way);
+  return at === -1 ? wayOrder.length : at;
+};
+
 /**
  * The rewards to list: every grade of a kind of core in one entry ("Defense
- * Augmentation Core", "VII–X"), with the highest grade's art; the rest as they are.
- * Order is kept, each core at its first grade's place.
+ * Augmentation Core", "VII–X"), with the highest grade's art and every way any grade
+ * comes, "complete" first (T7SEN, 2026-10-19); the rest as they are. Order is kept,
+ * each core at its first grade's place.
  */
 export function rewardEntries(drops: readonly Drop400[]): RewardEntry[] {
   const entries: RewardEntry[] = [];
@@ -180,7 +192,9 @@ export function rewardEntries(drops: readonly Drop400[]): RewardEntry[] {
       imageUrl: top?.imageUrl ?? "",
       kind: "core",
       href: top?.href ?? null,
-      ways: [...new Set(grades.flatMap((drop) => drop.ways))],
+      ways: [...new Set(grades.flatMap((drop) => drop.ways))].sort(
+        (a, b) => wayRank(a) - wayRank(b) || a.localeCompare(b),
+      ),
     };
   }
   return entries;

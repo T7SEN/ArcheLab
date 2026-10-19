@@ -522,6 +522,19 @@ export async function fetchItemHrefs(): Promise<Map<string, string>> {
   ]);
 }
 
+let mapNamesPromise: Promise<ReadonlySet<string>> | null = null;
+
+/**
+ * Every map name in the reward list, which names instanced maps too: the Void Erosion
+ * Purge page checks its five against it (ADR 0053). Empty when the list fails to load.
+ */
+export function fetchRewardMapNames(): Promise<ReadonlySet<string>> {
+  mapNamesPromise ??= fetchMetadataSet("reward", rewardMapSchema).then(
+    (maps) => new Set(maps.map((map) => map.map_name)),
+  );
+  return mapNamesPromise;
+}
+
 let schedulePromise: Promise<DifficultyRewards> | null = null;
 
 /**

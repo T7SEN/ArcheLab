@@ -1,5 +1,6 @@
 import {
   Atom,
+  Biohazard,
   CalendarClock,
   Motorbike,
   CircuitBoard,
@@ -19,15 +20,31 @@ import {
   PawPrint,
   Pickaxe,
   Puzzle,
+  Radar,
   Shirt,
   Scale,
   ScrollText,
   Shapes,
   ShieldCheck,
   Skull,
+  Timer,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
+
+/**
+ * The Database menu's sections, in order (T7SEN, 2026-10-19): what players equip, what
+ * they use up, what they collect, and the game's rotations. Game info stays last, in
+ * the menu and on the database page, whatever sections come (T7SEN, 2026-10-19).
+ */
+export const menuSections = [
+  "Equipment",
+  "Consumable",
+  "Collection",
+  "Game info",
+] as const;
+
+export type MenuSection = (typeof menuSections)[number];
 
 /** A player-facing page, as the navbar or the footer shows it. */
 export interface SitePage {
@@ -49,6 +66,12 @@ export interface SitePage {
    * (ADR 0027). The footer lists every page either way.
    */
   group?: "Database";
+  /**
+   * The heading the page sits under in its group's menu: a column on wide screens, a
+   * section that opens on a tap in the folded menu (T7SEN, 2026-10-19). The group's
+   * pages are listed section by section, in `menuSections` order.
+   */
+  section?: MenuSection;
   /** Kept out of the navbar: the footer links it (ADR 0028). */
   footerOnly?: true;
   /**
@@ -80,9 +103,16 @@ export const sitePages: readonly SitePage[] = [
     label: "Descendants",
     icon: UsersRound,
     group: "Database",
+    section: "Equipment",
   },
   // Every weapon, with filters (ADR 0024); each one's page is under it.
-  { href: "/weapons", label: "Weapons", icon: Crosshair, group: "Database" },
+  {
+    href: "/weapons",
+    label: "Weapons",
+    icon: Crosshair,
+    group: "Database",
+    section: "Equipment",
+  },
   // Every module, with filters; each opens in the index's grid (ADR 0025).
   {
     href: "/modules",
@@ -90,9 +120,16 @@ export const sitePages: readonly SitePage[] = [
     icon: Cpu,
     prefetch: false,
     group: "Database",
+    section: "Equipment",
   },
   // Every reactor, with filters; each opens in the index's grid (ADR 0026).
-  { href: "/reactors", label: "Reactors", icon: Hexagon, group: "Database" },
+  {
+    href: "/reactors",
+    label: "Reactors",
+    icon: Hexagon,
+    group: "Database",
+    section: "Equipment",
+  },
   // Every external component set, with filters; each opens in the index's grid
   // (ADR 0027).
   {
@@ -100,11 +137,24 @@ export const sitePages: readonly SitePage[] = [
     label: "External Components",
     icon: CircuitBoard,
     group: "Database",
+    section: "Equipment",
   },
   // Every Fellow; each opens in the index's grid (T7SEN, 2026-10-17; ADR 0035).
-  { href: "/fellows", label: "Fellows", icon: PawPrint, group: "Database" },
+  {
+    href: "/fellows",
+    label: "Fellows",
+    icon: PawPrint,
+    group: "Database",
+    section: "Equipment",
+  },
   // Every vehicle; each opens in the index's grid (T7SEN, 2026-10-17; ADR 0037).
-  { href: "/vehicles", label: "Vehicles", icon: Motorbike, group: "Database" },
+  {
+    href: "/vehicles",
+    label: "Vehicles",
+    icon: Motorbike,
+    group: "Database",
+    section: "Equipment",
+  },
   // Every Mutant Cell, from NEXON's node-item.json; each opens in the index's grid
   // (T7SEN, 2026-10-17; ADR 0038, ADR 0040).
   {
@@ -112,15 +162,7 @@ export const sitePages: readonly SitePage[] = [
     label: "Mutant Cells",
     icon: Dna,
     group: "Database",
-  },
-  // Every cosmetic, one card per cosmetic; each opens in the index's grid (T7SEN,
-  // 2026-10-17; ADR 0039).
-  {
-    href: "/cosmetics",
-    label: "Cosmetics",
-    icon: Shirt,
-    prefetch: false,
-    group: "Database",
+    section: "Equipment",
   },
   // Every Amorphous Material Pattern and what it opens into; each opens in the index's
   // grid (T7SEN, 2026-10-17; ADR 0041).
@@ -130,6 +172,7 @@ export const sitePages: readonly SitePage[] = [
     icon: PackageOpen,
     prefetch: false,
     group: "Database",
+    section: "Consumable",
   },
   // Every enhancement material and every way to research it; each opens in the
   // index's grid (T7SEN, 2026-10-17; ADR 0043).
@@ -138,6 +181,7 @@ export const sitePages: readonly SitePage[] = [
     label: "Enhancement Materials",
     icon: FlaskConical,
     group: "Database",
+    section: "Consumable",
   },
   // Every basic material, what it goes into and where it drops; each opens in the
   // index's grid (T7SEN, 2026-10-18; ADR 0045).
@@ -147,6 +191,7 @@ export const sitePages: readonly SitePage[] = [
     icon: Pickaxe,
     prefetch: false,
     group: "Database",
+    section: "Consumable",
   },
   // Every Core Material, the parts that research Descendants, weapons, Fellows and
   // vehicles; each opens in the index's grid (T7SEN, 2026-10-18; ADR 0047).
@@ -156,10 +201,17 @@ export const sitePages: readonly SitePage[] = [
     icon: Puzzle,
     prefetch: false,
     group: "Database",
+    section: "Consumable",
   },
   // Every kind of core, what it rolls by grade, where it drops and what takes it; each
   // opens in the index's grid (T7SEN, 2026-10-18; ADR 0044).
-  { href: "/cores", label: "Cores", icon: Atom, group: "Database" },
+  {
+    href: "/cores",
+    label: "Cores",
+    icon: Atom,
+    group: "Database",
+    section: "Consumable",
+  },
   // Every item of the game's Miscellaneous list, loot boxes, coins, vouchers and keys,
   // and where it drops; each opens in the index's grid (T7SEN, 2026-10-18; ADR 0050).
   {
@@ -168,6 +220,17 @@ export const sitePages: readonly SitePage[] = [
     icon: Shapes,
     prefetch: false,
     group: "Database",
+    section: "Consumable",
+  },
+  // Every cosmetic, one card per cosmetic; each opens in the index's grid (T7SEN,
+  // 2026-10-17; ADR 0039).
+  {
+    href: "/cosmetics",
+    label: "Cosmetics",
+    icon: Shirt,
+    prefetch: false,
+    group: "Database",
+    section: "Collection",
   },
   // Every battlefield's Difficulty Level Reward this week and each published week after
   // it, and what drops in its missions; each opens in the page's grid (T7SEN,
@@ -177,6 +240,7 @@ export const sitePages: readonly SitePage[] = [
     label: "Difficulty Level Rewards",
     icon: CalendarClock,
     group: "Database",
+    section: "Game info",
   },
   // Today's two 400% Infiltration Operations, the rotation ahead and what drops in
   // each; each opens in the page's grid (T7SEN, 2026-10-18; ADR 0049).
@@ -185,6 +249,34 @@ export const sitePages: readonly SitePage[] = [
     label: "400% Infiltration Operations",
     icon: Skull,
     group: "Database",
+    section: "Game info",
+  },
+  // The two Axion Plains Operational Area missions active now, the rotation and what
+  // drops in each; each opens in the page's grid (T7SEN, 2026-10-19; ADR 0052).
+  {
+    href: "/axion-operational-areas",
+    label: "Axion Operational Areas",
+    icon: Radar,
+    group: "Database",
+    section: "Game info",
+  },
+  // Today's Void Erosion Purge Stage 10 map, the five-map rotation, and what each
+  // stage gives (T7SEN, 2026-10-19; ADR 0053).
+  {
+    href: "/void-erosion-purge",
+    label: "Void Erosion Purge",
+    icon: Biohazard,
+    group: "Database",
+    section: "Game info",
+  },
+  // Wall Crasher, ETA-0, the resets, Bounty Operations, the rotations, HQ Special
+  // Orders and the running events, counting down (T7SEN, 2026-10-19; ADR 0054).
+  {
+    href: "/timers",
+    label: "Timers",
+    icon: Timer,
+    group: "Database",
+    section: "Game info",
   },
   // What players can check in game and send in (ADR 0028), in the footer's Community
   // column, not the navbar.

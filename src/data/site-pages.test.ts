@@ -1,10 +1,12 @@
 import { readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { databaseCategories } from "@/features/database/database-items";
 import {
   allPages,
   dynamicRoutes,
   legalPages,
+  menuSections,
   navbarCurrent,
   navbarEntries,
   sitePages,
@@ -111,18 +113,90 @@ describe("navbarEntries", () => {
           "Fellows",
           "Vehicles",
           "Mutant Cells",
-          "Cosmetics",
           "Amorphous Materials",
           "Enhancement Materials",
           "Basic Materials",
           "Core Materials",
           "Cores",
           "Miscellaneous",
+          "Cosmetics",
           "Difficulty Level Rewards",
           "400% Infiltration Operations",
+          "Axion Operational Areas",
+          "Void Erosion Purge",
+          "Timers",
         ],
       ],
     ]);
+  });
+
+  it("puts every Database page but the database's own under its section, as T7SEN grouped them", () => {
+    const database = sitePages.filter((page) => page.group === "Database");
+    expect(
+      database
+        .filter((page) => page.section === undefined)
+        .map((page) => page.href),
+    ).toEqual(["/database"]);
+    // T7SEN, 2026-10-19.
+    expect(
+      Object.fromEntries(
+        menuSections.map((section) => [
+          section,
+          database
+            .filter((page) => page.section === section)
+            .map((page) => page.label),
+        ]),
+      ),
+    ).toEqual({
+      Equipment: [
+        "Descendants",
+        "Weapons",
+        "Modules",
+        "Reactors",
+        "External Components",
+        "Fellows",
+        "Vehicles",
+        "Mutant Cells",
+      ],
+      Consumable: [
+        "Amorphous Materials",
+        "Enhancement Materials",
+        "Basic Materials",
+        "Core Materials",
+        "Cores",
+        "Miscellaneous",
+      ],
+      "Game info": [
+        "Difficulty Level Rewards",
+        "400% Infiltration Operations",
+        "Axion Operational Areas",
+        "Void Erosion Purge",
+        "Timers",
+      ],
+      Collection: ["Cosmetics"],
+    });
+  });
+
+  it("puts every database page category in a section, so the database page shows its card", () => {
+    for (const category of databaseCategories) {
+      expect(
+        sitePages.find((page) => page.href === category.href)?.section,
+        category.href,
+      ).toBeDefined();
+    }
+  });
+
+  it("keeps Game info the last section (T7SEN, 2026-10-19)", () => {
+    expect(menuSections.at(-1)).toBe("Game info");
+  });
+
+  it("keeps a section's pages together, the sections in menuSections order", () => {
+    const sections = sitePages.flatMap((page) =>
+      page.section === undefined ? [] : [page.section],
+    );
+    expect(
+      sections.filter((section, index) => section !== sections[index - 1]),
+    ).toEqual([...menuSections]);
   });
 
   it("makes the page named as its group the page the group's button opens", () => {

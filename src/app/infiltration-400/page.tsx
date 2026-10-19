@@ -1,10 +1,9 @@
-import { Skull, TriangleAlert } from "lucide-react";
+import { Skull } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { HeroBackdrop } from "@/components/hero-backdrop";
 import { ShinyText } from "@/components/react-bits/shiny-text";
 import { Badge } from "@/components/ui/badge";
-import { rotation400Status } from "@/data/infiltration-400";
 import {
   Infiltration400,
   Infiltration400FromUrl,
@@ -53,12 +52,6 @@ export default async function Infiltration400Page() {
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <ResetCountdown />
-            {rotation400Status === "provisional" ? (
-              <Badge variant="destructive">
-                <TriangleAlert aria-hidden="true" />
-                Provisional: not verified in game yet
-              </Badge>
-            ) : null}
           </div>
         </div>
       </section>

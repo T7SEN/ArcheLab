@@ -1,6 +1,6 @@
 {
   "name": "archelab",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "packageManager": "pnpm@12.11.2",
   "scripts": {
@@ -12,6 +12,7 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "check:daily": "vitest run --config vitest.checks.config.mts",
     "favicon": "node scripts/make-favicon.mjs"
   },
   "dependencies": {

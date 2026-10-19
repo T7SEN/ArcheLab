@@ -1,10 +1,10 @@
 /**
  * Which two Infiltration Operations are 400% each day (T7SEN, 2026-10-18; ADR 0049). No
  * official source says: not NEXON's data, the Library or the update notes. This is
- * tfdhub.gg's 50-day cycle, read from its 400% page on 2026-10-18 with T7SEN's okay:
- * recorded 2026-08-11 to 2026-09-29, "verified against history", and repeated from
- * there. A day starts at 07:00 UTC (00:00 PDT). tfdhub warns that "the in-game rotation
- * has recently changed", so it is provisional until T7SEN checks it in game.
+ * tfdhub.gg's 50-day cycle, read from its 400% page on 2026-10-18: recorded 2026-08-11
+ * to 2026-09-29, "verified against history", and repeated from there. A day starts at
+ * 07:00 UTC (00:00 PDT). tfdhub's pages are a valid source, not provisional (T7SEN,
+ * 2026-10-19), though tfdhub warns that "the in-game rotation has recently changed".
  */
 
 /** The cycle's first day, and its length in days. */
@@ -12,9 +12,6 @@ export const rotation400 = {
   startsAt: "2026-08-11T07:00:00Z",
   days: 50,
 } as const;
-
-/** "verified" once T7SEN has checked the cycle in game. */
-export const rotation400Status: "provisional" | "verified" = "provisional";
 
 /**
  * Each day's two operations, by name as the game writes them, from the cycle's first

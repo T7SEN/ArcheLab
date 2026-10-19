@@ -34,10 +34,16 @@ export interface PillNavLink {
   ariaLabel?: string;
   /** False keeps Next.js from prefetching the page (a large one). */
   prefetch?: false;
+  /**
+   * The heading the link sits under in its group's menu. Links of one section follow
+   * each other. A group's menu lays its sections out in columns, and folded, each is a
+   * button that shows or hides its links.
+   */
+  section?: string;
 }
 
 /**
- * A button in the bar that opens a short menu of links under it, such as Database
+ * A button in the bar that opens a menu of links under it, such as Database
  * (ADR 0027). It is marked while one of its links is the current page or section.
  * Folded, its links follow its label in the menu.
  */
@@ -74,6 +80,80 @@ const fillSize = (event: { currentTarget: HTMLElement }) => {
 
 /** How long a hover menu stays open once the pointer leaves it, so it can cross the gap. */
 const menuCloseDelay = 200;
+
+/** A group's links under one heading (`PillNavLink.section`); no heading for links without. */
+export interface PillNavSection {
+  label: string | undefined;
+  links: PillNavLink[];
+}
+
+/** A group's links, section by section, in their order. */
+export const sectionsOf = (links: readonly PillNavLink[]): PillNavSection[] => {
+  const sections: PillNavSection[] = [];
+  for (const link of links) {
+    const last = sections.at(-1);
+    if (last !== undefined && last.label === link.section) {
+      last.links.push(link);
+    } else {
+      sections.push({ label: link.section, links: [link] });
+    }
+  }
+  return sections;
+};
+
+/** Every way to cut `sections` into at most `room` runs, in order. */
+const splits = <T,>(sections: readonly T[], room: number): T[][][] =>
+  sections.length === 0
+    ? [[]]
+    : room < 1
+      ? []
+      : sections.flatMap((_, end) =>
+          splits(sections.slice(end + 1), room - 1).map((rest) => [
+            sections.slice(0, end + 1),
+            ...rest,
+          ]),
+        );
+
+/**
+ * A menu's sections in columns, in order: a column each (T7SEN, 2026-10-19), or when
+ * fewer than that fit the screen, at most `fit` of them, cut so the longest column is
+ * as short as it can be, and of those cuts the one with fewest columns. A heading
+ * counts as half a row.
+ */
+export const menuColumns = (
+  sections: readonly PillNavSection[],
+  fit: number,
+): PillNavSection[][] => {
+  if (sections.length <= fit) {
+    return sections.map((section) => [section]);
+  }
+  const height = (column: readonly PillNavSection[]) =>
+    column.reduce(
+      (sum, section) =>
+        sum + section.links.length * 2 + (section.label === undefined ? 0 : 1),
+      0,
+    );
+  let best: PillNavSection[][] = [];
+  let bestHeight = Infinity;
+  for (const columns of splits(sections, Math.max(1, fit))) {
+    const tallest = Math.max(...columns.map(height));
+    if (
+      tallest < bestHeight ||
+      (tallest === bestHeight && columns.length < best.length)
+    ) {
+      best = columns;
+      bestHeight = tallest;
+    }
+  }
+  return best;
+};
+
+/** Caps a scrolling box's height at the screen below its top, less `below` and 16px. */
+const fitScreen = (element: HTMLElement, below: number) => {
+  const room =
+    window.innerHeight - element.getBoundingClientRect().top - below - 16;
+  element.style.maxHeight = `${String(Math.max(160, Math.floor(room)))}px`;
+};
 
 const keyOf = (item: PillNavItem) =>
   isGroup(item) ? `group:${item.label}` : item.href;
@@ -270,9 +350,27 @@ const ROW_DOT =
 const ROW_FILL =
   "pointer-events-none absolute left-1/2 top-full z-[-1] h-[var(--pn-fill,200%)] w-[var(--pn-fill,200%)] scale-0 rounded-full [background:var(--pn-pill)] [margin:calc(var(--pn-fill,200%)/-2)_0_0_calc(var(--pn-fill,200%)/-2)] transition-transform duration-[360ms] ease-[cubic-bezier(0.4,0,0.2,1)] group-hover/row:scale-100 group-hover/row:duration-[550ms] group-hover/row:ease-[cubic-bezier(0.22,1,0.36,1)] group-focus-visible/row:scale-100 group-focus-visible/row:duration-[550ms] group-focus-visible/row:ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none";
 // A group's menu, under its button. It is the nav's child, not the bar's: glass inside
-// the bar's glass would blur only the bar.
+// the bar's glass would blur only the bar. As wide as its columns; PillNav places it.
 const DROPDOWN =
-  "absolute top-[calc(var(--pn-h)_+_8px)] z-[6] box-border w-60 rounded-[22px] p-[6px] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-1 motion-safe:duration-200";
+  "absolute top-[calc(var(--pn-h)_+_8px)] z-[6] box-border w-max rounded-[22px] p-[6px] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-1 motion-safe:duration-200";
+// The menu's and the folded panel's links, which scroll on a screen too short for them
+// (`fitScreen`). The rim stays outside, on the menu itself.
+const SCROLL = "overflow-y-auto overscroll-contain rounded-[16px]";
+// A group's menu columns, each as wide as its widest row and no narrower than 200px.
+// Each holds a section, a heading over its links, or on a narrow screen more than one.
+const COLUMNS =
+  "grid auto-cols-[minmax(200px,max-content)] grid-flow-col gap-x-[4px]";
+// A column's heading, with a line under it, over the first link (T7SEN, 2026-10-19).
+const COLUMN_HEADING =
+  "relative mb-[4px] block px-[16px] pt-[10px] pb-[8px] after:absolute after:inset-x-[16px] after:bottom-0 after:h-px after:[background:var(--pn-edge)] text-[length:calc(var(--pn-font)_-_2px)] leading-none font-medium tracking-[0.08em] whitespace-nowrap text-[var(--pn-text)] uppercase";
+// A section's button in the folded menu (T7SEN, 2026-10-19): its name, quieter than a
+// link, and a chevron that turns as its links open under it.
+const SECTION_TOGGLE = `${ROW_BASE} justify-between text-[var(--pn-text)] hover:[background:var(--pn-row-hover)] aria-expanded:text-[var(--pn-strong)] [&>svg]:transition-transform [&>svg]:duration-300 [&>svg]:ease-[ease] aria-expanded:[&>svg]:rotate-180 motion-reduce:[&>svg]:transition-none`;
+// A section's links in the folded menu, set in from its button. Closed, the row's height
+// eases to nothing and its links are inert.
+const SECTION_BODY =
+  "grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] data-[open]:grid-rows-[1fr] motion-reduce:transition-none";
+const SECTION_LINKS = "min-h-0 overflow-hidden pl-[12px]";
 const CHEVRON =
   "-mr-[0.2em] transition-transform duration-300 ease-[ease] group-aria-expanded/menu:rotate-180 motion-reduce:transition-none";
 // A group's label in the folded menu, above its links.
@@ -355,6 +453,8 @@ const PillNav = ({
   const panelRef = useRef<HTMLDivElement>(null);
   const measureListRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuScrollRef = useRef<HTMLDivElement>(null);
+  const panelScrollRef = useRef<HTMLDivElement>(null);
   const slotRefs = useRef<(HTMLLIElement | null)[]>([]);
   const groupRefs = useRef<(HTMLElement | null)[]>([]);
   const menuCloseRef = useRef<number | undefined>(undefined);
@@ -374,13 +474,17 @@ const PillNav = ({
   );
   const [open, setOpen] = useState(false);
   const [panelShown, setPanelShown] = useState(false);
-  // The group whose menu is open, where it sits, and the page it opened on: moving to
-  // another page closes it.
+  // The group whose menu is open, how many columns its sections may take, and the page
+  // it opened on: moving to another page closes it.
   const [menu, setMenu] = useState<{
     index: number;
-    left: number;
+    fit: number;
     at: string | undefined;
   } | null>(null);
+  // The folded menu's sections showing their links, by group index and label.
+  const [openSections, setOpenSections] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
 
   const controlled = activeHref !== undefined;
   const activeIndex = controlled
@@ -398,6 +502,17 @@ const PillNav = ({
   const menuItem = shownMenu === null ? undefined : items.at(shownMenu.index);
   const menuGroup =
     menuItem !== undefined && isGroup(menuItem) ? menuItem : undefined;
+  // The open menu's sections in columns. The group's own page is its button's link, not
+  // a row here.
+  const menuLayout =
+    shownMenu === null || menuGroup === undefined
+      ? []
+      : menuColumns(
+          sectionsOf(
+            menuGroup.links.filter((item) => item.href !== menuGroup.href),
+          ),
+          shownMenu.fit,
+        );
   const menuId = `${panelId}-menu`;
   const activeCurrent = activeKind === "section" ? "true" : "page";
   const joined = layout === "joined";
@@ -858,6 +973,22 @@ const PillNav = ({
     });
   }, [collapsed, joined]);
 
+  // The folded menu scrolls when the screen is too short for its open sections. Before
+  // the effect below, which reads the panel's height for its opening.
+  const panelOpen = collapsed === true && panelShown;
+  useLayoutEffect(() => {
+    if (!panelOpen) return undefined;
+    const fit = () => {
+      const scroll = panelScrollRef.current;
+      if (scroll) fitScreen(scroll, 6);
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    return () => {
+      window.removeEventListener("resize", fit);
+    };
+  }, [panelOpen]);
+
   useLayoutEffect(() => {
     const panel = panelRef.current;
     const root = rootRef.current;
@@ -872,7 +1003,10 @@ const PillNav = ({
       ? `inset(0px 0px ${String(Math.max(0, height - header))}px 0px round ${String(header / 2)}px)`
       : `inset(0px 0px ${String(Math.max(0, height - header))}px ${String(Math.max(0, width - header))}px round ${String(header / 2)}px)`;
     const end = "inset(0px 0px 0px 0px round 24px)";
-    const rows = panel.querySelectorAll("li");
+    // The rows in view: a closed section's are inert and hidden.
+    const rows = [...panel.querySelectorAll("li")].filter(
+      (row) => row.closest("[inert]") === null,
+    );
     const running: Animation[] = [];
     if (open) {
       if (reduce) return undefined;
@@ -975,6 +1109,63 @@ const PillNav = ({
     };
   }, [menuIndex]);
 
+  // The open menu sits centered under its button, at least 16px inside the screen, and
+  // scrolls when the screen is too short for it. Too wide for the screen, it gives up a
+  // column and comes back here before it paints; a resize starts again from them all.
+  const menuFit = shownMenu?.fit ?? null;
+  const menuColumnCount = menuLayout.length;
+  useLayoutEffect(() => {
+    if (menuIndex === null) return undefined;
+    const place = () => {
+      const dropdown = dropdownRef.current;
+      const scroll = menuScrollRef.current;
+      const slot = slotRefs.current[menuIndex];
+      const root = rootRef.current;
+      if (!dropdown || !scroll || !slot || !root) return;
+      const width = dropdown.offsetWidth;
+      // The page's width, without a scrollbar, which innerWidth counts.
+      const screen = document.documentElement.clientWidth;
+      if (width > screen - 32 && menuColumnCount > 1) {
+        setMenu((shown) =>
+          shown === null ? shown : { ...shown, fit: menuColumnCount - 1 },
+        );
+        return;
+      }
+      const box = slot.getBoundingClientRect();
+      const left = clamp(
+        box.left + box.width / 2 - width / 2,
+        16,
+        screen - 16 - width,
+      );
+      dropdown.style.left = `${String(left - root.getBoundingClientRect().left)}px`;
+      fitScreen(scroll, 6);
+    };
+    place();
+    // The menu slides in from 4px up, so its height is capped there first: it's capped
+    // again where it stops, or it would end up to 4px past the screen (2026-10-19).
+    const dropdown = dropdownRef.current;
+    const onSettled = (event: AnimationEvent) => {
+      if (event.target === dropdown) {
+        place();
+      }
+    };
+    dropdown?.addEventListener("animationend", onSettled);
+    const onResize = () => {
+      if (menuFit === Infinity) {
+        place();
+      } else {
+        setMenu((shown) =>
+          shown === null ? shown : { ...shown, fit: Infinity },
+        );
+      }
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      dropdown?.removeEventListener("animationend", onSettled);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [menuIndex, menuFit, menuColumnCount]);
+
   useEffect(
     () => () => {
       window.clearTimeout(menuCloseRef.current);
@@ -1009,23 +1200,12 @@ const PillNav = ({
     if (!controlled) setSelected(index);
   };
 
-  // The menu is as wide as DROPDOWN's w-60, centered under its button and kept 16px
-  // inside the screen.
-  const menuWidth = 240;
+  // A menu opens with room for a column per section; the layout effect below takes
+  // columns away until it fits the screen.
   const openMenu = (index: number) => {
     window.clearTimeout(menuCloseRef.current);
     if (menuIndex === index) return;
-    const slot = slotRefs.current[index];
-    const root = rootRef.current;
-    if (!slot || !root) return;
-    const box = slot.getBoundingClientRect();
-    const origin = root.getBoundingClientRect().left;
-    const left = clamp(
-      box.left + box.width / 2 - menuWidth / 2,
-      16,
-      window.innerWidth - 16 - menuWidth,
-    );
-    setMenu({ index, left: left - origin, at: activeHref });
+    setMenu({ index, fit: Infinity, at: activeHref });
   };
   const toggleMenu = (index: number) => {
     if (menuIndex === index) {
@@ -1090,10 +1270,27 @@ const PillNav = ({
     setMenu(null);
   };
 
+  // The folded menu opens with the current page's section open, the rest closed.
+  const sectionKey = (index: number, label: string) =>
+    `${String(index)}:${label}`;
   const toggle = () => {
     const next = !open;
-    if (next) setPanelShown(true);
-    else if (prefersReducedMotion()) setPanelShown(false);
+    if (next) {
+      setPanelShown(true);
+      setOpenSections(
+        new Set(
+          items.flatMap((item, index) =>
+            isGroup(item)
+              ? item.links.flatMap((child) =>
+                  child.href === activeHref && child.section !== undefined
+                    ? [sectionKey(index, child.section)]
+                    : [],
+                )
+              : [],
+          ),
+        ),
+      );
+    } else if (prefersReducedMotion()) setPanelShown(false);
     setOpen(next);
     onMenuToggle?.(next);
   };
@@ -1111,6 +1308,14 @@ const PillNav = ({
       {isGroup(item) && <ChevronDown aria-hidden="true" className={CHEVRON} />}
     </>
   );
+
+  const flipSection = (key: string) => {
+    setOpenSections((shown) => {
+      const next = new Set(shown);
+      if (!next.delete(key)) next.add(key);
+      return next;
+    });
+  };
 
   /** A link's row in the folded menu, which closes the menu. */
   const row = (item: PillNavLink, index: number, current: boolean) =>
@@ -1308,7 +1513,6 @@ const PillNav = ({
           ref={dropdownRef}
           id={menuId}
           className={cn(DROPDOWN, SURFACE)}
-          style={{ left: `${String(shownMenu.left)}px` }}
           onBlur={(event) => {
             leaveMenu(shownMenu.index, event);
           }}
@@ -1319,39 +1523,72 @@ const PillNav = ({
           }}
           onPointerLeave={unhoverMenu}
         >
-          <ul className={MENU}>
-            {/* The group's own page is its button's link, not a row here. */}
-            {menuGroup.links
-              .filter((item) => item.href !== menuGroup.href)
-              .map((item) => (
-                <li key={item.href}>
-                  {link(
-                    item,
-                    {
-                      className: MENU_ROW,
-                      "aria-current":
-                        item.href === activeHref ? activeCurrent : undefined,
-                      onPointerEnter: fillSize,
-                      onFocus: fillSize,
-                      onClick: (event) => {
-                        choose(item, shownMenu.index, event);
-                        setMenu(null);
-                      },
-                    },
-                    <>
-                      <span className={ROW_FILL} aria-hidden="true" />
-                      <span className={ROW_FACE}>{face(item)}</span>
-                      {item.href === activeHref && (
-                        <span className={ROW_DOT} aria-hidden="true" />
-                      )}
-                      <span className={ROW_FACE_ALT} aria-hidden="true">
-                        {face(item)}
-                      </span>
-                    </>,
-                  )}
-                </li>
+          <div ref={menuScrollRef} className={SCROLL}>
+            <div className={COLUMNS}>
+              {menuLayout.map((column, c) => (
+                <div key={column[0]?.links[0]?.href}>
+                  {column.map((section, s) => {
+                    const heading = `${menuId}-${String(c)}-${String(s)}`;
+                    return (
+                      <div key={section.links[0]?.href}>
+                        {section.label !== undefined && (
+                          <span id={heading} className={COLUMN_HEADING}>
+                            {section.label}
+                          </span>
+                        )}
+                        <ul
+                          aria-labelledby={
+                            section.label === undefined ? undefined : heading
+                          }
+                          className={MENU}
+                        >
+                          {section.links.map((item) => (
+                            <li key={item.href}>
+                              {link(
+                                item,
+                                {
+                                  className: MENU_ROW,
+                                  "aria-current":
+                                    item.href === activeHref
+                                      ? activeCurrent
+                                      : undefined,
+                                  onPointerEnter: fillSize,
+                                  onFocus: fillSize,
+                                  onClick: (event) => {
+                                    choose(item, shownMenu.index, event);
+                                    setMenu(null);
+                                  },
+                                },
+                                <>
+                                  <span
+                                    className={ROW_FILL}
+                                    aria-hidden="true"
+                                  />
+                                  <span className={ROW_FACE}>{face(item)}</span>
+                                  {item.href === activeHref && (
+                                    <span
+                                      className={ROW_DOT}
+                                      aria-hidden="true"
+                                    />
+                                  )}
+                                  <span
+                                    className={ROW_FACE_ALT}
+                                    aria-hidden="true"
+                                  >
+                                    {face(item)}
+                                  </span>
+                                </>,
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })}
+                </div>
               ))}
-          </ul>
+            </div>
+          </div>
           <span className={RIM} />
         </div>
       )}
@@ -1393,32 +1630,71 @@ const PillNav = ({
 
       {collapsed && panelShown && (
         <div ref={panelRef} id={panelId} className={cn(PANEL, SURFACE)}>
-          <ul className={MENU}>
-            {items.map((item, index) =>
-              isGroup(item) ? (
-                // Folded, a group is its label over its links.
-                <li key={keyOf(item)}>
-                  <span id={`${panelId}-${String(index)}`} className={HEADING}>
-                    {item.label}
-                  </span>
-                  <ul
-                    aria-labelledby={`${panelId}-${String(index)}`}
-                    className={MENU}
-                  >
-                    {item.links.map((child) => (
-                      <li key={child.href}>
-                        {row(child, index, child.href === activeHref)}
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ) : (
-                <li key={keyOf(item)}>
-                  {row(item, index, index === activeIndex)}
-                </li>
-              ),
-            )}
-          </ul>
+          <div ref={panelScrollRef} className={SCROLL}>
+            <ul className={MENU}>
+              {items.map((item, index) =>
+                isGroup(item) ? (
+                  // Folded, a group is its label over its links, a section's under a
+                  // button that shows or hides them.
+                  <li key={keyOf(item)}>
+                    <span
+                      id={`${panelId}-${String(index)}`}
+                      className={HEADING}
+                    >
+                      {item.label}
+                    </span>
+                    <ul
+                      aria-labelledby={`${panelId}-${String(index)}`}
+                      className={MENU}
+                    >
+                      {sectionsOf(item.links).flatMap((section, s) => {
+                        const links = section.links.map((child) => (
+                          <li key={child.href}>
+                            {row(child, index, child.href === activeHref)}
+                          </li>
+                        ));
+                        if (section.label === undefined) return links;
+                        const key = sectionKey(index, section.label);
+                        const shown = openSections.has(key);
+                        const body = `${panelId}-${String(index)}-${String(s)}`;
+                        return [
+                          <li key={key}>
+                            <button
+                              type="button"
+                              className={SECTION_TOGGLE}
+                              aria-expanded={shown}
+                              aria-controls={body}
+                              tabIndex={open ? undefined : -1}
+                              onClick={() => {
+                                flipSection(key);
+                              }}
+                            >
+                              {section.label}
+                              <ChevronDown aria-hidden="true" />
+                            </button>
+                            <div
+                              id={body}
+                              className={SECTION_BODY}
+                              data-open={shown ? "" : undefined}
+                              inert={!shown}
+                            >
+                              <ul className={cn(MENU, SECTION_LINKS)}>
+                                {links}
+                              </ul>
+                            </div>
+                          </li>,
+                        ];
+                      })}
+                    </ul>
+                  </li>
+                ) : (
+                  <li key={keyOf(item)}>
+                    {row(item, index, index === activeIndex)}
+                  </li>
+                ),
+              )}
+            </ul>
+          </div>
           <span className={RIM} />
         </div>
       )}

@@ -1,5 +1,10 @@
 import { expect, test, type Locator } from "@playwright/test";
-import { navbarFoldBelow, sitePages } from "../../src/data/site-pages";
+import { changelog } from "../../src/data/changelog";
+import {
+  menuSections,
+  navbarFoldBelow,
+  sitePages,
+} from "../../src/data/site-pages";
 
 /**
  * The pages the navbar links: all but the footer-only ones (ADR 0028) and Home, which the
@@ -20,7 +25,7 @@ const measured = (nav: Locator) =>
   expect(nav).not.toHaveAttribute("data-fold-below");
 
 for (const path of ["/", "/tools/chat", "/this-page-does-not-exist"]) {
-  test(`footer shows the disclaimer and attribution on ${path}`, async ({
+  test(`footer shows the disclaimer, attribution and version on ${path}`, async ({
     page,
   }) => {
     await page.goto(path);
@@ -36,6 +41,18 @@ for (const path of ["/", "/tools/chat", "/this-page-does-not-exist"]) {
     const api = footer.getByRole("link", { name: "NEXON Open API" });
     await expect(api).toHaveAttribute("href", "https://openapi.nexon.com/");
     await expect(api).toHaveAttribute("target", "_blank");
+    // T7SEN's name opens their page of links (T7SEN, 2026-10-19).
+    const owner = footer.getByRole("link", { name: "T7SEN", exact: true });
+    await expect(owner).toHaveAttribute("href", "https://links.t7sen.com/");
+    await expect(owner).toHaveAttribute("target", "_blank");
+    // The site's version, the Changelog's newest, opens the Changelog (T7SEN,
+    // 2026-10-19).
+    await expect(
+      footer.getByRole("link", {
+        name: `Version ${String(changelog[0]?.version)}`,
+        exact: true,
+      }),
+    ).toHaveAttribute("href", "/changelog");
   });
 }
 
@@ -100,10 +117,13 @@ for (const [path, section] of [
       }
     }
 
-    // Folded, the menu row is marked the same way.
+    // Folded, the menu row is marked the same way, its section open.
     await measured(nav);
     await page.setViewportSize({ width: 260, height: 700 });
     await nav.getByRole("button", { name: "Open menu" }).click();
+    await expect(
+      nav.getByRole("button", { name: "Equipment", exact: true }),
+    ).toHaveAttribute("aria-expanded", "true");
     await expect(current).toHaveAttribute("aria-current", "true");
   });
 }
@@ -275,10 +295,7 @@ test("the Database item opens its page, and its menu on hover or keyboard focus"
   await expect(
     nav.getByRole("link", { name: "Mutant Cells", exact: true }),
   ).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(
-    nav.getByRole("link", { name: "Cosmetics", exact: true }),
-  ).toBeFocused();
+  // Column by column (T7SEN, 2026-10-19).
   for (const label of [
     "Amorphous Materials",
     "Enhancement Materials",
@@ -286,8 +303,12 @@ test("the Database item opens its page, and its menu on hover or keyboard focus"
     "Core Materials",
     "Cores",
     "Miscellaneous",
+    "Cosmetics",
     "Difficulty Level Rewards",
     "400% Infiltration Operations",
+    "Axion Operational Areas",
+    "Void Erosion Purge",
+    "Timers",
   ]) {
     await page.keyboard.press("Tab");
     await expect(
@@ -335,29 +356,108 @@ test("on a narrow screen the navbar links fold into a menu", async ({
   await expect(page).toHaveURL("/tools/chat");
   await expect(builder).toHaveCount(0);
 
-  // Folded, the Database group is its label over its links.
+  // Folded, the Database group is its label over its own page, then a button per
+  // section that shows or hides its links (T7SEN, 2026-10-19), all closed on a page
+  // outside them.
   await nav.getByRole("button", { name: "Open menu" }).click();
   const database = nav.getByRole("list", { name: "Database" });
-  await expect(database.getByRole("link")).toHaveText([
-    "Database",
-    "Descendants",
-    "Weapons",
-    "Modules",
-    "Reactors",
-    "External Components",
-    "Fellows",
-    "Vehicles",
-    "Mutant Cells",
-    "Cosmetics",
+  await expect(
+    database.getByRole("link", { name: "Database", exact: true }),
+  ).toBeVisible();
+  const sections = database.getByRole("button");
+  await expect(sections).toHaveText([...menuSections]);
+  for (const section of await sections.all()) {
+    await expect(section).toHaveAttribute("aria-expanded", "false");
+  }
+  const consumable = database.getByRole("button", { name: "Consumable" });
+  const links = page.locator(
+    `[id="${String(await consumable.getAttribute("aria-controls"))}"]`,
+  );
+  await expect(links).toHaveAttribute("inert", "");
+  await consumable.click();
+  await expect(consumable).toHaveAttribute("aria-expanded", "true");
+  await expect(links).not.toHaveAttribute("inert");
+  await expect(links.getByRole("link")).toHaveText([
     "Amorphous Materials",
     "Enhancement Materials",
     "Basic Materials",
     "Core Materials",
     "Cores",
     "Miscellaneous",
-    "Difficulty Level Rewards",
-    "400% Infiltration Operations",
   ]);
+  await consumable.click();
+  await expect(consumable).toHaveAttribute("aria-expanded", "false");
+  await expect(links).toHaveAttribute("inert", "");
+
+  await nav.getByRole("button", { name: "Game info" }).click();
+  await nav
+    .getByRole("link", { name: "400% Infiltration Operations", exact: true })
+    .click();
+  await expect(page).toHaveURL("/infiltration-400");
+});
+
+test("the Database menu gives each section a column, fewer on a narrow screen, and scrolls on a short one", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const nav = page.getByRole("navigation", { name: "Main" });
+  const database = nav.getByRole("link", { name: "Database", exact: true });
+  await measured(nav);
+  const list = (section: string) =>
+    nav.getByRole("list", { name: section, exact: true });
+  const lefts = () =>
+    Promise.all(
+      menuSections.map(async (section) => {
+        const box = await list(section).boundingBox();
+        return box?.x ?? Number.NaN;
+      }),
+    );
+
+  // A column each, side by side, each a heading over its pages (T7SEN, 2026-10-19).
+  await database.hover();
+  for (const [section, first] of [
+    ["Equipment", "Descendants"],
+    ["Consumable", "Amorphous Materials"],
+    ["Collection", "Cosmetics"],
+    ["Game info", "Difficulty Level Rewards"],
+  ] as const) {
+    // Its name: a row's text holds its label twice, the second rolling in on hover.
+    await expect(list(section).getByRole("link").first()).toHaveAccessibleName(
+      first,
+    );
+  }
+  const wide = await lefts();
+  expect(wide).toEqual([...wide].sort((a, b) => a - b));
+  expect(new Set(wide).size).toBe(menuSections.length);
+
+  // Narrower and short, the sections after Equipment share a column; the menu stays
+  // on the screen and scrolls to its last page.
+  await page.mouse.move(8, 600);
+  await page.setViewportSize({ width: 600, height: 520 });
+  await database.hover();
+  const [equipment = 0, consumable = 0, collection, gameInfo] = await lefts();
+  expect(consumable).toBeGreaterThan(equipment);
+  expect(collection).toBe(consumable);
+  expect(gameInfo).toBe(consumable);
+  const menu = page.locator(
+    `[id="${String(await database.getAttribute("aria-controls"))}"]`,
+  );
+  const box = await menu.boundingBox();
+  const screen = await page.evaluate(() => ({
+    width: document.documentElement.clientWidth,
+    height: window.innerHeight,
+  }));
+  expect(box?.x).toBeGreaterThanOrEqual(16);
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(
+    screen.width - 16,
+  );
+  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(
+    screen.height - 16,
+  );
+  const cosmetics = nav.getByRole("link", { name: "Cosmetics", exact: true });
+  await cosmetics.scrollIntoViewIfNeeded();
+  await cosmetics.click();
+  await expect(page).toHaveURL("/cosmetics");
 });
 
 test("the navbar menu also closes with reduced motion", async ({ page }) => {

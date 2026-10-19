@@ -75,6 +75,16 @@ describe("rewardEntries", () => {
     });
   });
 
+  it("lists a core's ways with completion first, whichever grade comes first", () => {
+    // Grades A to Z put IX before VIII: its monsters' way came first (T7SEN, 2026-10-19).
+    const core = rewardEntries([
+      drop("Attribute Augmentation Core IX", "core", ["Mission Monster"]),
+      drop("Attribute Augmentation Core VIII", "core", ["complete"]),
+      drop("Attribute Augmentation Core X", "core", ["Mission Monster"]),
+    ]).at(0);
+    expect(core?.ways).toEqual(["complete", "Mission Monster"]);
+  });
+
   it("writes grades that skip one apart, and a lone grade alone", () => {
     expect(
       rewardEntries([

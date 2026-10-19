@@ -1,0 +1,67 @@
+# The daily check (ADR 0055). After the game's day starts at 07:00 UTC it checks NEXON's
+# sets and tfdhub.gg's rotation pages against the site, opens an issue for each failed
+# check (closed once it passes) and for each new NEXON post on Steam, and starts CI,
+# which rebuilds and deploys, when NEXON's data changed. Public repository: the minutes
+# are free. Actions are pinned to commit SHAs (ADR 0002).
+name: Daily check
+
+on:
+  schedule:
+    # 07:23 UTC, after the game's daily reset; the minute avoids the busy top of the hour.
+    - cron: "23 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # Opening and closing its issues, and starting CI.
+  issues: write
+  actions: write
+
+concurrency:
+  group: daily-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Daily check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      DAILY_CHECK_DIR: .daily-check
+      # Node tries IPv6 first, which can stall a connection where it's missing.
+      NODE_OPTIONS: --dns-result-order=ipv4first
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Restore the last run's NEXON set versions
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .daily-check/state
+          key: daily-check-${{ github.run_id }}
+          restore-keys: daily-check-
+      - name: Run the live checks
+        # A failed check becomes an issue in the next step, not a failed run.
+        continue-on-error: true
+        run: pnpm check:daily
+      - name: Open and close issues, and compare NEXON's sets
+        id: report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/daily-check/run.mjs
+      - name: Keep the set versions for the next run
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .daily-check/state
+          key: daily-check-${{ github.run_id }}
+      - name: Rebuild the site with NEXON's new data
+        if: steps.report.outputs.rebuild == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run ci.yml --ref main --repo "$GITHUB_REPOSITORY"

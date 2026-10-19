@@ -1,6 +1,7 @@
 import { Info } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { axionMissions } from "@/data/axion-operational-areas";
 import { slugOf } from "@/lib/slug";
 import {
   karelsMothershipLoot,
@@ -37,6 +38,19 @@ function operation400Href(
   const wanted = bare(slugOf(content.slice(0, -hard400.length)));
   const slug = operations.find((entry) => bare(entry) === wanted);
   return slug === undefined ? null : `/infiltration-400?operation=${slug}`;
+}
+
+/**
+ * A row's page: a Hard 400% one's operation on the 400% Infiltration Operations page,
+ * an Axion Operational Area mission's on its page (ADR 0052), or null.
+ */
+function contentHref(
+  content: string,
+  operations: readonly string[],
+): string | null {
+  return axionMissions.includes(content)
+    ? `/axion-operational-areas?mission=${slugOf(content)}`
+    : operation400Href(content, operations);
 }
 
 const inlineLinkClass =
@@ -174,14 +188,15 @@ export function TranscendentSources({
               </thead>
               <tbody>
                 {transcendentDrops.map((drop) => {
-                  const href = operation400Href(drop.content, operations400);
+                  const href = contentHref(drop.content, operations400);
                   return (
                     <tr key={drop.content} className="even:bg-background/30">
                       <th
                         scope="row"
                         className={`${cellClass} text-left font-normal`}
                       >
-                        {/* A 400% operation opens on its page (ADR 0050). */}
+                        {/* A 400% operation or an Axion Operational Area mission
+                            opens on its page (ADR 0050, ADR 0052). */}
                         {href === null ? (
                           drop.content
                         ) : (

@@ -2,7 +2,8 @@
  * The database page's search (T7SEN, 2026-10-17; ADR 0034): every Descendant, weapon,
  * module, reactor, external component, Fellow, vehicle, Mutant Cell, cosmetic, Amorphous
  * Material Pattern, enhancement material, basic material, Core Material, core,
- * Miscellaneous item, battlefield and 400% Infiltration Operation in one list, from a
+ * Miscellaneous item, battlefield, 400% Infiltration Operation, Axion Operational Area
+ * mission, Void Erosion Purge map and timer in one list, from a
  * static file, `/database/items`, loaded once someone searches. Pure, for the browser
  * and the tests.
  */
@@ -109,6 +110,24 @@ export const databaseCategories = [
     href: "/infiltration-400",
     description:
       "Today's two 400% operations, every day of the rotation ahead, and what drops in each at 400%.",
+  },
+  {
+    name: "Axion Operational Areas",
+    href: "/axion-operational-areas",
+    description:
+      "The two missions active now, every rotation in your time, and what drops in each.",
+  },
+  {
+    name: "Void Erosion Purge",
+    href: "/void-erosion-purge",
+    description:
+      "Today's Stage 10 map, the five-map rotation in your time, and what every stage gives.",
+  },
+  {
+    name: "Timers",
+    href: "/timers",
+    description:
+      "Wall Crasher, ETA-0, the resets, today's bounty, HQ Special Orders and every running event, counting down.",
   },
 ] as const;
 

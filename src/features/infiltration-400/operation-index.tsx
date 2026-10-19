@@ -13,6 +13,11 @@ import Link from "next/link";
 import { useEffect, useId, useRef, useState, type MouseEvent } from "react";
 import { motionAllowed, useSlideIn } from "@/components/motion";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  detailsScrollMargin,
+  useDetailsFocus,
+  useDetailsRequest,
+} from "@/features/game-data/details-focus";
 import { filterChipClass } from "@/features/game-data/filter-row";
 import { LoadFailed } from "@/features/game-data/load-failed";
 import { useSearch, writeSearch } from "@/features/game-data/url-query";
@@ -38,12 +43,15 @@ const previewCount = 5;
 /** How many rewards the list shows before "Show all": three rows on wide screens. */
 const rewardsFirst = 9;
 
-/** The reward tabs: every drop, then by kind. */
+/** The reward tabs: every drop, then by kind, equipment first (T7SEN, 2026-10-19). */
 const rewardTabs: readonly {
   readonly kind: DropKind | "all";
   readonly label: string;
 }[] = [
   { kind: "all", label: "All" },
+  { kind: "module", label: "Modules" },
+  { kind: "reactor", label: "Reactors" },
+  { kind: "component", label: "External Components" },
   { kind: "material", label: "Materials" },
   { kind: "core", label: "Cores" },
 ];
@@ -165,8 +173,12 @@ export function Infiltration400({
   const choose = (change: Partial<Operation400Filters>) => {
     writeSearch(operation400FiltersToSearch({ ...filters, ...change }));
   };
+  // An operation picked here, or named by the link the page opened on, brings its
+  // rewards into view (T7SEN, 2026-10-19).
+  const details = useDetailsRequest(filters.open !== null);
   const pick = (next: number, operation: Operation400) => {
     choose({ day: next === today ? null : next, open: operation.slug });
+    details.focus();
   };
 
   // The week on show: the chosen day's, until the arrows or tabs move it.
@@ -256,6 +268,7 @@ export function Infiltration400({
                       href={`${indexPath}${operation400FiltersToSearch({ ...filters, open: operation.slug })}`}
                       onChoose={() => {
                         choose({ open: operation.slug });
+                        details.focus();
                       }}
                     />
                   </li>
@@ -268,6 +281,7 @@ export function Infiltration400({
             <OperationRewards
               key={chosen.slug}
               operation={chosen}
+              request={details.request}
               day={day}
               today={today}
               onPickDay={(next) => {
@@ -582,16 +596,23 @@ function OperationSummary({
  */
 function OperationRewards({
   operation,
+  request,
   day,
   today,
   onPickDay,
 }: {
   operation: Operation400;
+  /** Asks for the panel in view, with focus on its heading, each time it goes up. */
+  request: number;
   day: number;
   today: number;
   onPickDay: (day: number) => void;
 }) {
   const ids = useId();
+  const { panelRef, headingRef } = useDetailsFocus<
+    HTMLElement,
+    HTMLHeadingElement
+  >(request);
   const [tab, setTab] = useState<DropKind | "all">("all");
   const [showAll, setShowAll] = useState(false);
   // Every grade of a kind of core is one entry, so the list stays short.
@@ -611,15 +632,18 @@ function OperationRewards({
 
   return (
     <section
+      ref={panelRef}
       aria-labelledby={`${ids}-title`}
-      className="grid gap-5 rounded-2xl border border-t-2 border-primary/40 border-t-primary bg-card/60 p-4 duration-300 motion-safe:animate-in motion-safe:fade-in sm:p-5"
+      className={`grid gap-5 rounded-2xl border border-t-2 border-primary/40 border-t-primary bg-card/60 p-4 duration-300 motion-safe:animate-in motion-safe:fade-in sm:p-5 ${detailsScrollMargin}`}
     >
       <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
         <div className="flex items-center gap-3">
           <OperationIcon size="lg" />
           <h2
+            ref={headingRef}
             id={`${ids}-title`}
-            className="grid gap-0.5 font-display text-2xl leading-tight font-semibold tracking-wide"
+            tabIndex={-1}
+            className="grid gap-0.5 font-display text-2xl leading-tight font-semibold tracking-wide outline-none"
           >
             <Eyebrow operation={operation} />
             {operation.name}
@@ -764,7 +788,7 @@ function OperationRewards({
  * A reward as a compact tile: its art beside its name, a core's grades, and each way it
  * comes. A link to its page when it has one.
  */
-function RewardTile({ entry }: { entry: RewardEntry }) {
+export function RewardTile({ entry }: { entry: RewardEntry }) {
   const body = (
     <>
       <span
@@ -795,6 +819,11 @@ function RewardTile({ entry }: { entry: RewardEntry }) {
           {entry.grades === null ? null : (
             <span className="font-normal text-muted-foreground">
               , {entry.grades}
+            </span>
+          )}
+          {entry.detail === undefined ? null : (
+            <span className="font-normal text-muted-foreground">
+              , {entry.detail}
             </span>
           )}
         </span>
