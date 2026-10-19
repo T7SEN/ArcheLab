@@ -21,6 +21,7 @@ import {
   type VehicleCard,
 } from "./vehicle-card";
 import { VehicleDetails } from "./vehicle-details";
+import { LoadFailed } from "@/features/game-data/load-failed";
 
 /** The page's address, for a card's link. */
 const indexPath = "/vehicles";
@@ -132,10 +133,7 @@ export function VehicleShowcase({
   }
 
   return entries.length === 0 ? (
-    <p className="rounded-2xl border border-dashed bg-card/40 p-8 text-center text-muted-foreground">
-      The vehicles couldn&apos;t be loaded for this build. They come back with
-      the next one.
-    </p>
+    <LoadFailed what="vehicles" />
   ) : (
     <ul aria-label="Vehicles" className={showcaseGridClass}>
       {items}

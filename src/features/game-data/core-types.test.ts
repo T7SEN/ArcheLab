@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { coreOptionLabel, formatCoreRange, romanGrade } from "./core-types";
+import {
+  coreHref,
+  coreOptionLabel,
+  coreSlotName,
+  formatCoreRange,
+  romanGrade,
+} from "./core-types";
 
 const option = (name: string, operator: string, min: number, max: number) => ({
   name,
@@ -30,9 +36,22 @@ describe("formatCoreRange", () => {
     expect(
       formatCoreRange(option("Reload Time Modifier", "Add", 0.02, 0.74)),
     ).toBe("2–74% [+]");
+    // Negatives take a minus sign (U+2212) and the dash spaces, as the monospace
+    // font draws a minus and an en dash alike.
     expect(formatCoreRange(option("Recoil", "Add", -0.92, -0.05))).toBe(
-      "-92–-5% [+]",
+      "−92 – −5% [+]",
     );
+    expect(
+      formatCoreRange(
+        option(
+          "Grappling Hook Charge Time Increase Ratio",
+          "Add",
+          -0.46,
+          -0.35000000000000003,
+        ),
+      ),
+    ).toBe("−46 – −35% [+]");
+    expect(formatCoreRange(option("Max HP", "Add", -2, 3))).toBe("−2 – 3 [+]");
     expect(formatCoreRange(option("Multi-Hit Chance", "Add", 1, 24))).toBe(
       "1–24% [+]",
     );
@@ -72,5 +91,22 @@ describe("romanGrade", () => {
     expect([1, 4, 9, 10].map(romanGrade)).toEqual(["I", "IV", "IX", "X"]);
     expect(romanGrade(11)).toBe("11");
     expect(romanGrade(0)).toBe("0");
+  });
+});
+
+describe("a core type's card on the Cores index", () => {
+  it("is named for its slot", () => {
+    expect(coreSlotName("Firepower Augmentation")).toBe("Firepower");
+    expect(coreSlotName("Free Augmentation")).toBe("Free");
+  });
+
+  it("opens the card, with a weapon type's rolls when given", () => {
+    expect(coreHref("Recovery Augmentation")).toBe("/cores?core=recovery");
+    expect(coreHref("Firepower Augmentation", "Launcher")).toBe(
+      "/cores?type=launcher&core=firepower",
+    );
+    expect(coreHref("Hit Augmentation", "Balanced Melee Weapon")).toBe(
+      "/cores?type=balanced-melee-weapon&core=hit",
+    );
   });
 });

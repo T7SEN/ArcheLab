@@ -34,7 +34,7 @@ export function ComponentShowcase({
     <CardCarousel
       icon={<CircuitBoard />}
       title="External Components"
-      description={`${String(sets)} sets and ${String(items.length - sets)} components with no set. Pick one for its set effect, and each piece's base stat at every level and possible sub-stats.`}
+      description={`All ${String(sets)} sets and ${String(items.length - sets)} components with no set. Open one for its set effect, and each piece's base stat at every level and possible sub-stats.`}
       seconds={7}
       action={
         <Link

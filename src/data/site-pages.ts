@@ -1,8 +1,11 @@
 import {
+  Atom,
+  CalendarClock,
   Motorbike,
   CircuitBoard,
   Database,
   Dna,
+  FlaskConical,
   HandHelping,
   History,
   Info,
@@ -14,10 +17,14 @@ import {
   MessageSquareText,
   PackageOpen,
   PawPrint,
+  Pickaxe,
+  Puzzle,
   Shirt,
   Scale,
   ScrollText,
+  Shapes,
   ShieldCheck,
+  Skull,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
@@ -31,7 +38,10 @@ export interface SitePage {
   /**
    * False for a page too heavy to prefetch from every page's navbar and footer: the
    * modules index's data is about 35 KB compressed, 368 KB to parse (ADR 0025), and the
-   * Cosmetics and Amorphous Materials indexes' more (ADR 0039, ADR 0041).
+   * Cosmetics and Amorphous Materials indexes' more (ADR 0039, ADR 0041). The Basic
+   * Materials index carries every material's drop places, about 100 KB (ADR 0045), the
+   * Core Materials index 469 materials with their recipes (ADR 0047), and the
+   * Miscellaneous index its items' drop places (ADR 0050).
    */
   prefetch?: false;
   /**
@@ -95,8 +105,8 @@ export const sitePages: readonly SitePage[] = [
   { href: "/fellows", label: "Fellows", icon: PawPrint, group: "Database" },
   // Every vehicle; each opens in the index's grid (T7SEN, 2026-10-17; ADR 0037).
   { href: "/vehicles", label: "Vehicles", icon: Motorbike, group: "Database" },
-  // Every Mutant Cell, from the update notes; each opens in the index's grid (T7SEN,
-  // 2026-10-17; ADR 0038).
+  // Every Mutant Cell, from NEXON's node-item.json; each opens in the index's grid
+  // (T7SEN, 2026-10-17; ADR 0038, ADR 0040).
   {
     href: "/mutant-cells",
     label: "Mutant Cells",
@@ -119,6 +129,61 @@ export const sitePages: readonly SitePage[] = [
     label: "Amorphous Materials",
     icon: PackageOpen,
     prefetch: false,
+    group: "Database",
+  },
+  // Every enhancement material and every way to research it; each opens in the
+  // index's grid (T7SEN, 2026-10-17; ADR 0043).
+  {
+    href: "/enhancement-materials",
+    label: "Enhancement Materials",
+    icon: FlaskConical,
+    group: "Database",
+  },
+  // Every basic material, what it goes into and where it drops; each opens in the
+  // index's grid (T7SEN, 2026-10-18; ADR 0045).
+  {
+    href: "/basic-materials",
+    label: "Basic Materials",
+    icon: Pickaxe,
+    prefetch: false,
+    group: "Database",
+  },
+  // Every Core Material, the parts that research Descendants, weapons, Fellows and
+  // vehicles; each opens in the index's grid (T7SEN, 2026-10-18; ADR 0047).
+  {
+    href: "/core-materials",
+    label: "Core Materials",
+    icon: Puzzle,
+    prefetch: false,
+    group: "Database",
+  },
+  // Every kind of core, what it rolls by grade, where it drops and what takes it; each
+  // opens in the index's grid (T7SEN, 2026-10-18; ADR 0044).
+  { href: "/cores", label: "Cores", icon: Atom, group: "Database" },
+  // Every item of the game's Miscellaneous list, loot boxes, coins, vouchers and keys,
+  // and where it drops; each opens in the index's grid (T7SEN, 2026-10-18; ADR 0050).
+  {
+    href: "/miscellaneous",
+    label: "Miscellaneous",
+    icon: Shapes,
+    prefetch: false,
+    group: "Database",
+  },
+  // Every battlefield's Difficulty Level Reward this week and each published week after
+  // it, and what drops in its missions; each opens in the page's grid (T7SEN,
+  // 2026-10-18; ADR 0048).
+  {
+    href: "/difficulty-level-rewards",
+    label: "Difficulty Level Rewards",
+    icon: CalendarClock,
+    group: "Database",
+  },
+  // Today's two 400% Infiltration Operations, the rotation ahead and what drops in
+  // each; each opens in the page's grid (T7SEN, 2026-10-18; ADR 0049).
+  {
+    href: "/infiltration-400",
+    label: "400% Infiltration Operations",
+    icon: Skull,
     group: "Database",
   },
   // What players can check in game and send in (ADR 0028), in the footer's Community

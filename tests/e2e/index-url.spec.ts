@@ -12,8 +12,8 @@ async function clickDatabaseLink(page: Page, name: string): Promise<void> {
 }
 
 for (const [path, name, label, match] of [
-  ["/weapons", "Weapons", "Search weapons by name", /^Thunder Cage\b/],
-  ["/descendants", "Descendants", "Search Descendants by name", /^Raven$/],
+  ["/weapons", "Weapons", "Search weapons", /^Thunder Cage\b/],
+  ["/descendants", "Descendants", "Search Descendants", /^Raven$/],
 ] as const) {
   test(`fast typing on ${path} keeps filtering, and the URL catches up`, async ({
     page,
@@ -39,8 +39,8 @@ for (const [path, name, label, match] of [
 }
 
 for (const [path, label, query] of [
-  ["/weapons", "Search weapons by name", "thunder"],
-  ["/descendants", "Search Descendants by name", "raven"],
+  ["/weapons", "Search weapons", "thunder"],
+  ["/descendants", "Search Descendants", "raven"],
 ] as const) {
   test(`a space typed first on ${path} stays in the box and out of the URL`, async ({
     page,

@@ -74,7 +74,7 @@ export function VehicleDetails({
           <TierPill name={card.tierName} hex={card.hex} />
           {first === undefined || last === undefined ? null : (
             <span>
-              Levels {first} to {last}
+              Levels {first}–{last}
             </span>
           )}
         </p>
@@ -84,7 +84,7 @@ export function VehicleDetails({
       <LevelView card={card} />
 
       {card.research === null ? null : (
-        <ResearchRecipe name={card.name} recipe={card.research} />
+        <ResearchRecipe name={card.name} recipe={card.research} inPanel />
       )}
     </section>
   );

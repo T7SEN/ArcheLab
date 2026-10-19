@@ -76,7 +76,7 @@ export function TierPill({ name, hex }: { name: string; hex: string }) {
       className="rounded-full border px-2 py-0.5 text-xs font-medium"
       style={{
         color: hex,
-        borderColor: `color-mix(in srgb, ${hex} 50%, transparent)`,
+        borderColor: `color-mix(in srgb, ${hex} 45%, transparent)`,
       }}
     >
       {name}

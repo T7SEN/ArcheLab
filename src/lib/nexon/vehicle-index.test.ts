@@ -26,11 +26,10 @@ const vehicle = (id: string, name: string): VehicleRecord => ({
 });
 
 const stats = [
-  { stat_id: "105000230", stat_name: "Max Speed", stat_order_no: 1 },
+  { stat_id: "105000230", stat_name: "Max Speed" },
   {
     stat_id: "105000237",
     stat_name: "Turning Power during Boost",
-    stat_order_no: 2,
   },
 ];
 

@@ -21,6 +21,31 @@ describe("serialize", () => {
     ] as const;
     expect(serialize(pieces)).toBe("&lt;red>x&lt;/> &amp;lt; & ");
   });
+
+  it.each([
+    ["two pieces", ["&", "lt;"], "&amp;lt;"],
+    ["a cut inside the name", ["&am", "p;"], "&amp;amp;"],
+    ["a cut before the semicolon", ["&quot", ";"], "&amp;quot;"],
+  ])(
+    "escapes an escape split across untagged pieces: %s",
+    (_label, texts, expected) => {
+      const pieces = texts.map((text) => ({
+        kind: "text" as const,
+        text,
+        style: null,
+      }));
+      expect(serialize(pieces)).toBe(expected);
+    },
+  );
+
+  it("escapes across an empty run, which it drops", () => {
+    const pieces = [
+      { kind: "text", text: "&", style: null },
+      { kind: "text", text: "", style: { type: "tag", name: "red" } },
+      { kind: "text", text: "gt;", style: null },
+    ] as const;
+    expect(serialize(pieces)).toBe("&amp;gt;");
+  });
 });
 
 describe("optimize", () => {

@@ -38,6 +38,11 @@ export const metadata: Metadata = {
   title: { default: siteName, template: `%s | ${siteName}` },
   description: siteDescription,
   applicationName: siteName,
+  // The site is dark already: Dark Reader's default (dynamic) mode leaves a page with
+  // this tag alone, so it doesn't recolor the game's tier and chat colors (its
+  // CONTRIBUTING.md, "darkreader-lock"). It looks only at the name; Next.js leaves out a
+  // tag with empty content, hence "on".
+  other: { "darkreader-lock": "on" },
 };
 
 export const viewport: Viewport = {
@@ -81,13 +86,20 @@ export default async function RootLayout({
     // The site is dark only; `dark` turns on shadcn's dark variants (ADR 0009).
     // data-scroll-behavior: Next.js 16 turns off the CSS smooth scrolling while it
     // changes pages, so only in-page jumps glide (ADR 0023).
+    // suppressHydrationWarning: browser extensions add attributes of their own to
+    // <html> and <body> before React loads (Dark Reader's data-darkreader-*, others'
+    // flags). It covers only these two elements' own attributes, nothing inside them.
     <html
       lang="en"
       data-scroll-behavior="smooth"
       className={`dark ${inter.variable} ${rajdhani.variable}`}
       style={{ backgroundColor: shellBackground, colorScheme: "dark" }}
+      suppressHydrationWarning
     >
-      <body className="flex min-h-dvh flex-col bg-background text-foreground antialiased">
+      <body
+        className="flex min-h-dvh flex-col bg-background text-foreground antialiased"
+        suppressHydrationWarning
+      >
         {/* Tooltips wait 700ms of hovering (shadcn's default is 0). Once one is open,
             the next opens at once if it is within 400ms (Base UI's timeout). */}
         <TooltipProvider delay={700}>

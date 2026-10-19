@@ -19,6 +19,9 @@ import {
 /** How many results show at once; a longer list asks for another word instead. */
 const shownResults = 50;
 
+/** Counts as the page writes them: "1,293". */
+const countFormat = new Intl.NumberFormat("en-US");
+
 /** Categories whose index is too heavy to prefetch (`prefetch: false` in sitePages). */
 const heavyCategories: ReadonlySet<string> = new Set(
   databaseCategories
@@ -79,7 +82,7 @@ export function DatabaseSearch({ search }: { search: string }) {
         <Input
           type="search"
           value={query}
-          placeholder="Search Descendants, weapons, modules, reactors, components"
+          placeholder="Search Descendants, weapons, materials and more"
           onFocus={() => {
             setWanted(true);
           }}
@@ -146,8 +149,9 @@ export function DatabaseSearch({ search }: { search: string }) {
           )}
           {results.length > shownResults ? (
             <p className="px-2 pb-1 text-sm text-muted-foreground">
-              Showing {shownResults} of {results.length}. Add a word to narrow
-              the search.
+              Showing {countFormat.format(shownResults)} of{" "}
+              {countFormat.format(results.length)}. Add a word to narrow the
+              search.
             </p>
           ) : null}
         </section>

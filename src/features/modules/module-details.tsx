@@ -111,7 +111,7 @@ export function ModuleDetails({
                 className="rounded-full border px-2 py-0.5 text-xs font-medium"
                 style={{
                   color,
-                  borderColor: `color-mix(in srgb, ${color} 50%, transparent)`,
+                  borderColor: `color-mix(in srgb, ${color} 45%, transparent)`,
                 }}
               >
                 {variant.tier}

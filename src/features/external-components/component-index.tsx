@@ -20,6 +20,7 @@ import {
 import { WideTile } from "@/features/game-data/wide-tile";
 import { ComponentDetails, tiersOf, type SubStats } from "./component-details";
 import type { CoreType } from "@/features/game-data/core-types";
+import { LoadFailed } from "@/features/game-data/load-failed";
 import {
   componentFiltersToSearch,
   defaultComponentFilters,
@@ -49,6 +50,8 @@ interface ComponentIndexProps {
   subStats: SubStats;
   /** The core types an Ultimate piece's slots take, for the details. */
   coreSlots: readonly CoreType[];
+  /** Where each slot is a Difficulty Level Reward, by slot name. */
+  rewardSlots: Readonly<Record<string, string>>;
 }
 
 /** The index filtered by the URL query. Render it inside `<Suspense>` (`useSearch`). */
@@ -67,6 +70,7 @@ export function ComponentIndex({
   tiers,
   subStats,
   coreSlots,
+  rewardSlots,
   search,
 }: ComponentIndexProps & {
   /** The URL query the filters come from. */
@@ -145,12 +149,19 @@ export function ComponentIndex({
           }
           subStats={subStats}
           coreSlots={coreSlots}
+          rewardSlots={rewardSlots}
           onClose={() => {
             closeDetails(detailsCard.slug);
           }}
         />
       </DetailsRowItem>,
     );
+  }
+
+  // The data couldn't load: the hero says so, and this says it once more instead of
+  // empty filters and "No … matches these filters."
+  if (entries.length === 0) {
+    return <LoadFailed what="external components" />;
   }
 
   return (
@@ -165,7 +176,7 @@ export function ComponentIndex({
           <Input
             type="search"
             value={filters.query}
-            placeholder="Search by set, piece or set effect"
+            placeholder="Search by name, piece or set effect"
             onChange={(event) => {
               set({ query: event.target.value });
             }}
@@ -232,7 +243,7 @@ export function ComponentIndex({
           No external component matches these filters.
         </p>
       ) : (
-        <ul aria-label="External components" className={gridClass}>
+        <ul aria-label="External Components" className={gridClass}>
           {items}
         </ul>
       )}

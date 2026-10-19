@@ -47,16 +47,14 @@ function reactorOf(
 }
 
 const stats = [
-  { stat_id: "105000145", stat_name: "Skill Power", stat_order_no: 1 },
+  { stat_id: "105000145", stat_name: "Skill Power" },
   {
     stat_id: "105000148",
     stat_name: "Fire Skill Power Boost Ratio",
-    stat_order_no: 2,
   },
   {
     stat_id: "105000154",
     stat_name: "Dimension Skill Power Boost Ratio",
-    stat_order_no: 3,
   },
 ];
 

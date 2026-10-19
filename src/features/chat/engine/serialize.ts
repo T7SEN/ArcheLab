@@ -17,19 +17,30 @@ export function imageTag(id: string): string {
  * Writes pieces as markup in canonical form: every run opened and closed, every `<`
  * escaped. `parse(serialize(pieces))` renders identically to `pieces` (invariant 1).
  * Empty runs are dropped because they render nothing.
+ *
+ * Neighboring untagged pieces are escaped together: the game decodes their text as one
+ * stretch, so `&` then `lt;` must become `&amp;lt;`, not `&lt;`, which shows as `<`.
  */
 export function serialize(pieces: readonly Piece[]): string {
   let out = "";
+  // Untagged text waiting to be escaped, until a run or an image ends the stretch.
+  let untagged = "";
   for (const piece of pieces) {
     if (piece.kind === "image") {
-      out += imageTag(piece.id);
+      out += escapeAll(untagged) + imageTag(piece.id);
+      untagged = "";
     } else if (piece.text === "") {
       continue;
     } else if (piece.style === null) {
-      out += escapeAll(piece.text);
+      untagged += piece.text;
     } else {
-      out += openTag(piece.style) + escapeAll(piece.text) + closeTag;
+      out +=
+        escapeAll(untagged) +
+        openTag(piece.style) +
+        escapeAll(piece.text) +
+        closeTag;
+      untagged = "";
     }
   }
-  return out;
+  return out + escapeAll(untagged);
 }

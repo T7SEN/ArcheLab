@@ -1,8 +1,10 @@
 /**
  * The database page's search (T7SEN, 2026-10-17; ADR 0034): every Descendant, weapon,
- * module, reactor, external component, Fellow, vehicle, Mutant Cell, cosmetic and Amorphous
- * Material Pattern in one list, from a static file,
- * `/database/items`, loaded once someone searches. Pure, for the browser and the tests.
+ * module, reactor, external component, Fellow, vehicle, Mutant Cell, cosmetic, Amorphous
+ * Material Pattern, enhancement material, basic material, Core Material, core,
+ * Miscellaneous item, battlefield and 400% Infiltration Operation in one list, from a
+ * static file, `/database/items`, loaded once someone searches. Pure, for the browser
+ * and the tests.
  */
 
 /** The database's categories, in the order the page and the results list them. */
@@ -11,30 +13,31 @@ export const databaseCategories = [
     name: "Descendants",
     href: "/descendants",
     description:
-      "Stats at every level, skills, exclusive modules and reactors.",
+      "Stats at every level, skills, exclusive modules, reactors and the research recipe.",
   },
   {
     name: "Weapons",
     href: "/weapons",
     description:
-      "ATK by level, base stats, unique abilities, core slots and where to get them.",
+      "ATK at every level, base stats, unique abilities, core slots and how to obtain them.",
   },
   {
     name: "Modules",
     href: "/modules",
     description:
-      "Effects at every level, tiers, sockets and who can equip them.",
+      "Capacity and effect at every level, tiers, sockets and who can equip them.",
   },
   {
     name: "Reactors",
     href: "/reactors",
     description:
-      "Skill Power by level, enchant bonuses and the Descendants they suit.",
+      "Skill Power at every level, enchant bonuses and the Descendants they suit.",
   },
   {
     name: "External Components",
     href: "/external-components",
-    description: "Base stats by level, set effects, sub-stats and core slots.",
+    description:
+      "Base stats at every level, set effects, sub-stats and core slots.",
   },
   {
     name: "Fellows",
@@ -63,7 +66,49 @@ export const databaseCategories = [
     name: "Amorphous Materials",
     href: "/amorphous-materials",
     description:
-      "Every pattern, what it opens into and the best ones for what you're building.",
+      "Every pattern, what it opens into and the best ones for what you're building, and the Shape Stabilizers.",
+  },
+  {
+    name: "Enhancement Materials",
+    href: "/enhancement-materials",
+    description:
+      "What each is for and every way to research it, with time, cost and ingredients.",
+  },
+  {
+    name: "Basic Materials",
+    href: "/basic-materials",
+    description:
+      "What each is for, from Descendants and weapons to Enhancement Materials, and where to find it.",
+  },
+  {
+    name: "Core Materials",
+    href: "/core-materials",
+    description:
+      "The Codes, Blueprints and parts that research Descendants, weapons, Fellows and vehicles, and where to find them.",
+  },
+  {
+    name: "Cores",
+    href: "/cores",
+    description:
+      "What each core rolls at grades I to X, where to find it, and the Ultimate weapons and external components it applies to.",
+  },
+  {
+    name: "Miscellaneous",
+    href: "/miscellaneous",
+    description:
+      "Loot boxes, coins, vouchers, keys and Code Analyzers, and where to find each.",
+  },
+  {
+    name: "Difficulty Level Rewards",
+    href: "/difficulty-level-rewards",
+    description:
+      "Each battlefield's reward this week and in every published week after it, and what drops in its missions.",
+  },
+  {
+    name: "400% Infiltration Operations",
+    href: "/infiltration-400",
+    description:
+      "Today's two 400% operations, every day of the rotation ahead, and what drops in each at 400%.",
   },
 ] as const;
 

@@ -39,6 +39,7 @@ import {
   useSearch,
   writeSearch,
 } from "@/features/game-data/url-query";
+import { LoadFailed } from "@/features/game-data/load-failed";
 import { slugOf } from "@/lib/slug";
 import {
   CosmeticArt,
@@ -214,6 +215,12 @@ export function CosmeticIndex({
       label: descendant.name,
     })),
   ];
+
+  // The data couldn't load: the hero says so, and this says it once more instead of
+  // empty filters and "No … matches these filters."
+  if (entries.length === 0) {
+    return <LoadFailed what="cosmetics" />;
+  }
 
   return (
     <div className="grid gap-6">
@@ -475,7 +482,7 @@ function CosmeticCardLink({
           </span>
         ) : version.stages.length > 0 ? (
           <span className="whitespace-nowrap">
-            {`${String(version.stages.length)} stages`}
+            {`${String(version.stages.length)} ${version.stages.length === 1 ? "stage" : "stages"}`}
           </span>
         ) : null}
       </span>

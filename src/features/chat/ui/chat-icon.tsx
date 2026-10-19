@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { PortraitUrls } from "@/lib/nexon/descendants";
-import { artUrlOf, chatIconClass } from "./chat-icons";
+import { artUrlOf, chatIconClass, iconName } from "./chat-icons";
 import { chatRegistry } from "./chat-registry";
 
 interface ChatIconProps {
@@ -22,17 +22,17 @@ export function ChatIcon({ id, portraits }: ChatIconProps) {
   const src = failed ? null : artUrlOf(image, portraits);
   if (src === null) {
     return (
-      <span className="chat-icon chat-icon-placeholder" title={`${label} icon`}>
+      <span className="chat-icon chat-icon-placeholder" title={iconName(label)}>
         {label}
       </span>
     );
   }
   return (
-    <span className={chatIconClass(image)} title={`${label} icon`}>
+    <span className={chatIconClass(image)} title={iconName(label)}>
       {/* eslint-disable-next-line @next/next/no-img-element -- NEXON images load directly from NEXON's host, never through Vercel Image Optimization (SKILL.md landmine 2). */}
       <img
         src={src}
-        alt={`${label} icon`}
+        alt={iconName(label)}
         draggable={false}
         onError={() => {
           setFailed(true);

@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 // The command palette (ADR 0022): Ctrl+K or the navbar's search button, the site's
 // pages, tools and Descendants everywhere, and the builder's own commands on its page.
 
-const searchName = "Search pages, tools and commands";
+const searchName = "Search pages, tools, Descendants, weapons and more";
 
 /** Waits for hydration, then opens the palette with the keyboard. */
 async function openWithShortcut(page: Page) {

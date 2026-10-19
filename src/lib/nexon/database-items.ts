@@ -12,9 +12,17 @@ import {
 import type { DatabaseItem } from "@/features/database/database-items";
 import { rarityOf } from "@/features/game-data/rarity";
 import { versionTier } from "@/features/modules/module-tiers";
+import { coreEquipment, rollNames } from "@/features/cores/core-filters";
 import { fetchComponentGroups } from "@/lib/nexon/component-index";
+import { fetchCoreKinds } from "@/lib/nexon/core-index";
+import { fetchDifficultyRewards } from "@/lib/nexon/difficulty-rewards";
+import { fetchInfiltration400 } from "@/lib/nexon/infiltration-400";
 import { fetchAmorphousPatterns } from "@/lib/nexon/amorphous-index";
+import { fetchBasicMaterials } from "@/lib/nexon/basic-material-index";
+import { fetchCoreMaterials } from "@/lib/nexon/core-material-index";
 import { fetchCosmetics } from "@/lib/nexon/cosmetic-index";
+import { fetchEnhancementMaterials } from "@/lib/nexon/enhancement-index";
+import { fetchMiscellaneous } from "@/lib/nexon/miscellaneous-index";
 import { fetchMutantCells } from "@/lib/nexon/mutant-cell-index";
 import { fetchDescendantSummaries } from "@/lib/nexon/descendant-page";
 import { fetchFellows } from "@/lib/nexon/fellow-index";
@@ -48,6 +56,13 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     mutantCells,
     cosmetics,
     amorphous,
+    enhancement,
+    basic,
+    coreMaterials,
+    cores,
+    miscellaneous,
+    rewards,
+    operations400,
   ] = await Promise.all([
     fetchDescendantSummaries(),
     fetchWeaponSummaries(),
@@ -59,6 +74,13 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     fetchMutantCells(),
     fetchCosmetics(),
     fetchAmorphousPatterns(),
+    fetchEnhancementMaterials(),
+    fetchBasicMaterials(),
+    fetchCoreMaterials(),
+    fetchCoreKinds(),
+    fetchMiscellaneous(),
+    fetchDifficultyRewards(),
+    fetchInfiltration400(),
   ]);
 
   const descendantItems = descendants.map((descendant): DatabaseItem => ({
@@ -271,6 +293,139 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     };
   });
 
+  // Each regular Shape Stabilizer, found by what it researches (T7SEN, 2026-10-18).
+  const stabilizerItems = amorphous.stabilizers.map(
+    (stabilizer): DatabaseItem => {
+      const rarity = rarityOf(stabilizer.tier);
+      return {
+        name: stabilizer.name,
+        category: "Amorphous Materials",
+        href: `/amorphous-materials?stabilizer=${stabilizer.slug}`,
+        hint: rarity?.name ?? "",
+        keywords: [
+          "Shape Stabilizer",
+          ...stabilizer.uses.map((use) => use.name),
+        ],
+        imageUrl: stabilizer.imageUrl,
+        hex: rarity?.hex ?? palette.primary,
+      };
+    },
+  );
+
+  // Each enhancement material with its tier (ADR 0043).
+  const enhancementItems = enhancement.map((item): DatabaseItem => {
+    const rarity = item.tier === null ? null : rarityOf(item.tier);
+    return {
+      name: item.name,
+      category: "Enhancement Materials",
+      href: `/enhancement-materials?material=${item.slug}`,
+      hint: rarity?.name ?? "",
+      keywords: ["Enhancement Material", "Research"],
+      imageUrl: item.imageUrl,
+      hex: rarity?.hex ?? palette.primary,
+    };
+  });
+
+  // Each basic material with its tier (ADR 0045). What it goes into doesn't find it: a
+  // Descendant's name finds the Descendant, not every material it takes.
+  const basicItems = basic.map((item): DatabaseItem => {
+    const rarity = rarityOf(item.tier);
+    return {
+      name: item.name,
+      category: "Basic Materials",
+      href: `/basic-materials?material=${item.slug}`,
+      hint: rarity?.name ?? "",
+      keywords: ["Basic Material", "Material"],
+      imageUrl: item.imageUrl,
+      hex: rarity?.hex ?? palette.primary,
+    };
+  });
+
+  // Each Core Material with its tier (ADR 0047), found by its name: a Descendant's name
+  // finds the Descendant, and "bunny code" its Code.
+  const coreMaterialItems = coreMaterials.map((item): DatabaseItem => {
+    const rarity = rarityOf(item.tier);
+    return {
+      name: item.name,
+      category: "Core Materials",
+      href: `/core-materials?material=${item.slug}`,
+      hint: rarity?.name ?? "",
+      keywords: ["Core Material", "Material"],
+      imageUrl: item.imageUrl,
+      hex: rarity?.hex ?? palette.primary,
+    };
+  });
+
+  // Each kind of core, found by its core items' names and what it rolls (ADR 0044). A
+  // weapon's name finds the weapon, not every core it takes.
+  const coreItems = cores.map((kind): DatabaseItem => ({
+    name: kind.name,
+    category: "Cores",
+    href: `/cores?core=${kind.slug}`,
+    hint:
+      coreEquipment.find((entry) => entry.equipment === kind.equipment)
+        ?.label ?? "",
+    keywords: [
+      "Core",
+      ...new Set(
+        kind.drops.flatMap((grade) =>
+          grade.items.map((item) => item.name.replace(/ [IVX]+$/, "")),
+        ),
+      ),
+      ...rollNames(kind.versions),
+    ],
+    imageUrl: kind.imageUrl,
+    hex: palette.primary,
+  }));
+
+  // Each Miscellaneous item with its tier (ADR 0050), found by its name.
+  const miscellaneousItems = miscellaneous.map((item): DatabaseItem => {
+    const rarity = rarityOf(item.tier);
+    return {
+      name: item.name,
+      category: "Miscellaneous",
+      href: `/miscellaneous?item=${item.slug}`,
+      hint: rarity?.name ?? "",
+      keywords: ["Miscellaneous"],
+      imageUrl: item.imageUrl,
+      hex: rarity?.hex ?? palette.primary,
+    };
+  });
+
+  // Each battlefield of the Difficulty Level Rewards, found by its region, missions,
+  // outpost and Void Fusion Reactor (ADR 0048). It has no art of its own.
+  const battlefieldItems = rewards.battlefields.map(
+    (battlefield): DatabaseItem => ({
+      name: battlefield.name,
+      category: "Difficulty Level Rewards",
+      href: `/difficulty-level-rewards?battlefield=${battlefield.slug}`,
+      hint: battlefield.region,
+      keywords: [
+        "Battlefield",
+        battlefield.region,
+        ...battlefield.missions,
+        ...(battlefield.outpost === null ? [] : [battlefield.outpost]),
+        ...(battlefield.fusionReactor === null
+          ? []
+          : [battlefield.fusionReactor]),
+      ],
+      imageUrl: "",
+      hex: palette.primary,
+    }),
+  );
+
+  // Each Infiltration Operation that has a 400% difficulty, found by its region (ADR
+  // 0049). It has no art of its own.
+  const operation400Items = operations400.map((operation): DatabaseItem => ({
+    name: operation.name,
+    category: "400% Infiltration Operations",
+    href: `/infiltration-400?operation=${operation.slug}`,
+    hint: operation.region,
+    keywords: ["400%", "Infiltration Operation", operation.region],
+    imageUrl: "",
+    hex: palette.primary,
+  }));
+
   return [
     ...descendantItems,
     ...weaponItems,
@@ -282,5 +437,13 @@ export async function fetchDatabaseItems(): Promise<DatabaseItem[]> {
     ...mutantCellItems,
     ...cosmeticItems,
     ...amorphousItems,
+    ...stabilizerItems,
+    ...enhancementItems,
+    ...basicItems,
+    ...coreMaterialItems,
+    ...coreItems,
+    ...miscellaneousItems,
+    ...battlefieldItems,
+    ...operation400Items,
   ];
 }

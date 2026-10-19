@@ -85,7 +85,7 @@ test("a card opens what the pattern opens into, and Escape closes it", async ({
     }),
   ).toBeFocused();
   await expect(shown.getByText("Ultimate", { exact: true })).toBeVisible();
-  await expect(shown.getByText("Drops from")).toBeVisible();
+  await expect(shown.getByText("Where to find it")).toBeVisible();
   const rewards = shown.getByRole("listitem").filter({ hasText: "%" });
   await expect(rewards).toHaveCount(5);
   await expect(
@@ -127,4 +127,62 @@ test("the Database menu and search lead to the patterns", async ({ page }) => {
   await expect(result).toContainText("Amorphous Material Pattern: Bunny");
   await result.click();
   await expect(details(page, "Bunny")).toBeVisible();
+});
+
+test("research recipes link the patterns their items come from", async ({
+  page,
+}) => {
+  await open(page, "/descendants/raven#obtain");
+  // Raven Code's line; the parts' own recipes hold more, folded away.
+  const pattern = page
+    .getByRole("listitem")
+    .filter({ hasText: /^Raven Code/ })
+    .getByRole("link", { name: "Amorphous Material Pattern: Raven" });
+  await expect(pattern).toHaveAttribute(
+    "href",
+    "/amorphous-materials?pattern=raven",
+  );
+  await pattern.click();
+  await expect(page).toHaveURL("/amorphous-materials?pattern=raven");
+  await expect(details(page, "Raven")).toBeVisible();
+});
+
+// The eight regular Shape Stabilizer Forms (T7SEN, 2026-10-18), after the patterns.
+test("the Shape Stabilizers, with what each researches, linked both ways", async ({
+  page,
+}) => {
+  await open(page, "/amorphous-materials");
+  await page
+    .getByRole("group", { name: "Type" })
+    .getByRole("button", { name: "Shape Stabilizers" })
+    .click();
+  await expect(page).toHaveURL(/\?type=stabilizers$/);
+  const stabilizers = page.getByRole("list", { name: "Shape Stabilizers" });
+  await expect(stabilizers.locator(":scope > li")).toHaveCount(8);
+  await expect(cards(page)).toHaveCount(0);
+
+  await open(page, "/amorphous-materials?stabilizer=shape-stabilizer-form-3");
+  const form3 = page
+    .getByRole("list", { name: "Shape Stabilizers" })
+    .getByRole("region", { name: "Shape Stabilizer Form 3", exact: true });
+  await expect(form3).toBeVisible();
+  const advanced = form3.getByRole("link", {
+    name: /^Advanced Shape Stabilizer Form 3/,
+  });
+  await expect(advanced).toHaveAttribute(
+    "href",
+    "/enhancement-materials?material=advanced-shape-stabilizer-form-3",
+  );
+  await advanced.click();
+  await expect(page).toHaveURL(
+    "/enhancement-materials?material=advanced-shape-stabilizer-form-3",
+  );
+  await expect(
+    page
+      .getByRole("link", { name: "Shape Stabilizer Form 3", exact: true })
+      .first(),
+  ).toHaveAttribute(
+    "href",
+    "/amorphous-materials?stabilizer=shape-stabilizer-form-3",
+  );
 });

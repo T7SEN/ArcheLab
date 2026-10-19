@@ -12,6 +12,7 @@ import {
   ReactorIndexFromUrl,
 } from "@/features/reactors/reactor-index";
 import { fetchReactorGroups } from "@/lib/nexon/reactor-index";
+import { fetchRewardLinks } from "@/lib/nexon/reward-links";
 import { pageMetadata } from "@/lib/site-metadata";
 import { palette } from "@/styles/tokens";
 
@@ -44,6 +45,8 @@ export default async function ReactorsPage() {
   // (ADR 0008, ADR 0026). Levels stay out of the page: each reactor's are in its own
   // data file, loaded when its details open.
   const groups = await fetchReactorGroups();
+  // Where each one's attribute and Arche type is a Difficulty Level Reward (ADR 0050).
+  const rewardLinks = await fetchRewardLinks();
   const attributes = ordered(
     groups.flatMap((group) =>
       group.attribute === null ? [] : [group.attribute],
@@ -57,27 +60,31 @@ export default async function ReactorsPage() {
     archeOrder,
   );
   // Tier names and colors come from the chat registry here, on the server.
-  const entries: ReactorCard[] = groups.map((group) => ({
-    slug: group.slug,
-    name: group.name,
-    attribute: group.attribute,
-    archeType: group.archeType,
-    boosts: group.boosts,
-    tiers: group.versions.map((version) => {
-      const rarity = rarityOf(version.tier);
-      return {
-        id: version.id,
-        name: rarity?.name ?? version.tier,
-        hex: rarity?.hex ?? palette.primary,
-        imageUrl: version.imageUrl,
-      };
-    }),
-    descendants: group.descendants.map((descendant) => ({
-      slug: descendant.slug,
-      name: descendant.name,
-      imageUrl: descendant.imageUrl,
-    })),
-  }));
+  const entries: ReactorCard[] = groups.map((group) => {
+    const rewardHref = rewardLinks.reactor(group.attribute, group.archeType);
+    return {
+      slug: group.slug,
+      name: group.name,
+      attribute: group.attribute,
+      archeType: group.archeType,
+      ...(rewardHref === null ? {} : { rewardHref }),
+      boosts: group.boosts,
+      tiers: group.versions.map((version) => {
+        const rarity = rarityOf(version.tier);
+        return {
+          id: version.id,
+          name: rarity?.name ?? version.tier,
+          hex: rarity?.hex ?? palette.primary,
+          imageUrl: version.imageUrl,
+        };
+      }),
+      descendants: group.descendants.map((descendant) => ({
+        slug: descendant.slug,
+        name: descendant.name,
+        imageUrl: descendant.imageUrl,
+      })),
+    };
+  });
   const indexProps = {
     entries,
     attributes,

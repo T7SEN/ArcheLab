@@ -16,6 +16,7 @@ import {
   fetchComponentCoreSlots,
   fetchComponentSubStats,
 } from "@/lib/nexon/component-index";
+import { fetchRewardLinks } from "@/lib/nexon/reward-links";
 import { pageMetadata } from "@/lib/site-metadata";
 import { palette } from "@/styles/tokens";
 
@@ -23,7 +24,7 @@ export const metadata: Metadata = pageMetadata({
   path: "/external-components",
   title: "External Components",
   description:
-    "Every external component set of The First Descendant, with its set effect, and each piece's base stat at every level and possible sub-stats.",
+    "Every external component set of The First Descendant and every component with no set, with each set effect, and each piece's base stat at every level and possible sub-stats.",
 });
 
 const tierNumber = (tier: string) => Number(tier.replace(/\D/g, "")) || 0;
@@ -79,6 +80,8 @@ export default async function ExternalComponentsPage() {
     },
     // Once, not per piece: every Ultimate piece's slots take the same two core types.
     coreSlots,
+    // Once per slot: where it is a Difficulty Level Reward (ADR 0050).
+    rewardSlots: (await fetchRewardLinks()).slots,
   };
 
   return (
@@ -104,7 +107,7 @@ export default async function ExternalComponentsPage() {
           <p className="mt-3 max-w-2xl hero-text">
             {groups.length === 0
               ? "The external components couldn't be loaded for this build. They come back with the next one."
-              : `All ${String(sets)} sets, and ${String(groups.length - sets)} components with no set. Open one for its set effect, and each piece's base stat at every level and possible sub-stats.`}
+              : `All ${String(sets)} sets and ${String(groups.length - sets)} components with no set. Open one for its set effect, and each piece's base stat at every level and possible sub-stats.`}
           </p>
         </div>
       </section>

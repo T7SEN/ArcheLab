@@ -107,7 +107,7 @@ export function SiteFooter() {
               <span className="inline-flex items-start gap-2 text-muted-foreground">
                 <LinkIcon icon={tool.icon} />
                 <span>
-                  {tool.name} <span className="text-xs text-primary">soon</span>
+                  {tool.name} <span className="text-xs text-primary">Soon</span>
                 </span>
               </span>
             </li>

@@ -1,4 +1,8 @@
 import "server-only";
+import { patternInGame } from "@/data/amorphous-materials";
+import { patternPrefix } from "@/features/amorphous/amorphous-filters";
+import { slugOf } from "@/lib/slug";
+import { materialHref } from "./material-links";
 import type { MaterialRecord, ResearchRecord } from "./shared-sets";
 
 /**
@@ -12,11 +16,23 @@ export interface RecipeItem {
   readonly count: number;
   /** How the item itself is researched, when NEXON lists a recipe for it. */
   readonly recipe: Recipe | null;
-  /** Amorphous Materials it comes from, when its acquisition names one. */
+  /**
+   * The Amorphous Material Patterns it comes from, when its acquisition names one still
+   * in the game (`patternInGame`), each with its address on the Amorphous Materials
+   * index (ADR 0041).
+   */
   readonly from: readonly {
     readonly name: string;
     readonly imageUrl: string;
+    /** `/amorphous-materials?pattern=<slug>`. */
+    readonly slug: string;
   }[];
+  /**
+   * Its details on a material index, when it has them: a basic material's on the Basic
+   * Materials index (ADR 0045), a Core Material's on the Core Materials index (ADR
+   * 0047); else null.
+   */
+  readonly href: string | null;
 }
 
 export interface Recipe {
@@ -93,14 +109,14 @@ export function recipeFor(
       const amorphous = /^AM:(\d+)$/.exec(source)?.[1];
       const pattern =
         amorphous === undefined ? undefined : materials.get(amorphous);
-      return pattern === undefined
+      const name = pattern?.consumable_material_name ?? "";
+      const short = name.slice(patternPrefix.length);
+      // Removed patterns NEXON still names are left out (T7SEN, 2026-10-17).
+      return pattern === undefined ||
+        !name.startsWith(patternPrefix) ||
+        !patternInGame(short)
         ? []
-        : [
-            {
-              name: pattern.consumable_material_name,
-              imageUrl: pattern.image_url,
-            },
-          ];
+        : [{ name, imageUrl: pattern.image_url, slug: slugOf(short) }];
     });
     return [
       {
@@ -109,6 +125,11 @@ export function recipeFor(
         count: input.material_count,
         recipe: recipeFor(ownRecipe, sets, depth + 1),
         from,
+        href: materialHref(
+          input.meta_id,
+          material.consumable_material_name,
+          sets,
+        ),
       },
     ];
   });

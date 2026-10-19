@@ -113,6 +113,13 @@ describe("navbarEntries", () => {
           "Mutant Cells",
           "Cosmetics",
           "Amorphous Materials",
+          "Enhancement Materials",
+          "Basic Materials",
+          "Core Materials",
+          "Cores",
+          "Miscellaneous",
+          "Difficulty Level Rewards",
+          "400% Infiltration Operations",
         ],
       ],
     ]);

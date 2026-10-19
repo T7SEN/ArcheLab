@@ -2,6 +2,7 @@ import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import type { DescendantModule } from "@/lib/nexon/descendant-page";
 import { moduleTierOf } from "@/features/game-data/rarity";
+import { SlotIcon, SocketIcon } from "@/features/modules/fact-icons";
 import { slugOf } from "@/lib/slug";
 
 const factClass = "flex justify-between gap-3 text-sm";
@@ -53,12 +54,12 @@ export function ModuleCards({
                   <Link
                     href={`/modules?module=${slugOf(module.name)}`}
                     prefetch={false}
-                    className="group/name rounded-sm underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                    className="group/name rounded-sm underline-offset-4 outline-none hover:text-primary hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
                     {module.name}
                     <ArrowUpRight
                       aria-hidden="true"
-                      className="ml-1 inline size-4 align-baseline text-muted-foreground transition-colors group-hover/name:text-foreground"
+                      className="ml-1 inline size-4 align-baseline text-muted-foreground transition-colors group-hover/name:text-primary"
                     />
                   </Link>
                 </h3>
@@ -68,7 +69,7 @@ export function ModuleCards({
                       className="w-fit rounded-full border px-2 py-0.5 text-xs font-medium"
                       style={{
                         color: accent,
-                        borderColor: `color-mix(in srgb, ${accent} 50%, transparent)`,
+                        borderColor: `color-mix(in srgb, ${accent} 45%, transparent)`,
                       }}
                     >
                       {rarity.name}
@@ -79,7 +80,7 @@ export function ModuleCards({
                       className="w-fit rounded-full border px-2 py-0.5 text-xs font-medium"
                       style={{
                         color: ultimateColor,
-                        borderColor: `color-mix(in srgb, ${ultimateColor} 50%, transparent)`,
+                        borderColor: `color-mix(in srgb, ${ultimateColor} 45%, transparent)`,
                       }}
                     >
                       Ultimate only
@@ -89,6 +90,16 @@ export function ModuleCards({
               </div>
             </div>
             <dl className="grid gap-1.5 border-y py-3">
+              {/* In the modules index's order, with its icons: socket, type, slot. */}
+              {module.socket === null ? null : (
+                <div className={factClass}>
+                  <dt className="text-muted-foreground">Socket</dt>
+                  <dd className="flex items-center gap-1.5">
+                    <SocketIcon socket={module.socket} />
+                    {module.socket}
+                  </dd>
+                </div>
+              )}
               {/* An Ancestor module's type is its tier, already shown above. */}
               {module.type === null || module.type === rarity?.name ? null : (
                 <div className={factClass}>
@@ -96,15 +107,16 @@ export function ModuleCards({
                   <dd>{module.type}</dd>
                 </div>
               )}
-              {module.socket === null ? null : (
-                <div className={factClass}>
-                  <dt className="text-muted-foreground">Socket</dt>
-                  <dd>{module.socket}</dd>
-                </div>
-              )}
               <div className={factClass}>
                 <dt className="text-muted-foreground">Slot</dt>
-                <dd>{module.slots.join(", ")}</dd>
+                <dd className="grid justify-items-end gap-1">
+                  {module.slots.map((slot) => (
+                    <span key={slot} className="flex items-center gap-1.5">
+                      <SlotIcon slot={slot} />
+                      {slot}
+                    </span>
+                  ))}
+                </dd>
               </div>
               {module.capacity === null ? null : (
                 <div className={factClass}>

@@ -10,6 +10,7 @@ import { ArcheIcon, ElementIcon } from "@/features/descendants/type-icons";
 import { dataFileHook } from "@/features/game-data/data-file";
 import { filterChipClass } from "@/features/game-data/filter-row";
 import { useRevealDetails } from "@/features/game-data/reveal-details";
+import { PageChip } from "@/features/game-data/page-chip";
 import { WideTile } from "@/features/game-data/wide-tile";
 import type { ReactorCard } from "./reactor-filters";
 import {
@@ -105,7 +106,7 @@ export function ReactorDetails({
                 className="rounded-full border px-2 py-0.5 text-xs font-medium"
                 style={{
                   color: tier.hex,
-                  borderColor: `color-mix(in srgb, ${tier.hex} 50%, transparent)`,
+                  borderColor: `color-mix(in srgb, ${tier.hex} 45%, transparent)`,
                 }}
               >
                 {tier.name}
@@ -196,6 +197,30 @@ export function ReactorDetails({
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {/* Where it comes from (ADR 0050): the battlefields whose Difficulty Level
+            Reward it is, picked on that page, and 400% Infiltration Operations, which
+            drop a reactor that matches the Descendant in use (Update 1.3.28). */}
+        {card.rewardHref === undefined &&
+        card.descendants.length === 0 ? null : (
+          <div className="grid gap-2">
+            <h3 className="text-xs font-medium text-muted-foreground">
+              Where to get it
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {card.rewardHref === undefined ? null : (
+                <PageChip href={card.rewardHref}>
+                  Difficulty Level Rewards
+                </PageChip>
+              )}
+              {card.descendants.length === 0 ? null : (
+                <PageChip href="/infiltration-400">
+                  400% Infiltration Operations, as a Descendant it suits
+                </PageChip>
+              )}
+            </div>
           </div>
         )}
       </div>

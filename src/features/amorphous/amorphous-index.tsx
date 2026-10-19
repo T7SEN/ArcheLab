@@ -18,6 +18,7 @@ import {
   rowEnd,
   useGridColumns,
 } from "@/features/game-data/details-row";
+import { CardTags } from "@/features/game-data/card-tags";
 import { FilterRow, filterChipClass } from "@/features/game-data/filter-row";
 import {
   CardItem,
@@ -31,16 +32,24 @@ import {
   writeSearch,
 } from "@/features/game-data/url-query";
 import { WideTile } from "@/features/game-data/wide-tile";
-import { AmorphousDetails, patternColor } from "./amorphous-details";
+import { LoadFailed } from "@/features/game-data/load-failed";
+import {
+  AmorphousDetails,
+  StabilizerDetails,
+  patternColor,
+} from "./amorphous-details";
 import {
   amorphousFiltersToSearch,
+  amorphousTypes,
   buildKinds,
   defaultAmorphousFilters,
   filterAmorphous,
+  filterStabilizers,
   parseAmorphousFilters,
   rateText,
   type AmorphousFilters,
   type AmorphousPattern,
+  type ShapeStabilizer,
 } from "./amorphous-filters";
 
 const all = "all";
@@ -54,9 +63,12 @@ function writeFilters(filters: AmorphousFilters): void {
 
 /** A card's id, for focus to come back to it when its details close. */
 const cardId = (slug: string) => `pattern-card-${slug}`;
+const stabilizerCardId = (slug: string) => `stabilizer-card-${slug}`;
 
 interface AmorphousIndexProps {
   entries: readonly AmorphousPattern[];
+  /** The regular Shape Stabilizers, in their own section after the patterns. */
+  stabilizers: readonly ShapeStabilizer[];
   /** The patterns' tiers, with their rarity names and colors. */
   tiers: readonly CosmeticTier[];
 }
@@ -76,6 +88,7 @@ export function AmorphousIndexFromUrl(props: AmorphousIndexProps) {
  */
 export function AmorphousIndex({
   entries,
+  stabilizers,
   tiers,
   search,
 }: AmorphousIndexProps & {
@@ -87,15 +100,19 @@ export function AmorphousIndex({
   const enter = useChangedSince(search);
   const filters = parseAmorphousFilters(search, {
     patterns: entries.map((entry) => entry.slug),
+    stabilizers: stabilizers.map((entry) => entry.slug),
   });
   const shown = filterAmorphous(entries, filters);
+  const shownStabilizers = filterStabilizers(stabilizers, filters);
   const set = (change: Partial<AmorphousFilters>): void => {
     writeFilters({ ...filters, ...change });
   };
   const tierOf = (id: string) => tiers.find((tier) => tier.id === id) ?? null;
   // A blank search filters nothing, so it alone offers no "Clear filters".
   const filtered =
-    urlSearchOf(amorphousFiltersToSearch({ ...filters, open: null })) !== "";
+    urlSearchOf(
+      amorphousFiltersToSearch({ ...filters, open: null, stabilizer: null }),
+    ) !== "";
 
   // The open pattern's details go in a row under its card's row (`details-row.ts`).
   // A roomier grid than the other indexes: each card lists five rewards by name.
@@ -112,7 +129,9 @@ export function AmorphousIndex({
   // A batch of cards at first, and more as the page nears the last one drawn (ADR
   // 0031). New filters start again from one batch; the open card is always drawn.
   const [batches, more] = useCardBatches(
-    urlSearchOf(amorphousFiltersToSearch({ ...filters, open: null })),
+    urlSearchOf(
+      amorphousFiltersToSearch({ ...filters, open: null, stabilizer: null }),
+    ),
     batchesThrough(openIndex),
   );
   const drawn = shown.slice(0, drawnCount(batches, shown.length));
@@ -125,7 +144,10 @@ export function AmorphousIndex({
         open={entry.slug === openCard?.slug}
         controls={detailsId}
         onToggle={() => {
-          set({ open: entry.slug === openCard?.slug ? null : entry.slug });
+          set({
+            open: entry.slug === openCard?.slug ? null : entry.slug,
+            stabilizer: null,
+          });
         }}
       />
     </CardItem>
@@ -164,6 +186,68 @@ export function AmorphousIndex({
     );
   }
 
+  // The Shape Stabilizers' section works the same way, its details under its own row.
+  const openStabilizer =
+    shownStabilizers.find((entry) => entry.slug === filters.stabilizer) ?? null;
+  const stabilizerItems = shownStabilizers.map((entry) => (
+    <CardItem key={entry.slug} enter={enter}>
+      <StabilizerCardLink
+        entry={entry}
+        tier={tierOf(entry.tier)}
+        open={entry.slug === openStabilizer?.slug}
+        controls={detailsId}
+        onToggle={() => {
+          set({
+            stabilizer: entry.slug === openStabilizer?.slug ? null : entry.slug,
+            open: null,
+          });
+        }}
+      />
+    </CardItem>
+  ));
+  const [detailsStabilizer, closingStabilizer, closedStabilizer] = useClosing(
+    openStabilizer,
+    (card) => card.slug,
+  );
+  const stabilizerIndex =
+    detailsStabilizer === null
+      ? -1
+      : shownStabilizers.findIndex(
+          (entry) => entry.slug === detailsStabilizer.slug,
+        );
+  if (closingStabilizer && stabilizerIndex === -1) {
+    closedStabilizer();
+  }
+  if (detailsStabilizer !== null && stabilizerIndex !== -1) {
+    stabilizerItems.splice(
+      rowEnd(stabilizerIndex, columns, shownStabilizers.length) + 1,
+      0,
+      <DetailsRowItem
+        key={`details-${detailsStabilizer.slug}`}
+        closing={closingStabilizer}
+        onClosed={closedStabilizer}
+      >
+        <StabilizerDetails
+          id={detailsId}
+          stabilizer={detailsStabilizer}
+          tier={tierOf(detailsStabilizer.tier)}
+          onClose={() => {
+            set({ stabilizer: null });
+            document
+              .getElementById(stabilizerCardId(detailsStabilizer.slug))
+              ?.focus({ preventScroll: true });
+          }}
+        />
+      </DetailsRowItem>,
+    );
+  }
+
+  // The data couldn't load: the hero says so, and this says it once more instead of
+  // empty filters and "No … matches these filters."
+  if (entries.length === 0) {
+    return <LoadFailed what="Amorphous Materials" />;
+  }
+
   return (
     <div className="grid gap-6">
       <div className="grid gap-4 rounded-2xl border bg-card/60 p-4 sm:p-5">
@@ -176,13 +260,47 @@ export function AmorphousIndex({
           <Input
             type="search"
             value={filters.query}
-            placeholder="Search by pattern, reward or what it builds"
+            placeholder="Search by name, reward or use"
             onChange={(event) => {
               set({ query: event.target.value });
             }}
             className="h-9 bg-background/60 pl-8"
           />
         </label>
+
+        <FilterRow id={`${ids}-type`} label="Type">
+          <ToggleGroup
+            aria-labelledby={`${ids}-type`}
+            variant="outline"
+            size="sm"
+            spacing={1}
+            className="min-w-0 flex-1 flex-wrap"
+            value={[filters.type ?? all]}
+            onValueChange={(value) => {
+              const next =
+                amorphousTypes.find((entry) => entry.type === value.at(0))
+                  ?.type ?? null;
+              // Shape Stabilizers are for no build: they clear For.
+              set({
+                type: next,
+                kind: next === "stabilizers" ? null : filters.kind,
+              });
+            }}
+          >
+            <ToggleGroupItem value={all} className={filterChipClass}>
+              All
+            </ToggleGroupItem>
+            {amorphousTypes.map((entry) => (
+              <ToggleGroupItem
+                key={entry.type}
+                value={entry.type}
+                className={filterChipClass}
+              >
+                {entry.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </FilterRow>
 
         <FilterRow id={`${ids}-for`} label="For">
           <ToggleGroup
@@ -196,7 +314,14 @@ export function AmorphousIndex({
               const next = buildKinds.find(
                 (entry) => entry.kind === value.at(0),
               );
-              set({ kind: next?.kind ?? null });
+              // A For pick is about patterns: it clears Shape Stabilizers.
+              set({
+                kind: next?.kind ?? null,
+                type:
+                  next !== undefined && filters.type === "stabilizers"
+                    ? null
+                    : filters.type,
+              });
             }}
           >
             <ToggleGroupItem value={all} className={filterChipClass}>
@@ -224,9 +349,13 @@ export function AmorphousIndex({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p aria-live="polite" className="text-sm text-muted-foreground">
-          {shown.length === entries.length
-            ? `${String(entries.length)} patterns`
-            : `${String(shown.length)} of ${String(entries.length)} patterns`}
+          {filters.type === "stabilizers"
+            ? shownStabilizers.length === stabilizers.length
+              ? `${String(stabilizers.length)} Shape Stabilizers`
+              : `${String(shownStabilizers.length)} of ${String(stabilizers.length)} Shape Stabilizers`
+            : shown.length === entries.length
+              ? `${String(entries.length)} patterns`
+              : `${String(shown.length)} of ${String(entries.length)} patterns`}
         </p>
         {filtered ? (
           <button
@@ -242,7 +371,13 @@ export function AmorphousIndex({
         ) : null}
       </div>
 
-      {shown.length === 0 ? (
+      {filters.type === "stabilizers" ? (
+        shownStabilizers.length === 0 ? (
+          <p className="rounded-2xl border border-dashed bg-card/40 p-8 text-center text-muted-foreground duration-300 motion-safe:animate-in motion-safe:fade-in">
+            No Shape Stabilizer matches these filters.
+          </p>
+        ) : null
+      ) : shown.length === 0 ? (
         <p className="rounded-2xl border border-dashed bg-card/40 p-8 text-center text-muted-foreground duration-300 motion-safe:animate-in motion-safe:fade-in">
           No pattern matches these filters.
         </p>
@@ -262,7 +397,96 @@ export function AmorphousIndex({
           />
         </>
       )}
+
+      {shownStabilizers.length === 0 ? null : (
+        <section aria-labelledby={`${ids}-stabilizers`} className="grid gap-3">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <h2
+              id={`${ids}-stabilizers`}
+              className="font-display text-2xl font-semibold tracking-wide"
+            >
+              Shape Stabilizers
+            </h2>
+            {/* With Type on Shape Stabilizers, the status line counts them. */}
+            {filters.type === "stabilizers" ? null : (
+              <p className="text-sm text-muted-foreground">
+                {shownStabilizers.length === stabilizers.length
+                  ? `${String(stabilizers.length)} Shape Stabilizers`
+                  : `${String(shownStabilizers.length)} of ${String(stabilizers.length)} Shape Stabilizers`}
+              </p>
+            )}
+          </div>
+          <ul aria-label="Shape Stabilizers" className={roomyGridClass}>
+            {stabilizerItems}
+          </ul>
+        </section>
+      )}
     </div>
+  );
+}
+
+/**
+ * A Shape Stabilizer's card: its art, name and tier, and what it goes into. A real link
+ * to the index with it open; a plain click opens or closes its details in place.
+ */
+function StabilizerCardLink({
+  entry,
+  tier,
+  open,
+  controls,
+  onToggle,
+}: {
+  entry: ShapeStabilizer;
+  tier: CosmeticTier | null;
+  open: boolean;
+  controls: string;
+  onToggle: () => void;
+}) {
+  const onClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    // A modified or middle click opens the link as the browser would.
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+    event.preventDefault();
+    onToggle();
+  };
+
+  return (
+    <a
+      id={stabilizerCardId(entry.slug)}
+      href={`${indexPath}?stabilizer=${entry.slug}`}
+      aria-expanded={open}
+      aria-controls={open ? controls : undefined}
+      onClick={onClick}
+      className="group grid h-full grid-cols-[minmax(0,1fr)] content-start gap-3 rounded-2xl border bg-card/70 p-3.5 transition-colors outline-none hover:border-ring/60 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-expanded:border-primary/70 aria-expanded:bg-primary/10"
+    >
+      <span className="flex min-w-0 items-center gap-3">
+        <WideTile
+          imageUrl={entry.imageUrl}
+          color={tier?.hex ?? patternColor}
+          size="sm"
+        />
+        <span className="grid min-w-0 justify-items-start gap-1.5">
+          <span className="font-display text-base leading-tight font-semibold tracking-wide break-words">
+            {entry.name}
+          </span>{" "}
+          {tier === null ? null : <TierBadge tier={tier} />}
+        </span>
+      </span>{" "}
+      <CardTags
+        label="Used for"
+        tags={entry.uses.map((use) => ({
+          text: use.name,
+          note: `×${String(use.count)}`,
+        }))}
+      />
+    </a>
   );
 }
 
@@ -324,18 +548,14 @@ function PatternCardLink({
           {tier === null ? null : <TierBadge tier={tier} />}
         </span>
       </span>{" "}
-      {/* Each reward's name, wrapping when it doesn't fit, and its chance. */}
-      <span className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-1.5 border-t border-border/60 pt-3 text-xs leading-snug">
-        {entry.rewards.map((reward) => (
-          <span key={reward.id} className="contents">
-            <span className="text-muted-foreground">{reward.name}</span>{" "}
-            <span className="text-right text-foreground/80 tabular-nums">
-              {rateText(reward.rate)}
-            </span>
-            <span className="sr-only">, </span>
-          </span>
-        ))}
-      </span>
+      {/* Each reward with its chance. */}
+      <CardTags
+        label="Opens into"
+        tags={entry.rewards.map((reward) => ({
+          text: reward.name,
+          note: rateText(reward.rate),
+        }))}
+      />
     </a>
   );
 }

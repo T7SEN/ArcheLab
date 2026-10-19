@@ -1960,7 +1960,7 @@
     },
     {
       "id": "Icon_CharacterTicket01",
-      "label": "Character ticket 01",
+      "label": "Character ticket 1",
       "art": {
         "kind": "placeholder"
       },
@@ -1970,7 +1970,7 @@
     },
     {
       "id": "Icon_CharacterTicket02",
-      "label": "Character ticket 02",
+      "label": "Character ticket 2",
       "art": {
         "kind": "placeholder"
       },
@@ -1980,7 +1980,7 @@
     },
     {
       "id": "Icon_CharacterTicket03",
-      "label": "Character ticket 03",
+      "label": "Character ticket 3",
       "art": {
         "kind": "placeholder"
       },
@@ -1990,7 +1990,7 @@
     },
     {
       "id": "Icon_CharacterTicket04",
-      "label": "Character ticket 04",
+      "label": "Character ticket 4",
       "art": {
         "kind": "placeholder"
       },

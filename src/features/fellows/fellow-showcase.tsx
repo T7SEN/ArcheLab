@@ -22,6 +22,7 @@ import {
 } from "./fellow-card";
 import { FellowDetails } from "./fellow-details";
 import { PassiveIcon } from "./passive-icon";
+import { LoadFailed } from "@/features/game-data/load-failed";
 
 /** The page's address, for a card's link. */
 const indexPath = "/fellows";
@@ -144,10 +145,7 @@ export function FellowShowcase({
   }
 
   return entries.length === 0 ? (
-    <p className="rounded-2xl border border-dashed bg-card/40 p-8 text-center text-muted-foreground">
-      The Fellows couldn&apos;t be loaded for this build. They come back with
-      the next one.
-    </p>
+    <LoadFailed what="Fellows" />
   ) : (
     <ul aria-label="Fellows" className={showcaseGridClass}>
       {items}

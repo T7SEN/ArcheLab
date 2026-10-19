@@ -1,7 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { wideArt } from "@/features/game-data/wide-art";
 import { ArcheIcon, ElementIcon } from "./type-icons";
+import { WideTile } from "@/features/game-data/wide-tile";
 
 /** A reactor as a Descendant's page shows it. */
 export interface DescendantReactor {
@@ -43,27 +43,23 @@ export function ReactorCards({
           }}
         >
           <div className="flex items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element -- NEXON images load directly from NEXON's host, never through Vercel Image Optimization (SKILL.md landmine 2). */}
-            <img
-              src={reactor.imageUrl}
-              alt=""
-              width={wideArt.width}
-              height={wideArt.height}
-              loading="lazy"
-              decoding="async"
-              className="h-12 w-auto shrink-0 object-contain"
+            {/* On a tile in its tier's color, as reactors are everywhere else. */}
+            <WideTile
+              imageUrl={reactor.imageUrl}
+              color={reactor.hex}
+              size="sm"
             />
             <div className="grid min-w-0 gap-1">
-              <h3 className="font-display text-lg leading-tight font-semibold tracking-wide">
+              <h3 className="font-display text-xl leading-tight font-semibold tracking-wide">
                 <Link
                   href={`/reactors?reactor=${reactor.slug}`}
                   prefetch={false}
-                  className="group/name rounded-sm underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="group/name rounded-sm underline-offset-4 outline-none hover:text-primary hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   {reactor.name}
                   <ArrowUpRight
                     aria-hidden="true"
-                    className="ml-1 inline size-4 align-baseline text-muted-foreground transition-colors group-hover/name:text-foreground"
+                    className="ml-1 inline size-4 align-baseline text-muted-foreground transition-colors group-hover/name:text-primary"
                   />
                 </Link>
               </h3>

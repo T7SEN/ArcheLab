@@ -2,6 +2,14 @@ import type { ImageEntry } from "@/features/chat/engine";
 import type { PortraitUrls } from "@/lib/nexon/descendants";
 
 /**
+ * An icon's name for its tooltip and alt text: "Bunny icon", but "Boss icon" rather
+ * than "Boss icon icon".
+ */
+export function iconName(label: string): string {
+  return /\bicon$/i.test(label) ? label : `${label} icon`;
+}
+
+/**
  * The art URL for an image, or null when it has none: a Descendant's API portrait,
  * for a portrait icon or a character ticket (null if the build could not load it,
  * ADR 0008), an image on NEXON's own site

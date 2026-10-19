@@ -20,6 +20,7 @@ import {
   useSearch,
   writeSearch,
 } from "@/features/game-data/url-query";
+import { LoadFailed } from "@/features/game-data/load-failed";
 import { RoundsIcon } from "./rounds-icon";
 import {
   defaultWeaponFilters,
@@ -102,12 +103,18 @@ export function WeaponIndex({
   const filtered =
     urlSearchOf(weaponFiltersToSearch({ ...filters, sort: "tier" })) !== "";
 
+  // The data couldn't load: the hero says so, and this says it once more instead of
+  // empty filters and "No … matches these filters."
+  if (entries.length === 0) {
+    return <LoadFailed what="weapons" />;
+  }
+
   return (
     <div className="grid gap-6">
       <div className="grid gap-4 rounded-2xl border bg-card/60 p-4 sm:p-5">
         <div className="flex flex-wrap items-center gap-3">
           <label className="relative min-w-56 flex-1">
-            <span className="sr-only">Search weapons by name</span>
+            <span className="sr-only">Search weapons</span>
             <Search
               aria-hidden="true"
               className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"

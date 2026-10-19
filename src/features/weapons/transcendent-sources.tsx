@@ -1,5 +1,7 @@
 import { Info } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
+import { slugOf } from "@/lib/slug";
 import {
   karelsMothershipLoot,
   rotationalBoost,
@@ -17,6 +19,42 @@ const numberFormat = new Intl.NumberFormat("en-US");
 const quality = (range: QualityRange) =>
   `${String(range.min)}–${String(range.max)}`;
 
+const hard400 = " - Hard 400%";
+
+/**
+ * A Hard 400% row's operation on the 400% Infiltration Operations page, or null (ADR
+ * 0050). Matched without a leading "The": the notes write "Asylum" and "The Magister
+ * Lab" for The Asylum and Magister Lab.
+ */
+function operation400Href(
+  content: string,
+  operations: readonly string[],
+): string | null {
+  if (!content.endsWith(hard400)) {
+    return null;
+  }
+  const bare = (slug: string) => slug.replace(/^the-/, "");
+  const wanted = bare(slugOf(content.slice(0, -hard400.length)));
+  const slug = operations.find((entry) => bare(entry) === wanted);
+  return slug === undefined ? null : `/infiltration-400?operation=${slug}`;
+}
+
+const inlineLinkClass =
+  "rounded-sm underline decoration-muted-foreground/60 decoration-dotted underline-offset-4 outline-none hover:text-primary hover:decoration-current hover:decoration-solid focus-visible:ring-3 focus-visible:ring-ring/50";
+
+/** "Transcendent Weapon Loot", linking its card on the Miscellaneous page (ADR 0050). */
+function LootLink() {
+  return (
+    <Link
+      href="/miscellaneous?item=transcendent-weapon-loot"
+      prefetch={false}
+      className={`${inlineLinkClass} text-foreground`}
+    >
+      Transcendent Weapon Loot
+    </Link>
+  );
+}
+
 /** A titled card in the panel's grid; `className` places it. */
 function SourceCard({
   title,
@@ -31,7 +69,7 @@ function SourceCard({
     <section
       className={`grid content-start gap-3 rounded-2xl border bg-card/60 p-5 ${className}`}
     >
-      <h3 className="font-display text-lg font-semibold tracking-wide">
+      <h3 className="font-display text-xl font-semibold tracking-wide">
         {title}
       </h3>
       {children}
@@ -55,7 +93,14 @@ const cellClass = "border-b border-border/60 px-3 py-1.5";
  * `src/data/transcendent-weapon-sources.ts`, with a note that the chances are for a
  * random one, in T7SEN's words, rephrased.
  */
-export function TranscendentSources({ name }: { name: string }) {
+export function TranscendentSources({
+  name,
+  operations400,
+}: {
+  name: string;
+  /** The 400% Infiltration Operations' addresses, for the Hard 400% rows' links. */
+  operations400: readonly string[];
+}) {
   return (
     <div className="grid gap-4">
       <p className="max-w-3xl text-sm text-muted-foreground">
@@ -80,7 +125,9 @@ export function TranscendentSources({ name }: { name: string }) {
             Chances are for a random Transcendent weapon, not {name}{" "}
             specifically. Drop-rate bonuses raise them.
           </p>
-          <p>One-time first-clear guarantees aren&apos;t in Mission rewards.</p>
+          <p>
+            One-time first-clear guarantees aren&apos;t in the mission rewards.
+          </p>
         </div>
       </div>
       {/* One grid for the list and its six cards, so no space is left empty
@@ -94,7 +141,7 @@ export function TranscendentSources({ name }: { name: string }) {
           <div className="grid gap-1">
             <h3
               id="transcendent-drops"
-              className="font-display text-lg font-semibold tracking-wide"
+              className="font-display text-xl font-semibold tracking-wide"
             >
               Mission rewards
             </h3>
@@ -126,26 +173,40 @@ export function TranscendentSources({ name }: { name: string }) {
                 </tr>
               </thead>
               <tbody>
-                {transcendentDrops.map((drop) => (
-                  <tr key={drop.content} className="even:bg-background/30">
-                    <th
-                      scope="row"
-                      className={`${cellClass} text-left font-normal`}
-                    >
-                      {drop.content}
-                    </th>
-                    <td
-                      className={`${cellClass} text-right font-mono whitespace-nowrap tabular-nums`}
-                    >
-                      {quality(drop.quality)}
-                    </td>
-                    <td
-                      className={`${cellClass} text-right font-mono tabular-nums`}
-                    >
-                      {drop.chance}
-                    </td>
-                  </tr>
-                ))}
+                {transcendentDrops.map((drop) => {
+                  const href = operation400Href(drop.content, operations400);
+                  return (
+                    <tr key={drop.content} className="even:bg-background/30">
+                      <th
+                        scope="row"
+                        className={`${cellClass} text-left font-normal`}
+                      >
+                        {/* A 400% operation opens on its page (ADR 0050). */}
+                        {href === null ? (
+                          drop.content
+                        ) : (
+                          <Link
+                            href={href}
+                            prefetch={false}
+                            className={inlineLinkClass}
+                          >
+                            {drop.content}
+                          </Link>
+                        )}
+                      </th>
+                      <td
+                        className={`${cellClass} text-right font-mono whitespace-nowrap tabular-nums`}
+                      >
+                        {quality(drop.quality)}
+                      </td>
+                      <td
+                        className={`${cellClass} text-right font-mono tabular-nums`}
+                      >
+                        {drop.chance}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -181,17 +242,17 @@ export function TranscendentSources({ name }: { name: string }) {
             ))}
           </dl>
           <p className="text-sm text-muted-foreground">
-            Transcendent Weapon Loot on mission completion. Its Commanders have
-            a small chance to drop one, and Common and Elite monsters a very
-            small chance.
+            <LootLink /> on mission completion. Its Commanders have a small
+            chance to drop one, and Common and Elite monsters a very small
+            chance.
           </p>
         </SourceCard>
 
         <SourceCard title="Trials" className="lg:col-span-6">
           <p className="text-sm text-muted-foreground">
-            Transcendent Weapon Loot, a {trialsLoot.chance} chance each round,
-            at this Quality. Its two dungeons, Protocol 001 and Protocol 002,
-            take turns each day with the same rewards.
+            <LootLink />, a {trialsLoot.chance} chance each round, at this
+            Quality. Its two dungeons, Protocol 001 and Protocol 002, take turns
+            each day with the same rewards.
           </p>
           {/* A row per round and a column per build: four rounds across didn't fit
                 the side column (T7SEN, 2026-10-17). */}
@@ -271,7 +332,7 @@ export function TranscendentSources({ name }: { name: string }) {
             {rotationalBoost.contents.map((content) => (
               <li
                 key={content}
-                className="rounded-full border bg-background/40 px-2.5 py-1 text-xs"
+                className="rounded-md bg-secondary px-1.5 py-0.5 text-[0.6875rem] leading-snug text-foreground/85"
               >
                 {content}
               </li>

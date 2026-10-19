@@ -18,7 +18,7 @@ export function ModuleEffect({ effect }: { effect: string | null }) {
         block.kind === "text" ? (
           <p
             key={index}
-            className="text-sm leading-relaxed whitespace-pre-line text-foreground/90"
+            className="text-sm leading-relaxed whitespace-pre-line text-foreground/85"
           >
             {block.text}
           </p>

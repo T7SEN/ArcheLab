@@ -13,9 +13,10 @@ import { fetchMetadataSet, nexonImageUrl } from "./metadata";
 export const numericId = z.string().regex(/^\d+$/);
 
 export const statSchema = z.object({
-  stat_id: numericId,
+  // A stat named for one Descendant joins the Descendant's id: "105000109:101000002",
+  // Max Void Energy (ten of them, checked 2026-10-18; no set uses them yet).
+  stat_id: z.string().regex(/^\d+(:\d+)?$/),
   stat_name: z.string().min(1),
-  stat_order_no: z.number(),
 });
 
 const amount = z.object({
@@ -75,15 +76,23 @@ export const moduleSchema = z.object({
   ),
 });
 
+/** `acquisition-detail.json`: the names of the places items come from (ADR 0041). */
+export const acquisitionSchema = z.object({
+  acquisition_detail_id: z.string().min(1),
+  acquisition_detail_name: z.string().min(1),
+});
+
 export type StatRecord = z.infer<typeof statSchema>;
 export type ResearchRecord = z.infer<typeof researchSchema>;
 export type MaterialRecord = z.infer<typeof materialSchema>;
 export type ModuleRecord = z.infer<typeof moduleSchema>;
+export type AcquisitionRecord = z.infer<typeof acquisitionSchema>;
 
 let statsPromise: Promise<StatRecord[]> | null = null;
 let researchPromise: Promise<ResearchRecord[]> | null = null;
 let materialsPromise: Promise<MaterialRecord[]> | null = null;
 let modulesPromise: Promise<ModuleRecord[]> | null = null;
+let acquisitionsPromise: Promise<AcquisitionRecord[]> | null = null;
 
 /** `stat.json`: stat names by id. */
 export function fetchStats(): Promise<StatRecord[]> {
@@ -97,10 +106,61 @@ export function fetchResearch(): Promise<ResearchRecord[]> {
   return researchPromise;
 }
 
-/** `consumable-material.json`: material names, images and where they come from. */
+/**
+ * `consumable-material.json` as NEXON sends it: some items have no art (event tokens,
+ * EX-P serums and a storage slot, 13 on 2026-10-18).
+ */
+const materialEntrySchema = materialSchema.extend({
+  image_url: nexonImageUrl.nullable(),
+});
+
+/**
+ * `consumable-material.json`: material names, images and where they come from. Items
+ * without art are left out, since every page that lists materials shows their art; one
+ * that also names a place to find it is said in the build's log, as a page would have
+ * shown it.
+ */
 export function fetchMaterials(): Promise<MaterialRecord[]> {
-  materialsPromise ??= fetchMetadataSet("consumable-material", materialSchema);
+  materialsPromise ??= fetchMetadataSet(
+    "consumable-material",
+    materialEntrySchema,
+  ).then((entries) => {
+    const drawn = entries.filter(
+      (entry): entry is MaterialRecord => entry.image_url !== null,
+    );
+    const placed = entries.filter(
+      (entry) =>
+        entry.image_url === null && entry.acquisition_detail.length > 0,
+    );
+    if (placed.length > 0) {
+      console.warn(
+        `NEXON consumable-material.json: ${String(placed.length)} items with places to find them have no art and were left out: ${placed.map((entry) => entry.consumable_material_name).join(", ")}.`,
+      );
+    }
+    return drawn;
+  });
   return materialsPromise;
+}
+
+/** `acquisition-detail.json`: where items come from, by the ids materials list. */
+export function fetchAcquisitions(): Promise<AcquisitionRecord[]> {
+  acquisitionsPromise ??= fetchMetadataSet(
+    "acquisition-detail",
+    acquisitionSchema,
+  );
+  return acquisitionsPromise;
+}
+
+/**
+ * NEXON's acquisition names with their bracket padding and doubled spaces gone:
+ * "[Kingston] [Normal]", "[Ultimate Equipment Research - 4]".
+ */
+export function sourceText(name: string): string {
+  return name
+    .replace(/\s+/g, " ")
+    .replace(/\[\s+/g, "[")
+    .replace(/\s+\]/g, "]")
+    .trim();
 }
 
 /** `module.json`: every module, with its capacity and effect at each level. */

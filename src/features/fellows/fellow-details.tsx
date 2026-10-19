@@ -78,7 +78,7 @@ export function FellowDetails({
             <TierPill name={card.tierName} hex={card.hex} />
             {first === undefined || last === undefined ? null : (
               <span>
-                Levels {first} to {last}
+                Levels {first}–{last}
               </span>
             )}
           </p>
@@ -117,7 +117,7 @@ export function FellowDetails({
 
       {card.research === null ? null : (
         <div className="lg:col-span-2">
-          <ResearchRecipe name={card.name} recipe={card.research} />
+          <ResearchRecipe name={card.name} recipe={card.research} inPanel />
         </div>
       )}
     </section>
@@ -161,7 +161,7 @@ function LevelView({ card }: { card: FellowCard }) {
         id={`${ids}-levels`}
         className="font-display text-lg font-semibold tracking-wide"
       >
-        Levels
+        Stats
       </h3>
       <div className="grid gap-3 rounded-xl border bg-card/60 p-4">
         {/* The slider's name stays "Level" and its value text says the level, so the

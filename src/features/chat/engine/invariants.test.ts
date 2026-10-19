@@ -113,6 +113,41 @@ const parsedMarkupArbitrary = textArbitrary.map((markup) =>
 
 const inputs = fc.oneof(piecesArbitrary, parsedMarkupArbitrary);
 
+/**
+ * Untagged text cut into neighboring untagged pieces at code point boundaries, with an
+ * empty piece in each cut. Cuts land inside escapes like `&lt;` far more often here
+ * than in `inputs`, which found that case once in about 300,000 runs.
+ */
+const splitUntaggedArbitrary = fc
+  .tuple(
+    textArbitrary,
+    fc.array(fc.record({ at: fc.nat(), empty: styleArbitrary }), {
+      maxLength: 4,
+    }),
+  )
+  .map(([text, cuts]) => {
+    const chars = Array.from(text);
+    const pieces: Piece[] = [];
+    let start = 0;
+    for (const cut of cuts
+      .map(({ at, empty }) => ({ at: at % (chars.length + 1), empty }))
+      .sort((a, b) => a.at - b.at)) {
+      pieces.push({
+        kind: "text",
+        text: chars.slice(start, cut.at).join(""),
+        style: null,
+      });
+      pieces.push({ kind: "text", text: "", style: cut.empty });
+      start = cut.at;
+    }
+    pieces.push({
+      kind: "text",
+      text: chars.slice(start).join(""),
+      style: null,
+    });
+    return { text, pieces };
+  });
+
 describe("engine invariants (SKILL.md section 5.2)", () => {
   it("1. parse(serialize(pieces)) renders identically to pieces", () => {
     fc.assert(
@@ -156,6 +191,41 @@ describe("engine invariants (SKILL.md section 5.2)", () => {
       fc.property(inputs, (pieces) => {
         const once = optimize(pieces, registry);
         expect(optimize(parse(once, registry), registry)).toBe(once);
+      }),
+      runs,
+    );
+  });
+
+  it("1, 2 and 4 hold for an escape split across untagged pieces", () => {
+    // fast-check's shrunk counterexample from a failed run of invariant 2 (2026-10-18).
+    // serialize wrote `&lt;`, which the game shows as `<`.
+    const pieces: Piece[] = [
+      { kind: "text", text: "&", style: null },
+      { kind: "text", text: "lt;", style: null },
+    ];
+    expect(
+      rendersIdentically(parse(serialize(pieces), registry), pieces, registry),
+    ).toBe(true);
+    const once = optimize(pieces, registry);
+    expect(rendersIdentically(parse(once, registry), pieces, registry)).toBe(
+      true,
+    );
+    expect(optimize(parse(once, registry), registry)).toBe(once);
+  });
+
+  it("untagged text cut into neighboring pieces serializes as one piece", () => {
+    fc.assert(
+      fc.property(splitUntaggedArbitrary, ({ text, pieces }) => {
+        expect(serialize(pieces)).toBe(
+          serialize([{ kind: "text", text, style: null }]),
+        );
+        expect(
+          rendersIdentically(
+            parse(optimize(pieces, registry), registry),
+            pieces,
+            registry,
+          ),
+        ).toBe(true);
       }),
       runs,
     );

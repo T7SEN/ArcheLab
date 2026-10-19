@@ -11,6 +11,7 @@ import { filterChipClass } from "@/features/game-data/filter-row";
 import { CoreTypeGrid } from "@/features/game-data/core-type-grid";
 import type { CoreType } from "@/features/game-data/core-types";
 import { useRevealDetails } from "@/features/game-data/reveal-details";
+import { PageChip } from "@/features/game-data/page-chip";
 import { WideTile } from "@/features/game-data/wide-tile";
 import type { ComponentCard, ComponentPieceCard } from "./component-filters";
 import {
@@ -68,6 +69,7 @@ export function ComponentDetails({
   initialTier,
   subStats,
   coreSlots,
+  rewardSlots,
   onClose,
 }: {
   /** The section's id, for its card's `aria-controls`. */
@@ -78,6 +80,8 @@ export function ComponentDetails({
   subStats: SubStats;
   /** The core types an Ultimate piece's slots take. */
   coreSlots: readonly CoreType[];
+  /** Where each slot is a Difficulty Level Reward, by slot name. */
+  rewardSlots: Readonly<Record<string, string>>;
   onClose: () => void;
 }) {
   const ids = useId();
@@ -167,7 +171,7 @@ export function ComponentDetails({
               className="rounded-full border px-2 py-0.5 text-xs font-medium"
               style={{
                 color: tier.hex,
-                borderColor: `color-mix(in srgb, ${tier.hex} 50%, transparent)`,
+                borderColor: `color-mix(in srgb, ${tier.hex} 45%, transparent)`,
               }}
             >
               {tier.name}
@@ -321,6 +325,7 @@ export function ComponentDetails({
             value={statAt(levels.file, piece, level)}
             subStats={subStats}
             coreSlots={coreSlots}
+            rewardHref={rewardSlots[piece.slot]}
           />
         )}
       </div>
@@ -365,6 +370,7 @@ function PieceView({
   value,
   subStats,
   coreSlots,
+  rewardHref,
 }: {
   piece: ComponentPieceCard;
   /** Every level, lowest first. */
@@ -376,6 +382,8 @@ function PieceView({
   value: number | undefined;
   subStats: SubStats;
   coreSlots: readonly CoreType[];
+  /** Where its slot is a Difficulty Level Reward (ADR 0050). */
+  rewardHref: string | undefined;
 }) {
   const ids = useId();
   const level = levels.at(index);
@@ -405,6 +413,12 @@ function PieceView({
           )}
         </div>
       </div>
+
+      {rewardHref === undefined ? null : (
+        <PageChip href={rewardHref}>
+          {`Where ${piece.slot} is the reward`}
+        </PageChip>
+      )}
 
       <div className="grid gap-3">
         {/* The slider's name stays "Level" and its value text says the level, so the

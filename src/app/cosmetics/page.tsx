@@ -69,7 +69,7 @@ export default async function CosmeticsPage() {
           <p className="mt-3 max-w-2xl hero-text">
             {cards.length === 0
               ? "The cosmetics couldn't be loaded for this build. They come back with the next one."
-              : `All ${count.format(cards.length)} cosmetics: skins, makeup, attachments, paints and spawns. Pick a Descendant to see everything they can use.`}
+              : `All ${count.format(cards.length)} cosmetics: skins, makeup, attachments, paints and spawns. Open one for its versions and who can use them, or pick a Descendant to see everything they can use.`}
           </p>
         </div>
       </section>

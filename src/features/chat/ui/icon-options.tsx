@@ -10,6 +10,7 @@ import type { ImageEntry } from "@/features/chat/engine";
 import { imageTag } from "@/features/chat/engine/serialize";
 import type { PortraitUrls } from "@/lib/nexon/descendants";
 import { ChatIcon } from "./chat-icon";
+import { iconName } from "./chat-icons";
 import { chatRegistry } from "./chat-registry";
 import { keepEditorFocus } from "./keep-editor-focus";
 
@@ -110,11 +111,6 @@ export function filterImages(query: string): ImageEntry[] {
           : [groupTitleOf(image)]),
       ].some((text) => text.toLowerCase().includes(needle)),
   );
-}
-
-/** "Bunny icon", but "Boss icon" rather than "Boss icon icon". */
-export function iconName(label: string): string {
-  return /\bicon$/i.test(label) ? label : `${label} icon`;
 }
 
 const buttonBase =

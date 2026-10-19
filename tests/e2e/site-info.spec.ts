@@ -67,9 +67,11 @@ test("the Changelog lists every update, newest first", async ({ page }) => {
   // An older update opens, and its row jumps to its group, which the line traces.
   await sections.last().click();
   await expect(sections.last()).toHaveAttribute("aria-expanded", "true");
-  const row = timeline.getByRole("link", { name: oldestGroup.title });
+  // Updates share their group names (changelogGroupTitles), so the row is found by
+  // where it links.
   const id = changelogGroupId(oldest.date, oldestGroup.title);
-  await expect(row).toHaveAttribute("href", `#${id}`);
+  const row = timeline.locator(`a[href="#${id}"]`);
+  await expect(row).toHaveText(oldestGroup.title);
   await row.click();
   await expect(page).toHaveURL(new RegExp(`#${id}$`));
   await expect(row).toHaveAttribute("aria-current", "true");

@@ -19,6 +19,7 @@ import {
   writeSearch,
 } from "@/features/game-data/url-query";
 import { WideTile } from "@/features/game-data/wide-tile";
+import { LoadFailed } from "@/features/game-data/load-failed";
 import { ReactorDetails, ReactorTypes } from "./reactor-details";
 import {
   defaultReactorFilters,
@@ -149,6 +150,12 @@ export function ReactorIndex({
         />
       </DetailsRowItem>,
     );
+  }
+
+  // The data couldn't load: the hero says so, and this says it once more instead of
+  // empty filters and "No … matches these filters."
+  if (entries.length === 0) {
+    return <LoadFailed what="reactors" />;
   }
 
   return (

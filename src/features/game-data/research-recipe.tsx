@@ -1,4 +1,5 @@
 import { ChevronDown, Clock } from "lucide-react";
+import Link from "next/link";
 import type { Recipe, RecipeItem } from "@/lib/nexon/recipe";
 import { formatDuration } from "./duration";
 
@@ -40,17 +41,57 @@ function ItemImage({ src, size }: { src: string; size: "lg" | "sm" }) {
   );
 }
 
+/**
+ * The Amorphous Material Patterns an item comes from, each a link to its details on the
+ * Amorphous Materials index (ADR 0041).
+ */
+function Sources({ item }: { item: RecipeItem }) {
+  return item.from.map((source) => (
+    <span key={source.slug} className="text-xs text-muted-foreground">
+      From{" "}
+      <Link
+        href={`/amorphous-materials?pattern=${source.slug}`}
+        prefetch={false}
+        className="rounded-sm text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
+        {source.name}
+      </Link>
+    </span>
+  ));
+}
+
+/**
+ * An item's name; a basic material's or Core Material's links its details on its index
+ * (ADR 0045, ADR 0047), as those pages link back to what each goes into. A dotted
+ * underline tells it apart without coloring every ingredient.
+ */
+function ItemName({
+  item,
+  className,
+}: {
+  item: RecipeItem;
+  className: string;
+}) {
+  return item.href === null ? (
+    <span className={className}>{item.name}</span>
+  ) : (
+    <Link
+      href={item.href}
+      prefetch={false}
+      className={`${className} justify-self-start rounded-sm underline decoration-muted-foreground/60 decoration-dotted underline-offset-4 outline-none hover:text-primary hover:decoration-current hover:decoration-solid focus-visible:ring-3 focus-visible:ring-ring/50`}
+    >
+      {item.name}
+    </Link>
+  );
+}
+
 function Ingredient({ item }: { item: RecipeItem }) {
   return (
     <li className="flex items-center gap-3">
       <ItemImage src={item.imageUrl} size="sm" />
       <span className="grid min-w-0 flex-1">
-        <span className="text-sm">{item.name}</span>
-        {item.from.map((source) => (
-          <span key={source.name} className="text-xs text-muted-foreground">
-            From {source.name}
-          </span>
-        ))}
+        <ItemName item={item} className="text-sm" />
+        <Sources item={item} />
       </span>
       <span className="font-mono text-sm text-muted-foreground tabular-nums">
         ×{numberFormat.format(item.count)}
@@ -62,24 +103,38 @@ function Ingredient({ item }: { item: RecipeItem }) {
 /**
  * How the Descendant is researched, from NEXON's research data (ADR 0023): the
  * research's time and cost, then each item it needs. A part that is itself researched opens to
- * show its own recipe; an item that comes from an Amorphous Material names it.
+ * show its own recipe; an item that comes from an Amorphous Material Pattern links it, and
+ * a basic material links its own details.
  */
 export function ResearchRecipe({
   name,
   recipe,
+  title,
+  compact = false,
+  inPanel = false,
 }: {
   name: string;
   recipe: Recipe;
+  /** The heading, when not "Research <name>": one of several ways ("From Archive Shard"). */
+  title?: string;
+  /** Its items in one column, for a recipe laid beside others. */
+  compact?: boolean;
+  /** In an index's details panel: a heading the size of the panel's others. */
+  inPanel?: boolean;
 }) {
   return (
     <div className="grid gap-4 rounded-2xl border bg-card/60 p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-        <h3 className="font-display text-xl font-semibold tracking-wide">
-          Research {name}
+        <h3
+          className={`font-display font-semibold tracking-wide ${inPanel ? "text-lg" : "text-xl"}`}
+        >
+          {title ?? `Research ${name}`}
         </h3>
         <Costs recipe={recipe} />
       </div>
-      <ul className="grid items-start gap-3 md:grid-cols-2">
+      <ul
+        className={`grid items-start gap-3 ${compact ? "" : "md:grid-cols-2"}`}
+      >
         {recipe.items.map((item) => (
           <li
             key={item.name}
@@ -88,15 +143,8 @@ export function ResearchRecipe({
             <div className="flex items-center gap-3">
               <ItemImage src={item.imageUrl} size="lg" />
               <div className="grid min-w-0 flex-1 gap-0.5">
-                <span className="font-medium">{item.name}</span>
-                {item.from.map((source) => (
-                  <span
-                    key={source.name}
-                    className="text-xs text-muted-foreground"
-                  >
-                    From {source.name}
-                  </span>
-                ))}
+                <ItemName item={item} className="font-medium" />
+                <Sources item={item} />
               </div>
               <span className="font-mono text-sm text-muted-foreground tabular-nums">
                 ×{numberFormat.format(item.count)}

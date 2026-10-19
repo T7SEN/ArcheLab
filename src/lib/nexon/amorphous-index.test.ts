@@ -271,9 +271,12 @@ describe("the Amorphous Materials index", () => {
     expect(patternKind("Piercing Light", [], targets)).toBe("weapon");
   });
 
-  it("tidies NEXON's bracket padding", () => {
+  it("tidies NEXON's bracket padding and doubled spaces", () => {
     expect(sourceText("[ Operation Authorized ] Quest")).toBe(
       "[Operation Authorized] Quest",
+    );
+    expect(sourceText("[ Ultimate Equipment Research -  4 ] Quest")).toBe(
+      "[Ultimate Equipment Research - 4] Quest",
     );
   });
 });

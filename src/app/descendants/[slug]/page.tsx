@@ -27,6 +27,7 @@ import {
 } from "@/features/descendants/reactor-cards";
 import { rarityOf } from "@/features/game-data/rarity";
 import { NeighborLinks } from "@/features/game-data/neighbor-links";
+import { PageChip } from "@/features/game-data/page-chip";
 import { PageTabs, type PageTab } from "@/features/game-data/page-tabs";
 import { ResearchRecipe } from "@/features/game-data/research-recipe";
 import { SkillsSection } from "@/features/descendants/skills-section";
@@ -37,6 +38,7 @@ import {
   fetchDescendantSummaries,
 } from "@/lib/nexon/descendant-page";
 import { fetchReactorGroups } from "@/lib/nexon/reactor-index";
+import { fetchRewardLinks } from "@/lib/nexon/reward-links";
 import { pageMetadata } from "@/lib/site-metadata";
 import { palette } from "@/styles/tokens";
 
@@ -69,7 +71,7 @@ export async function generateMetadata({
     description:
       page === null
         ? "A Descendant of The First Descendant."
-        : `${page.name}'s stats at every level, skills, exclusive modules and research recipe.`,
+        : `${page.name}'s stats at every level, skills, exclusive modules, reactors and research recipe.`,
   });
 }
 
@@ -79,9 +81,10 @@ export default async function DescendantPage({
   const { slug } = await params;
   // Fetched once while the page is prerendered and refreshed by the weekly deploy
   // (ADR 0008). If NEXON has no such Descendant, or is down, the page is a 404.
-  const [page, reactorGroups] = await Promise.all([
+  const [page, reactorGroups, rewardLinks] = await Promise.all([
     fetchDescendantPage(slug),
     fetchReactorGroups(),
+    fetchRewardLinks(),
   ]);
   if (page === null) {
     notFound();
@@ -114,6 +117,8 @@ export default async function DescendantPage({
           },
         ];
   });
+  // Where reactors that suit it are a Difficulty Level Reward (ADR 0050).
+  const reactorRewardHref = rewardLinks.descendant(slug);
   const chatId = descendantChatIds().get(page.name);
   const chatHash =
     chatId === undefined ? null : shareHash(`<img id="${chatId}"/>`, "normal");
@@ -201,14 +206,35 @@ export default async function DescendantPage({
             id: "reactors",
             label: "Reactors",
             icon: <Hexagon />,
-            description: `The ${String(reactors.length)} reactors whose attribute and Arche type match ${page.name}'s.`,
+            description: `The ${reactors.length === 1 ? "reactor" : `${String(reactors.length)} reactors`} whose attribute and Arche type match ${page.name}'s.`,
             content: (
-              <ReactorCards
-                reactors={reactors}
-                attributeIcons={elementIconUrls(
-                  reactors.map((reactor) => reactor.attribute),
-                )}
-              />
+              <div className="grid gap-4">
+                <ReactorCards
+                  reactors={reactors}
+                  attributeIcons={elementIconUrls(
+                    reactors.map((reactor) => reactor.attribute),
+                  )}
+                />
+                {/* Where these come from (ADR 0050): the battlefields whose Difficulty
+                    Level Reward suits it, picked on that page, and 400% Infiltration
+                    Operations, which drop one that matches the Descendant in use
+                    (Update 1.3.28). */}
+                <div className="grid gap-2">
+                  <h3 className="text-xs font-medium text-muted-foreground">
+                    Where to get them
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {reactorRewardHref === null ? null : (
+                      <PageChip href={reactorRewardHref}>
+                        Difficulty Level Rewards
+                      </PageChip>
+                    )}
+                    <PageChip href="/infiltration-400">
+                      {`400% Infiltration Operations, as ${page.name}`}
+                    </PageChip>
+                  </div>
+                </div>
+              </div>
             ),
           },
         ]),
@@ -232,8 +258,8 @@ export default async function DescendantPage({
       content: (
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-dashed bg-card/40 p-5">
           <p className="max-w-xl text-sm text-muted-foreground">
-            Descendant builds are the next tool on the way. When they land,
-            builds for {page.name} show here.
+            Descendant builds are on the way. When they land, builds for{" "}
+            {page.name} show here.
           </p>
           <Link
             href="/#coming-soon"
@@ -372,9 +398,9 @@ export default async function DescendantPage({
                   {keyStats.map((stat) => (
                     <div
                       key={stat.name}
-                      className="grid gap-0.5 rounded-xl border bg-card/60 px-3 py-2 backdrop-blur-md"
+                      className="grid content-between gap-0.5 rounded-xl border bg-card/60 px-3 py-2 backdrop-blur-md"
                     >
-                      <dt className="truncate text-xs text-muted-foreground">
+                      <dt className="text-xs leading-tight text-muted-foreground">
                         {stat.name}
                       </dt>
                       <dd className="font-display text-xl font-semibold tabular-nums">

@@ -34,6 +34,7 @@ const reward = (name: string, rate: number, build: AmorphousBuild | null) => ({
   imageUrl: art,
   rate,
   build,
+  href: null,
 });
 
 const pattern = (
@@ -99,7 +100,13 @@ describe("the Amorphous Materials index's filters in the URL", () => {
   it("reads what the patterns are for, a search and the open pattern", () => {
     expect(
       parseAmorphousFilters("?for=weapon&q=nano&pattern=bunny", offered),
-    ).toEqual({ kind: "weapon", query: "nano", open: "bunny" });
+    ).toEqual({
+      type: null,
+      kind: "weapon",
+      query: "nano",
+      open: "bunny",
+      stabilizer: null,
+    });
   });
 
   it("ignores values the index doesn't offer", () => {

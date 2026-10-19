@@ -79,15 +79,14 @@ const sets: WeaponSets = {
     },
   ],
   stats: [
-    { stat_id: "105000023", stat_name: "Fire Rate", stat_order_no: 1 },
+    { stat_id: "105000023", stat_name: "Fire Rate" },
     {
       stat_id: "105000030",
       stat_name: "Firearm Critical Hit Rate",
-      stat_order_no: 2,
     },
-    { stat_id: "105000026", stat_name: "Firearm ATK", stat_order_no: 3 },
-    { stat_id: "105000058", stat_name: "Fire ATK", stat_order_no: 4 },
-    { stat_id: "105000060", stat_name: "Electric ATK", stat_order_no: 5 },
+    { stat_id: "105000026", stat_name: "Firearm ATK" },
+    { stat_id: "105000058", stat_name: "Fire ATK" },
+    { stat_id: "105000060", stat_name: "Electric ATK" },
   ],
   research: [
     {

@@ -20,6 +20,11 @@ export interface ReactorCard {
   readonly name: string;
   readonly attribute: string | null;
   readonly archeType: string | null;
+  /**
+   * The Difficulty Level Rewards page with its attribute and Arche type picked, when a
+   * week rewards them (ADR 0050).
+   */
+  readonly rewardHref?: string;
   readonly boosts: readonly { readonly name: string; readonly value: number }[];
   /** Highest tier first. */
   readonly tiers: readonly ReactorTierCard[];

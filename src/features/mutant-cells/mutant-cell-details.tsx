@@ -133,7 +133,8 @@ export function MutantCellDetails({
         </p>
       </div>
 
-      <div className="grid content-start gap-3">
+      {/* Beside the header on wide screens, clear of the close button above it. */}
+      <div className="grid content-start gap-3 lg:pr-10">
         {card.effects.map((effect, index) => (
           <EffectBlock
             // No cell has two sections under one heading.

@@ -101,14 +101,14 @@ export default async function ContributePage() {
               On GitHub
             </h3>
             <p className="text-sm text-muted-foreground">
-              Each &quot;Report on GitHub&quot; link opens a short form with the
-              item already filled in. It needs a free GitHub account, and
-              reports are public in{" "}
+              Each &quot;Open the form on GitHub&quot; link opens a short form
+              with the item already filled in. It needs a free GitHub account,
+              and reports are public in{" "}
               <a
                 href={`${repoUrl}/issues`}
                 target="_blank"
                 rel="noreferrer"
-                className="text-primary underline-offset-4 hover:underline"
+                className="rounded-sm text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 ArcheLab&apos;s issues
               </a>

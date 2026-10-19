@@ -29,7 +29,8 @@ export function WeaponStats({ stats }: { stats: readonly WeaponStat[] }) {
               >
                 <dt className="text-muted-foreground">{stat.name}</dt>
                 <dd className="font-medium tabular-nums">
-                  {numberFormat.format(stat.value)}
+                  {/* A real minus sign, as the core ranges and stat changes write it. */}
+                  {numberFormat.format(stat.value).replace("-", "−")}
                 </dd>
               </div>
             ))}

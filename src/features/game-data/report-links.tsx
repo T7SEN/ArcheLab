@@ -20,7 +20,7 @@ export function ReportLinks({
   return (
     <span className="inline-flex flex-wrap items-center gap-x-4 gap-y-1">
       <a href={github} target="_blank" rel="noreferrer" className={linkClass}>
-        Report on GitHub
+        Open the form on GitHub
         <span className="sr-only"> for {label} (opens in a new tab)</span>
         <ExternalLink aria-hidden="true" className="size-3.5" />
       </a>

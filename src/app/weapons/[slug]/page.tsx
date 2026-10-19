@@ -27,6 +27,7 @@ import { StatLevels } from "@/features/game-data/stat-levels";
 import { RoundsIcon } from "@/features/weapons/rounds-icon";
 import { TranscendentSources } from "@/features/weapons/transcendent-sources";
 import { WeaponStats } from "@/features/weapons/weapon-stats";
+import { fetchOperation400Slugs } from "@/lib/nexon/place-links";
 import { fetchWeaponCores } from "@/lib/nexon/weapon-cores";
 import {
   fetchWeaponPage,
@@ -83,7 +84,7 @@ export async function generateMetadata({
     description:
       page === null
         ? "A weapon of The First Descendant."
-        : `${page.name}: ${summaryOf(page)}.`,
+        : `${page.name}: ${summaryOf(page).replace(/^The /, "the ")}.`,
   });
 }
 
@@ -116,6 +117,10 @@ export default async function WeaponPageRoute({
     page.coreSlots > 0
       ? await fetchWeaponCores(page.name)
       : { slots: [], types: [] };
+  // The 400% Infiltration Operations, for How to obtain's Hard 400% rows (ADR 0050).
+  const operations400 = transcendentSourceWeapons.has(page.name)
+    ? await fetchOperation400Slugs()
+    : [];
   const lastLevel = page.levels.at(-1);
   const attack = page.attack.at(0);
   const keyStats = keyStatNames
@@ -214,7 +219,7 @@ export default async function WeaponPageRoute({
                     Seen them? Send them in with a screenshot, or see{" "}
                     <Link
                       href="/contribute"
-                      className="text-primary underline-offset-4 hover:underline"
+                      className="rounded-sm text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
                     >
                       what else needs checking
                     </Link>
@@ -248,7 +253,11 @@ export default async function WeaponPageRoute({
                       </li>
                     ))}
                   </ul>
-                  <CoreTypeGrid types={coreTypes} headingLevel={3} />
+                  <CoreTypeGrid
+                    types={coreTypes}
+                    headingLevel={3}
+                    weaponType={page.type}
+                  />
                 </div>
               ),
           },
@@ -272,7 +281,12 @@ export default async function WeaponPageRoute({
               label: "How to obtain",
               icon: <PackageSearch />,
               description: `Where ${page.name} and the other Transcendent weapons come from.`,
-              content: <TranscendentSources name={page.name} />,
+              content: (
+                <TranscendentSources
+                  name={page.name}
+                  operations400={operations400}
+                />
+              ),
             },
           ]
         : []),

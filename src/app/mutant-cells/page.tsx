@@ -33,7 +33,7 @@ export default async function MutantCellsPage() {
         <div className="relative mx-auto max-w-6xl px-4 pt-[calc(var(--site-header-height)+3rem)] pb-10 lg:pt-[calc(var(--site-header-height)+4rem)]">
           <Badge variant="secondary">
             <Dna aria-hidden="true" className="text-primary" />
-            Arche Tuning
+            Every Mutant Cell
           </Badge>
           <h1 className="mt-4 font-display text-4xl leading-tight font-semibold tracking-wide sm:text-5xl">
             <ShinyText

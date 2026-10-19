@@ -279,10 +279,21 @@ test("the Database item opens its page, and its menu on hover or keyboard focus"
   await expect(
     nav.getByRole("link", { name: "Cosmetics", exact: true }),
   ).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(
-    nav.getByRole("link", { name: "Amorphous Materials", exact: true }),
-  ).toBeFocused();
+  for (const label of [
+    "Amorphous Materials",
+    "Enhancement Materials",
+    "Basic Materials",
+    "Core Materials",
+    "Cores",
+    "Miscellaneous",
+    "Difficulty Level Rewards",
+    "400% Infiltration Operations",
+  ]) {
+    await page.keyboard.press("Tab");
+    await expect(
+      nav.getByRole("link", { name: label, exact: true }),
+    ).toBeFocused();
+  }
   await page.keyboard.press("Tab");
   await expect(reactors).toHaveCount(0);
 
@@ -339,6 +350,13 @@ test("on a narrow screen the navbar links fold into a menu", async ({
     "Mutant Cells",
     "Cosmetics",
     "Amorphous Materials",
+    "Enhancement Materials",
+    "Basic Materials",
+    "Core Materials",
+    "Cores",
+    "Miscellaneous",
+    "Difficulty Level Rewards",
+    "400% Infiltration Operations",
   ]);
 });
 

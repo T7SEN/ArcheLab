@@ -24,7 +24,7 @@ export const metadata: Metadata = pageMetadata({
   path: "/database",
   title: "Database",
   description:
-    "Search every Descendant, weapon, module, reactor and external component of The First Descendant, or browse them by category.",
+    "Search everything in The First Descendant at once, from Descendants and weapons to materials and cores, or browse it by category.",
 });
 
 const numberFormat = new Intl.NumberFormat("en-US");
@@ -39,8 +39,8 @@ const firstRowSpan: Readonly<Partial<Record<number, string>>> = {
 /**
  * Where a category card sits, so no space is left empty (T7SEN, 2026-10-17): on wide
  * screens (12 columns) rows of three, with the first row taking the rest, two or four
- * (ten categories: four, then three and three); on medium screens pairs, an odd last card
- * across the row.
+ * (sixteen categories: a first row of four, then four rows of three); on medium
+ * screens pairs, an odd last card across the row.
  */
 function cardSpan(index: number, total: number): string {
   const extra = total % 3;
@@ -59,11 +59,23 @@ const gameTerms = new Set([
   "Fellows",
   "Mutant Cells",
   "Amorphous Materials",
+  "Enhancement Materials",
+  "Basic Materials",
+  "Core Materials",
 ]);
 
-/** "36 Descendants", "1 reactor": the category's name for counting. */
+/** What a category counts when it isn't its own name: the index's word for it. */
+const countNouns: Readonly<Partial<Record<string, string>>> = {
+  Miscellaneous: "items",
+  "Difficulty Level Rewards": "battlefields",
+  "400% Infiltration Operations": "operations",
+};
+
+/** "36 Descendants", "1 reactor", "37 battlefields": the category's name for counting. */
 const countOf = (count: number, category: string) => {
-  const plural = gameTerms.has(category) ? category : category.toLowerCase();
+  const plural =
+    countNouns[category] ??
+    (gameTerms.has(category) ? category : category.toLowerCase());
   const noun = plural.replace(/s$/, "");
   return `${numberFormat.format(count)} ${count === 1 ? noun : plural}`;
 };
@@ -105,7 +117,7 @@ export default async function DatabasePage() {
           <p className="max-w-xl hero-text">
             {items.length === 0
               ? "The database couldn't be loaded for this build. It comes back with the next one."
-              : `Search all ${numberFormat.format(items.length)} Descendants, weapons, modules, reactors, external components, Fellows, vehicles, Mutant Cells, cosmetics and Amorphous Materials, or browse a category below.`}
+              : `Search all ${numberFormat.format(items.length)} Descendants, weapons, modules, reactors, external components, Fellows, vehicles, Mutant Cells, cosmetics, Amorphous Materials, Enhancement Materials, Basic Materials, Core Materials, cores, battlefields and 400% Infiltration Operations, or browse a category below.`}
           </p>
           <div className="w-full text-left">
             {/* The URL's search is read in the browser; the static HTML holds the

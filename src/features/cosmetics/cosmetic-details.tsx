@@ -206,7 +206,7 @@ export function CosmeticDetails({
               id={`${ids}-stages`}
               className="text-xs font-medium text-muted-foreground"
             >
-              {`${String(version.stages.length)} stages`}
+              {`${String(version.stages.length)} ${version.stages.length === 1 ? "stage" : "stages"}`}
             </span>
             <ToggleGroup
               aria-labelledby={`${ids}-stages`}
@@ -290,7 +290,7 @@ export function CosmeticDetails({
           {card.everyone ? (
             <p className="text-sm">Every Descendant</p>
           ) : people.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Not listed</p>
+            <p className="text-sm text-muted-foreground">Not listed yet</p>
           ) : (
             <ul className="flex flex-wrap gap-2">
               {people.map((entry) => (

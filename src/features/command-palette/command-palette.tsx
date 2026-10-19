@@ -104,7 +104,7 @@ export function CommandPalette({
                   className="size-4 shrink-0 text-muted-foreground"
                 />
                 <Autocomplete.Input
-                  aria-label="Search pages, tools and commands"
+                  aria-label="Search pages, tools, Descendants, weapons and more"
                   aria-describedby={hintsId}
                   placeholder="Search pages, tools, Descendants, weapons…"
                   className="h-13 w-full bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground"

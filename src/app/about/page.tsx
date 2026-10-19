@@ -77,8 +77,8 @@ const sections: readonly {
         </li>
         <li>
           <PageLink href="/database">Database</PageLink>: search every
-          Descendant, weapon, module, reactor, external component and Fellow,
-          with their stats at every level.
+          Descendant, weapon, module, reactor, external component, Fellow,
+          vehicle, Mutant Cell, cosmetic, material and core at once.
         </li>
         <li>
           Command palette: press Ctrl+K on any page to jump to a page or an

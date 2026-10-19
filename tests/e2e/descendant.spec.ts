@@ -441,7 +441,7 @@ test.describe("the index", () => {
   test("search and sort, with an empty state", async ({ page }) => {
     await open(page, "/descendants");
     const search = page.getByRole("searchbox", {
-      name: "Search Descendants by name",
+      name: "Search Descendants",
     });
     await search.fill("bunny");
     await expect(page).toHaveURL(/\?q=bunny$/);

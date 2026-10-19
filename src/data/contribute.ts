@@ -96,7 +96,7 @@ export const openChecks: readonly {
   {
     topic: "External Component wording",
     question:
-      "Whether the game writes External Component with capitals, as this site does.",
+      "Whether the game writes External Component with capitals, as this site's titles do.",
     page: "/external-components",
   },
 ];

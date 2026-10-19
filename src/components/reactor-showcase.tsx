@@ -38,7 +38,7 @@ export function ReactorShowcase({
     <CardCarousel
       icon={<Hexagon />}
       title="Reactors"
-      description={`${String(items.length)} reactors, each in ${String(tiers)} tiers. Pick one for its Skill Power at every level, and the Descendants whose skills it suits.`}
+      description={`All ${String(items.length)} reactors, each in ${String(tiers)} tiers. Open one for its Skill Power at every level, and the Descendants whose skills it suits.`}
       seconds={7}
       action={
         <Link

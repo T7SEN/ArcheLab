@@ -49,6 +49,7 @@ import {
   rowEnd,
   useGridColumns,
 } from "@/features/game-data/details-row";
+import { LoadFailed } from "@/features/game-data/load-failed";
 import { ModuleDetails, ModuleTile } from "./module-details";
 
 /** A tier the filter offers, with its rarity color from the chat registry. */
@@ -221,19 +222,25 @@ export function ModuleIndex({
     ...options.types.map((type) => ({ value: type, label: type })),
   ];
   const ownerItems = [
-    { value: all, label: "Any Descendant" },
+    { value: all, label: "All Descendants" },
     ...options.owners.map((owner) => ({
       value: owner.slug,
       label: owner.name,
     })),
   ];
 
+  // The data couldn't load: the hero says so, and this says it once more instead of
+  // empty filters and "No … matches these filters."
+  if (entries.length === 0) {
+    return <LoadFailed what="modules" />;
+  }
+
   return (
     <div className="grid gap-6">
       <div className="grid gap-4 rounded-2xl border bg-card/60 p-4 sm:p-5">
         <div className="flex flex-wrap items-center gap-3">
           <label className="relative min-w-56 flex-1">
-            <span className="sr-only">Search modules by name</span>
+            <span className="sr-only">Search modules</span>
             <Search
               aria-hidden="true"
               className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"

@@ -27,7 +27,6 @@ const stats = [
   {
     stat_id: "105000176",
     stat_name: "Module Drop Rate Increase Modifier",
-    stat_order_no: 1,
   },
 ];
 

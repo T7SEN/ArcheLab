@@ -12,6 +12,7 @@ import {
   rowEnd,
   useGridColumns,
 } from "@/features/game-data/details-row";
+import { CardText } from "@/features/game-data/card-tags";
 import { FilterRow, filterChipClass } from "@/features/game-data/filter-row";
 import {
   CardItem,
@@ -24,6 +25,7 @@ import {
   useSearch,
   writeSearch,
 } from "@/features/game-data/url-query";
+import { LoadFailed } from "@/features/game-data/load-failed";
 import { SocketIcon } from "@/features/modules/fact-icons";
 import {
   CellTile,
@@ -157,6 +159,12 @@ export function MutantCellIndex({
         />
       </DetailsRowItem>,
     );
+  }
+
+  // The data couldn't load: the hero says so, and this says it once more instead of
+  // empty filters and "No … matches these filters."
+  if (entries.length === 0) {
+    return <LoadFailed what="Mutant Cells" />;
   }
 
   return (
@@ -302,9 +310,7 @@ function MutantCellCardLink({
           <SocketLabel socket={entry.socket} />
         </span>
       </span>{" "}
-      <span className="line-clamp-3 text-xs leading-relaxed text-muted-foreground">
-        {entry.description}
-      </span>
+      <CardText>{entry.description}</CardText>
     </a>
   );
 }

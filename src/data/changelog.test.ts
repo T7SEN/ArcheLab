@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import packageJson from "../../package.json";
-import { changelog, changelogDate, changelogGroupId } from "./changelog";
+import {
+  changelog,
+  changelogDate,
+  changelogGroupId,
+  nextChangelogVersion,
+} from "./changelog";
+import { changelogStyleProblems } from "./changelog-style";
 
 describe("the changelog", () => {
   it("runs newest first, one entry a day, each with something in it", () => {
@@ -34,6 +40,35 @@ describe("the changelog", () => {
       entry.version === undefined ? [] : [entry.version],
     );
     expect(new Set(versions).size).toBe(versions.length);
+  });
+
+  it("gives every entry from Version 1 on a version, and none before", () => {
+    const first = changelog.findIndex((entry) => entry.version === "1.0.0");
+    for (const [index, entry] of changelog.entries()) {
+      expect(entry.version === undefined, entry.date).toBe(index > first);
+    }
+  });
+
+  it("raises the minor number for anything new, only the patch for fixes (T7SEN)", () => {
+    const fixes = [{ title: "Fixes", items: ["A fix."] }] as const;
+    const page = [{ title: "Database", items: ["A page."] }, ...fixes] as const;
+    expect(nextChangelogVersion("1.1.0", fixes)).toBe("1.1.1");
+    expect(nextChangelogVersion("1.1.3", page)).toBe("1.2.0");
+    for (const [index, entry] of changelog.entries()) {
+      const before = changelog.at(index + 1);
+      if (entry.version === undefined || before?.version === undefined)
+        continue;
+      // The major number goes up only when T7SEN says so.
+      const major = `${String(Number(before.version.split(".")[0]) + 1)}.0.0`;
+      expect([
+        nextChangelogVersion(before.version, entry.groups),
+        major,
+      ]).toContain(entry.version);
+    }
+  });
+
+  it("writes every entry in the house style (changelog-style.ts)", () => {
+    expect(changelog.flatMap(changelogStyleProblems)).toEqual([]);
   });
 
   it("has package.json's version as its newest (T7SEN: always the same)", () => {

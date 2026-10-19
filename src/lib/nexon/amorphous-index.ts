@@ -1,24 +1,40 @@
 import "server-only";
 import { z } from "zod";
-import { patternInGame, patternTier } from "@/data/amorphous-materials";
+import {
+  patternInGame,
+  patternTier,
+  shapeStabilizerDescription,
+  shapeStabilizerName,
+  shapeStabilizerTier,
+} from "@/data/amorphous-materials";
 import {
   patternPrefix,
   type AmorphousBuild,
   type AmorphousPattern,
   type BuildKind,
   type AmorphousReward,
+  type ShapeStabilizer,
+  type StabilizerUse,
 } from "@/features/amorphous/amorphous-filters";
+import { withPlaceLinks } from "@/features/game-data/places";
 import { slugOf } from "@/lib/slug";
+import { fetchPlaceHrefs } from "./place-links";
 import { fetchDescendantLinks } from "./descendant-page";
 import { fetchFellows } from "./fellow-index";
+import { materialHref } from "./material-links";
 import { fetchMetadataSet } from "./metadata";
 import {
+  fetchAcquisitions,
   fetchMaterials,
   fetchResearch,
   numericId,
+  sourceText,
+  type AcquisitionRecord,
   type MaterialRecord,
   type ResearchRecord,
 } from "./shared-sets";
+
+export { sourceText };
 import { fetchVehicles } from "./vehicle-index";
 import { fetchWeaponLinks } from "./weapon-page";
 
@@ -49,18 +65,14 @@ const rewardSchema = z.object({
   ),
 });
 
-const acquisitionSchema = z.object({
-  acquisition_detail_id: z.string().min(1),
-  acquisition_detail_name: z.string().min(1),
-});
-
 export type AmorphousRewardRecord = z.infer<typeof rewardSchema>;
-export type AcquisitionRecord = z.infer<typeof acquisitionSchema>;
 
 /** The Descendants, weapons, Fellows and vehicles a reward can be part of, by NEXON id. */
 export type BuildTargets = ReadonlyMap<string, AmorphousBuild>;
 
 export interface AmorphousSets {
+  /** Pages for drop places, by NEXON's place id (`place-links.ts`). */
+  readonly placeHrefs?: ReadonlyMap<string, string>;
   readonly materials: readonly MaterialRecord[];
   readonly rewards: readonly AmorphousRewardRecord[];
   readonly acquisitions: readonly AcquisitionRecord[];
@@ -69,11 +81,8 @@ export interface AmorphousSets {
 
 export interface AmorphousIndex {
   readonly patterns: readonly AmorphousPattern[];
-}
-
-/** NEXON's acquisition names with their bracket padding gone: "[Kingston] [Normal]". */
-export function sourceText(name: string): string {
-  return name.replace(/\[\s+/g, "[").replace(/\s+\]/g, "]").trim();
+  /** The eight regular Shape Stabilizers, by Form (T7SEN, 2026-10-18). */
+  readonly stabilizers: readonly ShapeStabilizer[];
 }
 
 /**
@@ -213,6 +222,11 @@ export function amorphousIndex(
               imageUrl: item.image_url,
               rate: entry.rate,
               build,
+              href: materialHref(
+                item.consumable_material_id,
+                item.consumable_material_name,
+                sets,
+              ),
             },
           ];
         },
@@ -239,6 +253,11 @@ export function amorphousIndex(
               }),
             ),
           ],
+          ...withPlaceLinks(
+            material.acquisition_detail,
+            places,
+            sets.placeHrefs,
+          ),
         },
       ];
     })
@@ -247,34 +266,71 @@ export function amorphousIndex(
         b.tier.localeCompare(a.tier, "en", { numeric: true }) ||
         a.name.localeCompare(b.name, "en", { numeric: true }),
     );
-  return { patterns };
+  // The regular Shape Stabilizers, with the research that takes them: each makes its
+  // Advanced Form, an Enhancement Material.
+  const stabilizers = sets.materials
+    .filter(
+      (material) =>
+        material.material_type === "ShapeStabilizer" &&
+        shapeStabilizerName.test(material.consumable_material_name),
+    )
+    .map((material): ShapeStabilizer => {
+      const id = material.consumable_material_id;
+      const uses = sets.research.flatMap((entry): StabilizerUse[] => {
+        const input = entry.research_material.find(
+          (item) => item.meta_id === id,
+        );
+        const result = materials.get(
+          entry.research_result.at(0)?.meta_id ?? "",
+        );
+        return input === undefined || result === undefined
+          ? []
+          : [
+              {
+                name: result.consumable_material_name,
+                imageUrl: result.image_url,
+                href: `/enhancement-materials?material=${slugOf(result.consumable_material_name)}`,
+                count: input.material_count,
+              },
+            ];
+      });
+      return {
+        slug: slugOf(material.consumable_material_name),
+        name: material.consumable_material_name,
+        tier: shapeStabilizerTier,
+        description: shapeStabilizerDescription,
+        imageUrl: material.image_url,
+        uses,
+        sources: [
+          ...new Set(
+            material.acquisition_detail.flatMap((placeId) => {
+              const place = places.get(placeId);
+              return place === undefined ? [] : [place];
+            }),
+          ),
+        ],
+        ...withPlaceLinks(material.acquisition_detail, places, sets.placeHrefs),
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name, "en", { numeric: true }));
+  return { patterns, stabilizers };
 }
 
-let indexPromise: Promise<AmorphousIndex> | null = null;
+let targetsPromise: Promise<BuildTargets> | null = null;
 
-/** Every pattern, fetched once per build worker; none when NEXON can't be reached. */
-export function fetchAmorphousPatterns(): Promise<AmorphousIndex> {
-  indexPromise ??= Promise.all([
-    fetchMaterials(),
-    fetchMetadataSet("amorphous-reward", rewardSchema),
-    fetchMetadataSet("acquisition-detail", acquisitionSchema),
-    fetchResearch(),
+/**
+ * Every Descendant, weapon, Fellow and vehicle by NEXON id, for naming what an item
+ * builds; fetched once per build worker. Also used by the Basic Materials page (ADR 0045).
+ */
+export function fetchBuildTargets(): Promise<BuildTargets> {
+  targetsPromise ??= Promise.all([
     fetchDescendantLinks(),
     fetchWeaponLinks(),
     fetchFellows(),
     fetchVehicles(),
   ]).then(
-    ([
-      materials,
-      rewards,
-      acquisitions,
-      research,
-      descendants,
-      weapons,
-      fellows,
-      vehicles,
-    ]) => {
-      const targets = new Map<string, AmorphousBuild>([
+    ([descendants, weapons, fellows, vehicles]) =>
+      new Map<string, AmorphousBuild>([
         ...[...descendants].map(([id, link]): [string, AmorphousBuild] => [
           id,
           { kind: "descendant", slug: link.slug, name: link.name },
@@ -291,12 +347,27 @@ export function fetchAmorphousPatterns(): Promise<AmorphousIndex> {
           vehicle.id,
           { kind: "vehicle", slug: vehicle.slug, name: vehicle.name },
         ]),
-      ]);
-      return amorphousIndex(
-        { materials, rewards, acquisitions, research },
-        targets,
-      );
-    },
+      ]),
+  );
+  return targetsPromise;
+}
+
+let indexPromise: Promise<AmorphousIndex> | null = null;
+
+/** Every pattern, fetched once per build worker; none when NEXON can't be reached. */
+export function fetchAmorphousPatterns(): Promise<AmorphousIndex> {
+  indexPromise ??= Promise.all([
+    fetchMaterials(),
+    fetchMetadataSet("amorphous-reward", rewardSchema),
+    fetchAcquisitions(),
+    fetchResearch(),
+    fetchBuildTargets(),
+    fetchPlaceHrefs(),
+  ]).then(([materials, rewards, acquisitions, research, targets, placeHrefs]) =>
+    amorphousIndex(
+      { materials, rewards, acquisitions, research, placeHrefs },
+      targets,
+    ),
   );
   return indexPromise;
 }

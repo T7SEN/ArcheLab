@@ -16,7 +16,7 @@ import { count, parse, type Piece } from "@/features/chat/engine";
 import type { PortraitUrls } from "@/lib/nexon/descendants";
 import { ChatLine } from "./chat-line";
 import { chatRegistry } from "./chat-registry";
-import { iconName } from "./icon-options";
+import { iconName } from "./chat-icons";
 import {
   browserStorage,
   deleteTemplate,

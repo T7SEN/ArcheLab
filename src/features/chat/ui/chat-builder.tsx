@@ -686,7 +686,7 @@ export function ChatBuilder({ portraits }: ChatBuilderProps) {
               <span className={over ? "text-warning" : "text-muted-foreground"}>
                 {over
                   ? `${String(counted.used - counted.limit)} over the limit: the game cuts the highlighted part.`
-                  : `${String(counted.remaining)} characters left.`}
+                  : `${String(counted.remaining)} ${counted.remaining === 1 ? "character" : "characters"} left.`}
               </span>
             </div>
             <p

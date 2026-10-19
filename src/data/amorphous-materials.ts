@@ -6,7 +6,8 @@
  *   which the game no longer shows.
  * - Every pattern is Ultimate but two, Bunny's and Freyna's, which are Rare.
  * - The same list holds Shape Stabilizer Form 7 and Form 8 (Ultimate), which aren't
- *   patterns and open nothing; the page leaves them out.
+ *   patterns and open nothing. The page shows the eight regular Forms in a section of
+ *   their own (T7SEN, 2026-10-18).
  */
 
 /** The patterns in the game, by the name after "Amorphous Material Pattern: ". */
@@ -73,3 +74,16 @@ export const rarePatterns: readonly string[] = ["Bunny", "Freyna"];
 export function patternTier(name: string): "Tier2" | "Tier3" {
   return rarePatterns.includes(name) ? "Tier2" : "Tier3";
 }
+
+/** A regular Shape Stabilizer's name, as the game writes it; the Advanced ones differ. */
+export const shapeStabilizerName = /^Shape Stabilizer Form \d+$/;
+
+/**
+ * The regular Shape Stabilizers' tier and description, the same for all eight, from
+ * NEXON's Library (https://tfd-api.nexon.com/api/library/en/consumables/262083001 to
+ * 262083008, read 2026-10-18): Ultimate, as T7SEN's screenshots show Form 7 and Form 8.
+ * The description stays as written.
+ */
+export const shapeStabilizerTier = "Tier3";
+export const shapeStabilizerDescription =
+  "A solution that stabilizes and Shapes Amorphous Materials when a specific structural formula matches. When used while opening an Amorphous Material increases the Shaping Count.";

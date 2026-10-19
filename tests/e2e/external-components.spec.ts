@@ -12,7 +12,7 @@ const open = async (page: Page, url: string) => {
   await page.waitForLoadState("networkidle");
 };
 const grid = (page: Page) =>
-  page.getByRole("list", { name: "External components" });
+  page.getByRole("list", { name: "External Components" });
 const card = (page: Page, name: string) =>
   grid(page).getByRole("link", { name: new RegExp(`^${name}\\b`) });
 const details = (page: Page, name: string) =>

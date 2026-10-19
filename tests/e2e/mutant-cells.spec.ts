@@ -14,6 +14,16 @@ const card = (page: Page, name: string) =>
   cards(page).getByRole("link", { name: new RegExp(`^${name}\\b`) });
 const details = (page: Page, name: string) =>
   cards(page).getByRole("region", { name, exact: true });
+/** Scrolls to the end until every cell is drawn: a card's boxed description makes each batch taller. */
+const drawAll = async (page: Page) => {
+  const items = cards(page).locator(":scope > li");
+  await expect
+    .poll(async () => {
+      await page.keyboard.press("End");
+      return items.count();
+    })
+    .toBe(64);
+};
 
 test("every cell is listed, the last ones drawn as the page scrolls", async ({
   page,
@@ -36,13 +46,16 @@ test("every cell is listed, the last ones drawn as the page scrolls", async ({
     /^https:\/\/open\.api\.nexon\.com\/static\/tfd\/img\/[0-9a-f]{32}$/,
   );
 
-  await page.keyboard.press("End");
+  // Each End draws the next batches as the page nears them.
+  await drawAll(page);
   await expect(items).toHaveCount(64);
   await expect(items.last()).toContainText("Venomous Spike");
 });
 
 test("a card opens its effects with their numbers", async ({ page }) => {
   await open(page, "/mutant-cells");
+  // Past the first batches.
+  await drawAll(page);
   const tuning = card(page, "Singular Fusion Tuning");
   await tuning.click();
   await expect(page).toHaveURL(/\?cell=singular-fusion-tuning$/);

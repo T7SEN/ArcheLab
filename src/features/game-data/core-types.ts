@@ -1,4 +1,5 @@
 import { coreOptionDisplay } from "@/data/core-option-display";
+import { slugOf } from "@/lib/slug";
 
 /**
  * Core types as weapon pages and external component cards show them (ADR 0024, ADR
@@ -59,6 +60,22 @@ export function romanGrade(grade: number): string {
   );
 }
 
+/** The slot a core type goes in: "Firepower" for Firepower Augmentation. */
+export function coreSlotName(typeName: string): string {
+  return typeName.replace(/ Augmentation$/, "");
+}
+
+/**
+ * A core type's card on the Cores index, open (ADR 0044): Firepower Augmentation is
+ * `/cores?core=firepower`, and with a weapon type, only what it rolls on that type.
+ */
+export function coreHref(typeName: string, weaponType?: string): string {
+  const core = `core=${slugOf(coreSlotName(typeName))}`;
+  return weaponType === undefined
+    ? `/cores?${core}`
+    : `/cores?type=${slugOf(weaponType)}&${core}`;
+}
+
 /** An option's name as the game writes it ("Multi-Hit Chance(+)"). */
 export function coreOptionLabel(option: CoreOption): string {
   return coreOptionDisplay[option.name]?.label ?? option.name;
@@ -73,8 +90,9 @@ const threePlaces = new Intl.NumberFormat("en-US", {
  * An option's range as the game writes it: a "Multiply" option as a percentage marked
  * [x] (Max HP 28.2–37.5% [x]), an "Add" option as an amount marked [+] (DEF
  * 5,625–7,500 [+]), unless `core-option-display.ts` says the game writes it otherwise
- * (Reload Time Modifier 2–74% [+], Fire Rate 1–20% [x]). Low to high; NEXON's
- * floating-point noise (0.28200000000000003) rounds away.
+ * (Reload Time Modifier 2–74% [+], Fire Rate 1–20% [x]). Low to high, negatives with a
+ * minus sign and a spaced dash (Recoil −92 – −80% [+]); NEXON's floating-point noise
+ * (0.28200000000000003) rounds away.
  */
 export function formatCoreRange(option: CoreOption): string {
   const display = coreOptionDisplay[option.name];
@@ -84,11 +102,19 @@ export function formatCoreRange(option: CoreOption): string {
   const [low, high] = [option.min * sign, option.max * sign].sort(
     (a, b) => a - b,
   ) as [number, number];
-  const format = (value: number) =>
-    percent === "scaled"
-      ? twoPlaces.format(value * 100)
-      : threePlaces.format(value);
-  const range = `${format(low)}–${format(high)}${percent === "none" ? "" : "%"}`;
+  // A negative end takes a minus sign (U+2212), and the dash between the ends then
+  // takes spaces: in the ranges' monospace font a minus and an en dash look alike, so
+  // −92 – −80% reads where −92–−80% looked like -92--80%.
+  const format = (value: number) => {
+    const text =
+      percent === "scaled"
+        ? twoPlaces.format(Math.abs(value) * 100)
+        : threePlaces.format(Math.abs(value));
+    return value < 0 && text !== "0" ? `−${text}` : text;
+  };
+  const [from, to] = [format(low), format(high)];
+  const dash = from.startsWith("−") || to.startsWith("−") ? " – " : "–";
+  const range = `${from}${dash}${to}${percent === "none" ? "" : "%"}`;
   const marker =
     option.operator === "Multiply"
       ? " [x]"

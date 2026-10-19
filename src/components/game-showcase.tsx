@@ -42,7 +42,7 @@ export function GameShowcase({ descendants, weapons }: GameShowcaseProps) {
         <CardCarousel
           icon={<UsersRound />}
           title="Descendants"
-          description={`All ${String(descendants.items.length)} Descendants, newest first, with the ${String(descendants.ultimates)} Ultimates in gold. Pick one for their stats, skills and modules.`}
+          description={`All ${String(descendants.items.length)} Descendants, newest first, with the ${String(descendants.ultimates)} Ultimates in gold. Open one for their stats, skills and modules.`}
           action={
             <Link
               href="/descendants"
@@ -64,7 +64,7 @@ export function GameShowcase({ descendants, weapons }: GameShowcaseProps) {
         <CardCarousel
           icon={<Crosshair />}
           title="Weapons"
-          description={`${String(weapons.total)} weapons in ${String(weapons.types)} types. Each card shows the highest tier of its type; pick one for its page.`}
+          description={`All ${String(weapons.total)} weapons in ${String(weapons.types)} types. Each card shows the highest tier of its type; open one for its page.`}
           seconds={7}
           action={
             <Link

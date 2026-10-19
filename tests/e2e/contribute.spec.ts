@@ -51,6 +51,6 @@ test("a weapon page with its core slots asks for no report", async ({
   const cores = page.getByRole("tabpanel", { name: "Core slots" });
   await expect(cores.getByRole("list", { name: "Slots" })).toBeVisible();
   await expect(
-    cores.getByRole("link", { name: /Report on GitHub/ }),
+    cores.getByRole("link", { name: /Open the form on GitHub/ }),
   ).toHaveCount(0);
 });

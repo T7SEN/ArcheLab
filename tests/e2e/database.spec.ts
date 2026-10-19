@@ -36,8 +36,10 @@ test("the search finds items across categories and opens one's page", async ({
   await expect(results(page).getByRole("status")).toHaveText(/^\d+ results?$/);
   const storm = results(page).getByRole("link", { name: /^Storm Cage\b/ });
   await expect(storm).toHaveAttribute("href", "/weapons/storm-cage");
+  // Its Core Materials share its name ("Thunder Cage Blueprint"): the weapon by its
+  // address.
   await expect(
-    results(page).getByRole("link", { name: /^Thunder Cage\b/ }),
+    results(page).locator('a[href="/weapons/thunder-cage"]'),
   ).toBeVisible();
   expect(loads).toHaveLength(1);
 

@@ -10,8 +10,12 @@ const open = async (page: Page, url: string) => {
   await page.waitForLoadState("networkidle");
 };
 const cards = (page: Page) => page.getByRole("list", { name: "Fellows" });
+// The card itself: an open card's research links its Core Materials, which share its
+// name ("Hagios Sheepdog Code").
 const card = (page: Page, name: string) =>
-  cards(page).getByRole("link", { name: new RegExp(`^${name}\\b`) });
+  cards(page)
+    .locator('a[id^="fellow-card-"]')
+    .and(page.getByRole("link", { name: new RegExp(`^${name}\\b`) }));
 const details = (page: Page, name: string) =>
   cards(page).getByRole("region", { name, exact: true });
 

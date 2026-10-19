@@ -119,9 +119,9 @@ const sets: DescendantSets = {
     },
   ],
   stats: [
-    { stat_id: "105000029", stat_name: "DEF", stat_order_no: 500 },
-    { stat_id: "105000001", stat_name: "Max HP", stat_order_no: 300 },
-    { stat_id: "105000024", stat_name: "Max MP", stat_order_no: 400 },
+    { stat_id: "105000029", stat_name: "DEF" },
+    { stat_id: "105000001", stat_name: "Max HP" },
+    { stat_id: "105000024", stat_name: "Max MP" },
   ],
   modules: [
     {
@@ -232,7 +232,8 @@ const sets: DescendantSets = {
       consumable_material_id: "261021321",
       consumable_material_name: "Raven Code",
       image_url: img("code"),
-      acquisition_detail: ["AM:262051183", "QS:630100791"],
+      // A removed numbered pattern NEXON still names is left out (T7SEN, 2026-10-17).
+      acquisition_detail: ["AM:262051183", "AM:262051001", "QS:630100791"],
     },
     {
       consumable_material_id: "261511007",
@@ -244,6 +245,12 @@ const sets: DescendantSets = {
       consumable_material_id: "262051183",
       consumable_material_name: "Amorphous Material Pattern: Raven",
       image_url: img("pattern"),
+      acquisition_detail: [],
+    },
+    {
+      consumable_material_id: "262051001",
+      consumable_material_name: "Amorphous Material Pattern: 001",
+      image_url: img("pattern-001"),
       acquisition_detail: [],
     },
   ],
@@ -341,9 +348,19 @@ describe("descendantPageFrom", () => {
     expect(cells?.recipe?.items.map((item) => [item.name, item.count])).toEqual(
       [["Carbon Crystal", 554]],
     );
+    // A basic material links its details on the Basic Materials index, a part (a Core
+    // Material) its own on the Core Materials index.
+    expect(cells?.recipe?.items.at(0)?.href).toBe(
+      "/basic-materials?material=carbon-crystal",
+    );
+    expect(cells?.href).toBe("/core-materials?material=raven-enhanced-cells");
     expect(code?.recipe).toBeNull();
     expect(code?.from).toEqual([
-      { name: "Amorphous Material Pattern: Raven", imageUrl: img("pattern") },
+      {
+        name: "Amorphous Material Pattern: Raven",
+        imageUrl: img("pattern"),
+        slug: "raven",
+      },
     ]);
   });
 });

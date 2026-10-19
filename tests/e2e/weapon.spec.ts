@@ -135,8 +135,11 @@ test("an Ultimate weapon's page shows its core slots and research recipe", async
   await expect(cores).toContainText("Multi-Hit Chance(+)");
   await expect(cores).toContainText("Fits the Free and Firepower slots");
   // Special isn't one of Thunder Cage's slots, so only its Free slot takes those cores.
+  // The name is a link to its core on the Cores index (ADR 0044), in the type's heading.
   await expect(
-    cores.getByText("Special Augmentation", { exact: true }).locator(".."),
+    cores
+      .getByRole("heading", { name: "Special Augmentation", exact: true })
+      .locator(".."),
   ).toContainText("Fits the Free slot");
 
   const research = await openTab(page, "How to obtain");
@@ -197,7 +200,7 @@ test("a Transcendent weapon's How to obtain tab lists where it comes from", asyn
   const note = obtain.getByRole("note");
   await expect(note.getByRole("paragraph")).toHaveText([
     "Chances are for a random Transcendent weapon, not Storm Cage specifically. Drop-rate bonuses raise them.",
-    "One-time first-clear guarantees aren't in Mission rewards.",
+    "One-time first-clear guarantees aren't in the mission rewards.",
   ]);
 });
 
@@ -339,7 +342,7 @@ test.describe("the index", () => {
   test("search and sort, with an empty state", async ({ page }) => {
     await open(page, "/weapons");
     const search = page.getByRole("searchbox", {
-      name: "Search weapons by name",
+      name: "Search weapons",
     });
     await search.fill("thunder");
     await expect(page).toHaveURL(/\?q=thunder$/);

@@ -13,7 +13,7 @@ import {
   type Style,
 } from "@/features/chat/engine";
 import type { PortraitUrls } from "@/lib/nexon/descendants";
-import { artUrlOf, chatIconClass } from "./chat-icons";
+import { artUrlOf, chatIconClass, iconName } from "./chat-icons";
 import { chatRegistry } from "./chat-registry";
 import {
   docFromPieces,
@@ -75,14 +75,14 @@ function imageView(portraits: PortraitUrls) {
     const dom = document.createElement("span");
     dom.className = chatIconClass(image);
     dom.contentEditable = "false";
-    dom.title = `${label} icon`;
+    dom.title = iconName(label);
     const src = artUrlOf(image, portraits);
     if (src === null) {
       dom.append(placeholderIcon(label));
     } else {
       const img = document.createElement("img");
       img.src = src;
-      img.alt = `${label} icon`;
+      img.alt = iconName(label);
       img.draggable = false;
       img.addEventListener(
         "error",

@@ -85,7 +85,7 @@ export default async function DescendantsPage() {
           <p className="mt-3 max-w-2xl hero-text">
             {summaries.length === 0
               ? "The Descendants couldn't be loaded for this build. They come back with the next one."
-              : `All ${String(summaries.length)} Descendants, ${String(ultimates)} of them Ultimates. Each page has stats at every level, skills, exclusive modules and the research recipe.`}
+              : `All ${String(summaries.length)} Descendants, ${String(ultimates)} of them Ultimates. Each page has stats at every level, skills, exclusive modules, reactors and the research recipe.`}
           </p>
         </div>
       </section>

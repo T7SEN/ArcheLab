@@ -12,6 +12,9 @@ import {
 } from "react";
 import { motionAllowed } from "@/components/motion";
 
+/** Counts as the page writes them: "1,293". */
+const countFormat = new Intl.NumberFormat("en-US");
+
 // An index's grid items (ADR 0030): its cards, the row its open details sit in, and,
 // for a long index, the strip that draws more cards as the page nears it (ADR 0031).
 
@@ -87,7 +90,8 @@ export function MoreCards({
         className="size-5 animate-spin text-muted-foreground"
       />
       <span className="sr-only">
-        Showing {drawn} of {total} {noun}; more show as you scroll.
+        Showing {countFormat.format(drawn)} of {countFormat.format(total)}{" "}
+        {noun}; more show as you scroll.
       </span>
     </div>
   );

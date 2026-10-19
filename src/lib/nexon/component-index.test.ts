@@ -36,7 +36,7 @@ const volcano = [
   { set_option: "Active Volcano", set_count: 2, set_option_effect: "Two." },
 ];
 
-const stats = [{ stat_id: "105000001", stat_name: "Max HP", stat_order_no: 1 }];
+const stats = [{ stat_id: "105000001", stat_name: "Max HP" }];
 
 describe("componentGroups", () => {
   const groups = componentGroups(
@@ -143,8 +143,8 @@ describe("componentGroups", () => {
 describe("componentSubStats", () => {
   it("names each slot's sub-stats from stat.json, leaving out any it doesn't name", () => {
     const named = componentSubStats([
-      { stat_id: "105000024", stat_name: "Max MP", stat_order_no: 1 },
-      { stat_id: "105000063", stat_name: "Chill Resistance", stat_order_no: 2 },
+      { stat_id: "105000024", stat_name: "Max MP" },
+      { stat_id: "105000063", stat_name: "Chill Resistance" },
     ]);
     expect(named.Sensor).toEqual(["Max MP", "Chill Resistance"]);
     expect(named.Processor).toEqual([]);

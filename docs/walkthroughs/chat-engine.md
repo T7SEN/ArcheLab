@@ -10,7 +10,7 @@ The engine in `src/features/chat/engine` reads, writes, counts, shortens and sha
    - Known tags become styled text, a text size (`<a id>`) or an image (`<img id>`). Anything unknown is shown exactly as typed.
    - Text between matches is untagged. Escapes (`&lt;` and friends) are decoded last.
 3. **Render.** `render.ts` turns pieces into glyphs: each character with its look, or an image id. "Renders identically" compares glyph lists. A visible character's look is its color plus its shape (weight, slant, size). A whitespace character's look is only its shape.
-4. **Serialize.** `serialize.ts` writes canonical markup: every run closed with `</>`, every `<` escaped.
+4. **Serialize.** `serialize.ts` writes canonical markup: every run closed with `</>`, every `<` escaped. Neighboring untagged pieces, empty ones skipped, are escaped together as one text: escaped one by one, `"&"` then `"lt;"` came out as `&lt;`, which shows `<` (found by the invariant tests on 2026-10-18; the editor never sends such pieces).
 5. **Count.** `count.ts` counts the raw markup in UTF-16 units, the way the input box does, and finds where the box cuts it. It also flags characters the game refuses (emoji and some symbols) or that are untested.
 6. **Optimize.** `optimize.ts` simplifies the pieces in three steps:
    - It swaps each tag for its shortest same-looking equivalent: `<default>` and `<QuestEvent>` become `<Plain>`.
