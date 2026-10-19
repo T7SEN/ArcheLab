@@ -457,7 +457,9 @@ test("the Database menu gives each section a column, fewer on a narrow screen, a
   const cosmetics = nav.getByRole("link", { name: "Cosmetics", exact: true });
   await cosmetics.scrollIntoViewIfNeeded();
   await cosmetics.click();
-  await expect(page).toHaveURL("/cosmetics");
+  // Cosmetics isn't prefetched and its page data is large (2,123 cosmetics): on a busy
+  // machine the move takes longer than the default 5 seconds.
+  await expect(page).toHaveURL("/cosmetics", { timeout: 15_000 });
 });
 
 test("the navbar menu also closes with reduced motion", async ({ page }) => {

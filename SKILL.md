@@ -545,7 +545,9 @@ None today. When player lookups ship, `NEXON_API_KEY` is server-only, set in Ver
 
 21. **Chrome puts a space before screen-reader text in a name.** A button whose visible word is followed by an `sr-only` span ("Alert" + ": AX Refinery") is named "Alert : AX Refinery", because the span is positioned on its own. Match such names with a pattern (`/^Alert ?: AX Refinery$/`) in e2e tests.
 
-20. **One `next dev` per folder.** Next.js 16 refuses a second dev server in the same checkout ("Another next dev server is already running", with the first one's port and PID), whatever `--port` says. Sessions sharing this folder share one dev server; use its port, or stop it first. Screenshots for review can come from Playwright's Chromium against it (checked 2026-10-18, ADR 0044).
+22. **One `next dev` per folder.** Next.js 16 refuses a second dev server in the same checkout ("Another next dev server is already running", with the first one's port and PID), whatever `--port` says. Sessions sharing this folder share one dev server; use its port, or stop it first. Screenshots for review can come from Playwright's Chromium against it (checked 2026-10-18, ADR 0044).
+
+23. **Hobby allows 5,000 uploads a day.** The CLI uploads each new file of `.vercel/output` on its own, and `api-upload-free` counts them over a rolling 24 hours. On 2026-10-19 a change to every page, after the morning's scheduled deploy, went over it and the deploy failed ("Too many requests - try again in 24 hours"). `ci.yml` deploys with `--archive=tgz`: the whole build goes up as a few compressed files every time (about 17 MB for 108 MB, 2026-10-19), never file by file. Hobby also caps CLI uploads at 100 MB, and Vercel doesn't say whether that counts the archive or the files in it; if a deploy is refused on size, the build has to shrink (ADR 0003 amendment).
 
 ## 11. Known tech debt
 

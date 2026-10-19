@@ -148,10 +148,22 @@ export const menuColumns = (
   return best;
 };
 
-/** Caps a scrolling box's height at the screen below its top, less `below` and 16px. */
-const fitScreen = (element: HTMLElement, below: number) => {
-  const room =
-    window.innerHeight - element.getBoundingClientRect().top - below - 16;
+/**
+ * Caps a scrolling box's height at the screen below its top, less `below` and 16px. The
+ * top is where the box comes to rest: `moving`, a menu still sliding in, is measured
+ * without its animation's offset (2026-10-19: measured mid-slide, the menu ended up to
+ * 4px past a short screen).
+ */
+const fitScreen = (
+  element: HTMLElement,
+  below: number,
+  moving?: HTMLElement,
+) => {
+  const transform =
+    moving === undefined ? "none" : getComputedStyle(moving).transform;
+  const shift = transform === "none" ? 0 : new DOMMatrixReadOnly(transform).m42;
+  const top = element.getBoundingClientRect().top - shift;
+  const room = window.innerHeight - top - below - 16;
   element.style.maxHeight = `${String(Math.max(160, Math.floor(room)))}px`;
 };
 
@@ -1138,18 +1150,9 @@ const PillNav = ({
         screen - 16 - width,
       );
       dropdown.style.left = `${String(left - root.getBoundingClientRect().left)}px`;
-      fitScreen(scroll, 6);
+      fitScreen(scroll, 6, dropdown);
     };
     place();
-    // The menu slides in from 4px up, so its height is capped there first: it's capped
-    // again where it stops, or it would end up to 4px past the screen (2026-10-19).
-    const dropdown = dropdownRef.current;
-    const onSettled = (event: AnimationEvent) => {
-      if (event.target === dropdown) {
-        place();
-      }
-    };
-    dropdown?.addEventListener("animationend", onSettled);
     const onResize = () => {
       if (menuFit === Infinity) {
         place();
@@ -1161,7 +1164,6 @@ const PillNav = ({
     };
     window.addEventListener("resize", onResize);
     return () => {
-      dropdown?.removeEventListener("animationend", onSettled);
       window.removeEventListener("resize", onResize);
     };
   }, [menuIndex, menuFit, menuColumnCount]);

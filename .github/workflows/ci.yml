@@ -86,13 +86,15 @@ jobs:
           else
             pnpm exec vercel build --token="$VERCEL_TOKEN"
           fi
+      # One compressed archive instead of a file per page: Hobby allows 5,000 uploads a
+      # day, and a change to every page went over it (2026-10-19; ADR 0003 amendment).
       - name: Deploy prebuilt output
         id: deploy
         run: |
           if [ "$VERCEL_TARGET" = "production" ]; then
-            url="$(pnpm exec vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN")"
+            url="$(pnpm exec vercel deploy --prebuilt --archive=tgz --prod --token="$VERCEL_TOKEN")"
           else
-            url="$(pnpm exec vercel deploy --prebuilt --token="$VERCEL_TOKEN")"
+            url="$(pnpm exec vercel deploy --prebuilt --archive=tgz --token="$VERCEL_TOKEN")"
           fi
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Deployed ($VERCEL_TARGET): $url" >> "$GITHUB_STEP_SUMMARY"
